@@ -109,7 +109,6 @@ class assign_submission_aiwriter extends assign_submission_plugin
         return true;
     }
 
-
     public function save(stdClass $submission, stdClass $data)
     {
         global $USER, $DB;
@@ -175,7 +174,6 @@ class assign_submission_aiwriter extends assign_submission_plugin
         }
     }
 
-
     public function get_files($submission, $class)
     {
         $result = array();
@@ -195,8 +193,6 @@ class assign_submission_aiwriter extends assign_submission_plugin
         }
         return $result;
     }
-
-
 
     public function view_summary(stdClass $submission, &$showviewlink)
     {

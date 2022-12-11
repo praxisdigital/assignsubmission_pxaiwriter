@@ -23,3 +23,39 @@ $string['submission_step_label'] = "AI writer submission steps";
 // $string['maximumsubmissionsize'] = "";
 // $string['maximumsubmissionsize'] = "";
 // $string['maximumsubmissionsize'] = "";
+$string['open_ai_request_settings'] = "Open API request settings";
+$string['open_ai_request_settings_description'] = "";
+
+$string['url'] = "URL";
+$string['url_description'] = "Open API URL";
+
+$string['content_type'] = 'Content Type';
+$string['content_type_description'] = "";
+$string['authorization'] = "Authorization";
+$string['authorization_description'] = "";
+
+$string['model'] = 'Model';
+$string['model_type_description'] = "";
+$string['temperature'] = "Temperature";
+$string['temperature_description'] = "";
+
+$string['max_tokens'] = "Max tokens";
+$string['max_tokens_description'] = "";
+
+$string['top_p'] = "Top p";
+$string['top_p_description'] = "";
+
+$string['frequency_penalty'] = "Frequency Penalty";
+$string['frequency_penalty_description'] = "";
+
+$string['presence_penalty'] = "Precence penalty";
+$string['presence_penalty_description'] = "";
+
+$string['api_key'] = "API key";
+$string['api_key_description'] = "";
+
+$string['last_modified'] = "Last modified";
+$string['last_modified_description'] = "";
+
+$string['last_modified_by'] = "Last modified by";
+$string['last_modified_description'] = "";
