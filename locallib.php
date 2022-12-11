@@ -16,55 +16,68 @@ class assign_submission_aiwriter extends assign_submission_plugin
         $defaultmaxfilesubmissions = $this->get_config('maxfilesubmissions');
         $defaultmaxsubmissionsizebytes = $this->get_config('maxsubmissionsizebytes');
 
-        $settings = array();
-        $options = array();
-        for ($i = 1; $i <= ASSIGNSUBMISSION_FILE_MAXFILES; $i++) {
-            $options[$i] = $i;
-        }
+        // $settings = array();
+        // $options = array();
+        // for ($i = 1; $i <= ASSIGNSUBMISSION_FILE_MAXFILES; $i++) {
+        //     $options[$i] = $i;
+        // }
 
-        $name = get_string('maxfilessubmission', 'assignsubmission_aiwriter');
-        $mform->addElement('select', 'assignsubmission_aiwriter_maxfiles', $name, $options);
-        $mform->addHelpButton(
-            'assignsubmission_aiwriter_maxfiles',
-            'maxfilessubmission',
-            'assignsubmission_aiwriter'
-        );
-        $mform->setDefault('assignsubmission_aiwriter_maxfiles', $defaultmaxfilesubmissions);
-        $mform->disabledIf('assignsubmission_aiwriter_maxfiles', 'assignsubmission_aiwriter_enabled', 'notchecked');
+        // $name = get_string('maxfilessubmission', 'assignsubmission_aiwriter');
+        // $mform->addElement('select', 'assignsubmission_aiwriter_maxfiles', $name, $options);
+        // $mform->addHelpButton(
+        //     'assignsubmission_aiwriter_maxfiles',
+        //     'maxfilessubmission',
+        //     'assignsubmission_aiwriter'
+        // );
+        // $mform->setDefault('assignsubmission_aiwriter_maxfiles', $defaultmaxfilesubmissions);
+        // $mform->disabledIf('assignsubmission_aiwriter_maxfiles', 'assignsubmission_aiwriter_enabled', 'notchecked');
 
-        $choices = get_max_upload_sizes(
-            $CFG->maxbytes,
-            $COURSE->maxbytes,
-            get_config('assignsubmission_aiwriter', 'maxbytes')
-        );
+        // $choices = get_max_upload_sizes(
+        //     $CFG->maxbytes,
+        //     $COURSE->maxbytes,
+        //     get_config('assignsubmission_aiwriter', 'maxbytes')
+        // );
 
-        $settings[] = array(
-            'type' => 'select',
-            'name' => 'maxsubmissionsizebytes',
-            'description' => get_string('maximumsubmissionsize', 'assignsubmission_aiwriter'),
-            'options' => $choices,
-            'default' => $defaultmaxsubmissionsizebytes
-        );
+        // $settings[] = array(
+        //     'type' => 'select',
+        //     'name' => 'maxsubmissionsizebytes',
+        //     'description' => get_string('maximumsubmissionsize', 'assignsubmission_aiwriter'),
+        //     'options' => $choices,
+        //     'default' => $defaultmaxsubmissionsizebytes
+        // );
 
-        $name = get_string('maximumsubmissionsize', 'assignsubmission_aiwriter');
-        $mform->addElement('select', 'assignsubmission_aiwriter_maxsizebytes', $name, $choices);
-        $mform->addHelpButton(
-            'assignsubmission_aiwriter_maxsizebytes',
-            'maximumsubmissionsize',
-            'assignsubmission_aiwriter'
-        );
-        $mform->setDefault('assignsubmission_aiwriter_maxsizebytes', $defaultmaxsubmissionsizebytes);
-        $mform->disabledIf(
-            'assignsubmission_aiwriter_maxsizebytes',
-            'assignsubmission_aiwriter_enabled',
-            'notchecked'
-        );
+        // $name = get_string('maximumsubmissionsize', 'assignsubmission_aiwriter');
+        // $mform->addElement('select', 'assignsubmission_aiwriter_maxsizebytes', $name, $choices);
+        // $mform->addHelpButton(
+        //     'assignsubmission_aiwriter_maxsizebytes',
+        //     'maximumsubmissionsize',
+        //     'assignsubmission_aiwriter'
+        // );
+        // $mform->setDefault('assignsubmission_aiwriter_maxsizebytes', $defaultmaxsubmissionsizebytes);
+        // $mform->disabledIf(
+        //     'assignsubmission_aiwriter_maxsizebytes',
+        //     'assignsubmission_aiwriter_enabled',
+        //     'notchecked'
+        // );
+        //$mform->addElement('text','location','test_34556', 'class="d-none" id="test_34555"');
+        //$mform->createElement('hidden', 'test_34555', 1);
+        $mform->addElement('hidden', 'assignsubmission_aiwriter_steps', null);
+        $mform->setType('assignsubmission_aiwriter_steps', PARAM_RAW);
+
+
+        MoodleQuickForm::registerElementType('course_competency_rule',
+                                         "$CFG->dirroot/mod/assign/submission/aiwriter/classes/datetime_rule_form_element.php",
+                                         'test_element_123');
+        $mform->addElement('course_competency_rule', 'assignsubmission_aiwriter_steps_config');
     }
 
     public function save_settings(stdClass $data)
     {
-        $this->set_config('maxfilesubmissions', $data->assignsubmission_aiwriter_maxfiles);
-        $this->set_config('maxsubmissionsizebytes', $data->assignsubmission_aiwriter_maxsizebytes);
+        var_dump($data);
+        
+        //$vl = (string)$data->location;
+        $this->set_config('aiwritersteps', $data->assignsubmission_aiwriter_steps);
+        //$this->set_config('maxsubmissionsizebytes', $data->assignsubmission_aiwriter_maxsizebytes);
         return true;
     }
 
