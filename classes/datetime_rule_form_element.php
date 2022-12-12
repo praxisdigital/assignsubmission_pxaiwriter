@@ -99,13 +99,13 @@ class test_element_123 extends HTML_QuickForm_element
                                         <div class=" form-group row">
                                             <label for="staticEmail" class="col-md-3 col-form-label">'.$stepLabel.'&nbsp;{{step}}</label>
                                             <div class="col-md-9">
-                                                <textarea class="form-control" name="step_{{step}}_value" id="step_{{step}}_value">{{ description }}</textarea>
+                                                <textarea class="form-control step-des" name="step_{{step}}_value" id="step_{{step}}_value" data-id="{{step}}">{{ description }}</textarea>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="col-md-1">
-                                        {{#removable}} <button class="btn btn-danger remove-btn" id="remove_{{step}}" data-id="{{step}}"><i class="fa fa-trash" aria-hidden="true"></i></button> {{/removable}}
-                                        {{^removable}} <button class="btn btn-danger remove-btn d-none" id="remove_{{step}}" data-id="{{step}}"><i class="fa fa-trash" aria-hidden="true"></i></button> {{/removable}}
+                                        {{#removable}} <button class="btn btn-remove remove-btn" id="remove_{{step}}" data-id="{{step}}"><i class="fa fa-trash" aria-hidden="true"></i></button> {{/removable}}
+                                        {{^removable}} <button class="btn btn-remove remove-btn d-none" id="remove_{{step}}" data-id="{{step}}"><i class="fa fa-trash" aria-hidden="true"></i></button> {{/removable}}
                                     </div>
                                 </div>';
         $html = "";
