@@ -2,99 +2,56 @@
 
 define('ASSIGNSUBMISSION_FILE_MAXFILES', 10);
 
-class assign_submission_aiwriter extends assign_submission_plugin
+class assign_submission_pxaiwriter extends assign_submission_plugin
 {
     public function get_name()
     {
-        return get_string('pluginname', 'assignsubmission_aiwriter');
+        return get_string('pluginname', 'assignsubmission_pxaiwriter');
     }
 
     public function get_settings(MoodleQuickForm $mform)
     {
         global $CFG, $COURSE;
 
-        $defaultmaxfilesubmissions = $this->get_config('maxfilesubmissions');
-        $defaultmaxsubmissionsizebytes = $this->get_config('maxsubmissionsizebytes');
-
-        // $settings = array();
-        // $options = array();
-        // for ($i = 1; $i <= ASSIGNSUBMISSION_FILE_MAXFILES; $i++) {
-        //     $options[$i] = $i;
-        // }
-
-        // $name = get_string('maxfilessubmission', 'assignsubmission_aiwriter');
-        // $mform->addElement('select', 'assignsubmission_aiwriter_maxfiles', $name, $options);
-        // $mform->addHelpButton(
-        //     'assignsubmission_aiwriter_maxfiles',
-        //     'maxfilessubmission',
-        //     'assignsubmission_aiwriter'
-        // );
-        // $mform->setDefault('assignsubmission_aiwriter_maxfiles', $defaultmaxfilesubmissions);
-        // $mform->disabledIf('assignsubmission_aiwriter_maxfiles', 'assignsubmission_aiwriter_enabled', 'notchecked');
-
-        // $choices = get_max_upload_sizes(
-        //     $CFG->maxbytes,
-        //     $COURSE->maxbytes,
-        //     get_config('assignsubmission_aiwriter', 'maxbytes')
-        // );
-
-        // $settings[] = array(
-        //     'type' => 'select',
-        //     'name' => 'maxsubmissionsizebytes',
-        //     'description' => get_string('maximumsubmissionsize', 'assignsubmission_aiwriter'),
-        //     'options' => $choices,
-        //     'default' => $defaultmaxsubmissionsizebytes
-        // );
-
-        // $name = get_string('maximumsubmissionsize', 'assignsubmission_aiwriter');
-        // $mform->addElement('select', 'assignsubmission_aiwriter_maxsizebytes', $name, $choices);
-        // $mform->addHelpButton(
-        //     'assignsubmission_aiwriter_maxsizebytes',
-        //     'maximumsubmissionsize',
-        //     'assignsubmission_aiwriter'
-        // );
-        // $mform->setDefault('assignsubmission_aiwriter_maxsizebytes', $defaultmaxsubmissionsizebytes);
-        // $mform->disabledIf(
-        //     'assignsubmission_aiwriter_maxsizebytes',
-        //     'assignsubmission_aiwriter_enabled',
-        //     'notchecked'
-        // );
-        //$mform->addElement('text','location','test_34556', 'class="d-none" id="test_34555"');
-        //$mform->createElement('hidden', 'test_34555', 1);
-        $mform->addElement('hidden', 'assignsubmission_aiwriter_steps', null);
-        $mform->setType('assignsubmission_aiwriter_steps', PARAM_RAW);
+        $aiwritersteps = $this->get_config('pxaiwritersteps');
 
         $stepList = array();
-        $step1 = new stdClass();
-        $step1->step = 1;
-        $step1->description = "Test description 1";
-        $step1->mandatory = true;
-        $step1->type = 'text';
-        $step1->removable = false;
 
-        $step2 = new stdClass();
-        $step2->step = 2;
-        $step2->description = "Test description 1";
-        $step2->mandatory = true;
-        $step2->type = 'text';
-        $step1->removable = false;
+        if ($aiwritersteps == null) {
+            $step1 = new stdClass();
+            $step1->step = 1;
+            $step1->description = "Test description 1";
+            $step1->mandatory = true;
+            $step1->type = 'text';
+            $step1->removable = false;
 
-        array_push($stepList, $step1, $step2);
+            $step2 = new stdClass();
+            $step2->step = 2;
+            $step2->description = "Test description 1";
+            $step2->mandatory = true;
+            $step2->type = 'text';
+            $step1->removable = false;
+
+            array_push($stepList, $step1, $step2);
+        }
+
+        else {
+            $stepList = json_decode($aiwritersteps);
+        }
+        
+        $mform->addElement('hidden', 'assignsubmission_pxaiwriter_steps', null);
+        $mform->setType('assignsubmission_pxaiwriter_steps', PARAM_RAW);
 
 
-        MoodleQuickForm::registerElementType('course_competency_rule',
-                                         "$CFG->dirroot/mod/assign/submission/aiwriter/classes/datetime_rule_form_element.php",
-                                         'test_element_123');
-        $mform->addElement('course_competency_rule', 'assignsubmission_aiwriter_steps_config', null, null, $stepList);
+        MoodleQuickForm::registerElementType('pxaiwriter_steps_section',
+                                         "$CFG->dirroot/mod/assign/submission/pxaiwriter/classes/pxaiwriter_steps_form_element.php",
+                                         'pxaiwriter_steps_form_element');
+        $mform->addElement('pxaiwriter_steps_section', 'assignsubmission_pxaiwriter_steps_config', null, null, $stepList);
     }
 
     public function save_settings(stdClass $data)
     {
-        var_dump($data);
-        
-        //$vl = (string)$data->location;
-        $this->set_config('aiwritersteps', $data->assignsubmission_aiwriter_steps);
-        //$this->set_config('maxsubmissionsizebytes', $data->assignsubmission_aiwriter_maxsizebytes);
+        $this->set_config('pxaiwritersteps', $data->assignsubmission_pxaiwriter_steps);
         return true;
     }
 
@@ -113,7 +70,7 @@ class assign_submission_aiwriter extends assign_submission_plugin
             'files',
             $fileoptions,
             $this->assignment->get_context(),
-            'assignsubmission_aiwriter',
+            'assignsubmission_pxaiwriter',
             ASSIGNSUBMISSION_FILE_FILEAREA,
             $submissionid
         );
@@ -137,7 +94,7 @@ class assign_submission_aiwriter extends assign_submission_plugin
             'files',
             $fileoptions,
             $this->assignment->get_context(),
-            'assignsubmission_aiwriter',
+            'assignsubmission_pxaiwriter',
             ASSIGNSUBMISSION_FILE_FILEAREA,
             $submission->id
         );
@@ -149,7 +106,7 @@ class assign_submission_aiwriter extends assign_submission_plugin
         $fs = get_file_storage();
         $files = $fs->get_area_files(
             $this->assignment->get_context()->id,
-            'assignsubmission_aiwriter',
+            'assignsubmission_pxaiwriter',
             ASSIGNSUBMISSION_FILE_FILEAREA,
             $submission->id,
             'id',
@@ -178,7 +135,7 @@ class assign_submission_aiwriter extends assign_submission_plugin
                 $submission->id,
                 ASSIGNSUBMISSION_FILE_FILEAREA
             );
-            return $DB->update_record('assignsubmission_aiwriter', $filesubmission);
+            return $DB->update_record('assignsubmission_pxaiwriter', $filesubmission);
         } else {
             $filesubmission = new stdClass();
             $filesubmission->numfiles = $this->count_files(
@@ -187,7 +144,7 @@ class assign_submission_aiwriter extends assign_submission_plugin
             );
             $filesubmission->submission = $submission->id;
             $filesubmission->assignment = $this->assignment->get_instance()->id;
-            return $DB->insert_record('assignsubmission_aiwriter', $filesubmission) > 0;
+            return $DB->insert_record('assignsubmission_pxaiwriter', $filesubmission) > 0;
         }
     }
 
@@ -198,7 +155,7 @@ class assign_submission_aiwriter extends assign_submission_plugin
 
         $files = $fs->get_area_files(
             $this->assignment->get_context()->id,
-            'assignsubmission_aiwriter',
+            'assignsubmission_pxaiwriter',
             ASSIGNSUBMISSION_FILE_FILEAREA,
             $submission->id,
             'timemodified',
@@ -216,23 +173,23 @@ class assign_submission_aiwriter extends assign_submission_plugin
         $count = $this->count_files($submission->id, ASSIGNSUBMISSION_FILE_FILEAREA);
 
         // Show we show a link to view all files for this plugin?                                                                   
-        $showviewlink = $count > ASSIGNSUBMISSION_AIWRITER_MAXSUMMARYFILES;
-        if ($count <= ASSIGNSUBMISSION_AIWRITER_MAXSUMMARYFILES) {
+        $showviewlink = $count > ASSIGNSUBMISSION_PXAIWRITER_MAXSUMMARYFILES;
+        if ($count <= ASSIGNSUBMISSION_PXAIWRITER_MAXSUMMARYFILES) {
             return $this->assignment->render_area_files(
-                'assignsubmission_aiwriter',
-                ASSIGNSUBMISSION_AIWRITER_FILEAREA,
+                'assignsubmission_pxaiwriter',
+                ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
                 $submission->id
             );
         } else {
-            return get_string('countfiles', 'assignsubmission_aiwriter', $count);
+            return get_string('countfiles', 'assignsubmission_pxaiwriter', $count);
         }
     }
 
     public function view($submission)
     {
         return $this->assignment->render_area_files(
-            'assignsubmission_aiwriter',
-            ASSIGNSUBMISSION_AIWRITER_FILEAREA,
+            'assignsubmission_pxaiwriter',
+            ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
             $submission->id
         );
     }
@@ -296,8 +253,8 @@ class assign_submission_aiwriter extends assign_submission_plugin
         $file_submission->submission = $submission->id;
         $file_submission->assignment = $this->assignment->get_instance()->id;
 
-        if (!$DB->insert_record('assign_submission_aiwriter', $file_submission) > 0) {
-            $log .= get_string('couldnotconvertsubmission', 'assignsubmission_aiwriter', $submission->userid);
+        if (!$DB->insert_record('assign_submission_pxaiwriter', $file_submission) > 0) {
+            $log .= get_string('couldnotconvertsubmission', 'assignsubmission_pxaiwriter', $submission->userid);
             return false;
         }
 
@@ -323,7 +280,7 @@ class assign_submission_aiwriter extends assign_submission_plugin
 
     public function get_editor_fields()
     {
-        return array('onlinetext' => get_string('pluginname', 'assignsubmission_aiwriter'));
+        return array('onlinetext' => get_string('pluginname', 'assignsubmission_pxaiwriter'));
     }
 
     public function get_editor_text($name, $submissionid)
@@ -370,7 +327,7 @@ class assign_submission_aiwriter extends assign_submission_plugin
         $fs = get_file_storage();
         $files = $fs->get_area_files(
             $contextid,
-            'assignsubmission_aiwriter',
+            'assignsubmission_pxaiwriter',
             ASSIGNSUBMISSION_FILE_FILEAREA,
             $sourcesubmission->id,
             'id',
@@ -381,11 +338,11 @@ class assign_submission_aiwriter extends assign_submission_plugin
             $fs->create_file_from_storedfile($fieldupdates, $file);
         }
 
-        // Copy the assignsubmission_aiwriter record.                                                                                   
+        // Copy the assignsubmission_pxaiwriter record.                                                                                   
         if ($filesubmission = $this->get_file_submission($sourcesubmission->id)) {
             unset($filesubmission->id);
             $filesubmission->submission = $destsubmission->id;
-            $DB->insert_record('assignsubmission_aiwriter', $filesubmission);
+            $DB->insert_record('assignsubmission_pxaiwriter', $filesubmission);
         }
         return true;
     }
@@ -404,7 +361,7 @@ class assign_submission_aiwriter extends assign_submission_plugin
     {
         global $DB;
         // will throw exception on failure                                                                                          
-        $DB->delete_records('assignsubmission_aiwriter', array('assignment' => $this->assignment->get_instance()->id));
+        $DB->delete_records('assignsubmission_pxaiwriter', array('assignment' => $this->assignment->get_instance()->id));
 
         return true;
     }

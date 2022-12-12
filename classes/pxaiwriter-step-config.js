@@ -1,8 +1,8 @@
-test = {};
-test.template = null;
-test.steps = [];
+stepConfig = {};
+stepConfig.template = null;
+stepConfig.steps = [];
 
-test.init = function(config, stepConfig) {
+stepConfig.init = function(config, stepConfig) {
 
     this.template = stepConfig.template;
     this.steps = stepConfig.steps;
@@ -12,7 +12,7 @@ test.init = function(config, stepConfig) {
         $("#ai_writer_submisson_steps").append(rendered);
     });
     
-    $('#id_assignsubmission_aiwriter_enabled').click(function() {
+    $('#id_assignsubmission_pxaiwriter_enabled').click(function() {
         $("#ai_writer_submisson_steps_section").toggle(this.checked); // -> display/hide aiwriter section upon selecting the ai writer submission checkbox
     });
 
@@ -20,7 +20,7 @@ test.init = function(config, stepConfig) {
 
     $("#ai_writer_submisson_steps_loader").toggle(false); // hide loader after rendering template
 
-    $('input[name="assignsubmission_aiwriter_steps"]').val(JSON.stringify(this.steps)); // set defualt value to the ai writer steps. this is the value stored in the db
+    $('input[name="assignsubmission_pxaiwriter_steps"]').val(JSON.stringify(this.steps)); // set defualt value to the ai writer steps. this is the value stored in the db
 
     $('#add_step_btn').click(function(e) {
         const newStepId = this.steps.length + 1;
@@ -41,8 +41,7 @@ test.init = function(config, stepConfig) {
         const stepId = $(e.currentTarget).attr('data-id');
         let step = this.steps.find(e => e.step == stepId);
         step.description = $(e.currentTarget).val();
-        alert(step.description);
-        $('input[name="assignsubmission_aiwriter_steps"]').val(JSON.stringify(this.steps));
+        $('input[name="assignsubmission_pxaiwriter_steps"]').val(JSON.stringify(this.steps));
     }.bind(this));
 
     $('#ai_writer_submisson_steps').on('click', '.remove-btn', function(e) {
@@ -61,6 +60,6 @@ test.init = function(config, stepConfig) {
             let rendered = Mustache.render(this.template,step);
             $("#ai_writer_submisson_steps").append(rendered);
         });
-        $('input[name="assignsubmission_aiwriter_steps"]').val(JSON.stringify(this.steps));
+        $('input[name="assignsubmission_pxaiwriter_steps"]').val(JSON.stringify(this.steps));
     }.bind(this));
 }

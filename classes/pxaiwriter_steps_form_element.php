@@ -18,7 +18,7 @@ require_once($CFG->dirroot . '/lib/filelib.php');
  *
  * @package   mod_courseevents
  */
-class test_element_123 extends HTML_QuickForm_element
+class pxaiwriter_steps_form_element extends HTML_QuickForm_element
 {
 
     private $_value = array();
@@ -73,12 +73,10 @@ class test_element_123 extends HTML_QuickForm_element
         global $CFG, $OUTPUT, $PAGE;
 
         $stepConfig = new stdClass();
-        //$this->setValue('test');
-        var_dump($this->_init_val);
 
         $stepConfig->steps = $this->_init_val;
-        $stepLabel = get_string('guide_to_step_label', 'assignsubmission_aiwriter');
-        $removeButtonLabel = get_string('remove_step_label', 'assignsubmission_aiwriter');
+        $stepLabel = get_string('guide_to_step_label', 'assignsubmission_pxaiwriter');
+        $removeButtonLabel = get_string('remove_step_label', 'assignsubmission_pxaiwriter');
         $stepConfig->template = '<div class="row mb-2" id="step_{{step}}">
                                     <div class="col-md-11">
                                         <div class=" form-group row">
@@ -94,10 +92,10 @@ class test_element_123 extends HTML_QuickForm_element
                                     </div>
                                 </div>';
         $html = "";
-        $html .= $OUTPUT->render_from_template('assignsubmission_aiwriter/test',null);
+        $html .= $OUTPUT->render_from_template('assignsubmission_pxaiwriter/assignsubmission_pxaiwriter_steps_form',null);
 
-        $module = array('name' => 'assignsubmission_aiwriter_test', 'fullpath' => '/mod/assign/submission/aiwriter/classes/test.js');
-        $PAGE->requires->js_init_call('test.init', array($stepConfig), true, $module);
+        $module = array('name' => 'assignsubmission_pxaiwriter_stepConfig', 'fullpath' => '/mod/assign/submission/pxaiwriter/classes/pxaiwriter-step-config.js');
+        $PAGE->requires->js_init_call('stepConfig.init', array($stepConfig), true, $module);
         return $html;
     }
 }

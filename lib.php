@@ -1,7 +1,7 @@
 <?php
 defined('MOODLE_INTERNAL') || die();
 
-function assignfeedback_aiwriter_pluginfile($course,                                                                                    
+function assignfeedback_pxaiwriter_pluginfile($course,                                                                                    
                                         $cm,                                                                                        
                                         context $context,                                                                           
                                         $filearea,                                                                                  
@@ -33,7 +33,7 @@ function assignfeedback_aiwriter_pluginfile($course,
                                                                                                                                     
     $relativepath = implode('/', $args);                                                                                            
                                                                                                                                     
-    $fullpath = "/{$context->id}/assignfeedback_aiwriter/$filearea/$itemid/$relativepath";                                              
+    $fullpath = "/{$context->id}/assignfeedback_pxaiwriter/$filearea/$itemid/$relativepath";                                              
                                                                                                                                     
     $fs = get_file_storage();                                                                                                       
     if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {                                                 
