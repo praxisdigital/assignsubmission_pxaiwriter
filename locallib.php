@@ -11,7 +11,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
     public function get_settings(MoodleQuickForm $mform)
     {
-        global $CFG, $COURSE;
+        global $CFG, $DB;
 
         $aiwritersteps = $this->get_config('pxaiwritersteps');
 
@@ -39,7 +39,9 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             $stepList = json_decode($aiwritersteps);
         }
 
-        $hasUsedInAssignments = false;
+        $assignmentId = $this->get_assignment_id();
+
+        $hasUsedInAssignments = $assignmentId != null ? $DB->record_exists('assignsubmission_pxaiwriter', ['assignment' => $assignmentId]) : false;
         
         $mform->addElement('hidden', 'assignsubmission_pxaiwriter_steps', null);
         $mform->setType('assignsubmission_pxaiwriter_steps', PARAM_RAW);
@@ -49,6 +51,15 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
                                          "$CFG->dirroot/mod/assign/submission/pxaiwriter/classes/pxaiwriter_steps_form_element.php",
                                          'pxaiwriter_steps_form_element');
         $mform->addElement('pxaiwriter_steps_section', 'assignsubmission_pxaiwriter_steps_config', null, null, $stepList, $hasUsedInAssignments);
+    }
+
+    private function get_assignment_id() {
+        try {
+            $assignmentId = $this->assignment->has_instance() ? $this->assignment->get_instance()->id : null;
+            return $assignmentId;
+        } catch(Exception $e) {
+            return null;
+        }
     }
 
     public function save_settings(stdClass $data)
