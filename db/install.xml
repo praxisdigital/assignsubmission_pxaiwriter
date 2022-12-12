@@ -4,7 +4,7 @@
     xsi:noNamespaceSchemaLocation="../../../../../lib/xmldb/xmldb.xsd"                                                              
 >                                                                                                                                   
   <TABLES>                                                                                                                          
-    <TABLE NAME="assignsubmission_aiwriter" COMMENT="Info about AI writer submissions for assignments">                                      
+    <TABLE NAME="assignsubmission_pxaiwriter" COMMENT="Info about AI writer submissions for assignments">                                      
       <FIELDS>                                                                                                                      
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>                                                    
         <FIELD NAME="assignment" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>                               
