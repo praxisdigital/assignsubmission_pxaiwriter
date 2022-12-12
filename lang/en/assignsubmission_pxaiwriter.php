@@ -21,6 +21,9 @@ $string['remove_step_label'] = "Delete step";
 $string['submission_step_label'] = "AI writer submission steps";
 $string['ai_writer_helper_msg'] = "Help with AI writer submission steps";
 $string['ai_writer_helper_msg_description'] = "If AI writer submissions are enabled, each student will be able to follow these steps in their submission.";
+
+$string['steps_change_warning'] = "These steps are already used in assignment submission. Your changes will be applied to the future submissions of same assignment";
+$string['ok_button_label'] = "OK";
 // $string['maximumsubmissionsize'] = "";
 // $string['maximumsubmissionsize'] = "";
 // $string['maximumsubmissionsize'] = "";

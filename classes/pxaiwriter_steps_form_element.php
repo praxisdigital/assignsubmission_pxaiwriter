@@ -23,10 +23,12 @@ class pxaiwriter_steps_form_element extends HTML_QuickForm_element
 
     private $_value = array();
     private $_init_val = null;
+    private $_has_used = false;
 
-    public function __construct($elementName = null, $elementLabel = null, $attributes = null, $initvalue = null)
+    public function __construct($elementName = null, $elementLabel = null, $attributes = null, $initvalue = null, $hasUsed = false)
     {
         $this->_init_val = $initvalue;
+        $this->_has_used = $hasUsed;
         parent::__construct($elementName, $elementLabel, $attributes);
     }
 
@@ -87,10 +89,11 @@ class pxaiwriter_steps_form_element extends HTML_QuickForm_element
                                         </div>
                                     </div>
                                     <div class="col-md-1 align-self-baseline">
-                                        {{#removable}} <button class="btn btn-remove remove-btn align-middle" id="remove_{{step}}" data-id="{{step}}"><i class="fa fa-trash" aria-hidden="true"></i></button> {{/removable}}
-                                        {{^removable}} <button class="btn btn-remove remove-btn align-middle d-none" id="remove_{{step}}" data-id="{{step}}"><i class="fa fa-trash" aria-hidden="true"></i></button> {{/removable}}
+                                        {{#removable}} <button class="btn btn-remove remove-btn" id="remove_{{step}}" data-id="{{step}}"><i class="fa fa-trash" aria-hidden="true"></i></button> {{/removable}}
+                                        {{^removable}} <button class="btn btn-remove remove-btn d-none" id="remove_{{step}}" data-id="{{step}}"><i class="fa fa-trash" aria-hidden="true"></i></button> {{/removable}}
                                     </div>
                                 </div>';
+        $stepConfig->hasUsed = $this->_has_used;
         $html = "";
         $html .= $OUTPUT->render_from_template('assignsubmission_pxaiwriter/assignsubmission_pxaiwriter_steps_form',null);
 

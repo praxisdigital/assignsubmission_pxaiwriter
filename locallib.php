@@ -38,6 +38,8 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         else {
             $stepList = json_decode($aiwritersteps);
         }
+
+        $hasUsedInAssignments = false;
         
         $mform->addElement('hidden', 'assignsubmission_pxaiwriter_steps', null);
         $mform->setType('assignsubmission_pxaiwriter_steps', PARAM_RAW);
@@ -46,7 +48,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         MoodleQuickForm::registerElementType('pxaiwriter_steps_section',
                                          "$CFG->dirroot/mod/assign/submission/pxaiwriter/classes/pxaiwriter_steps_form_element.php",
                                          'pxaiwriter_steps_form_element');
-        $mform->addElement('pxaiwriter_steps_section', 'assignsubmission_pxaiwriter_steps_config', null, null, $stepList);
+        $mform->addElement('pxaiwriter_steps_section', 'assignsubmission_pxaiwriter_steps_config', null, null, $stepList, $hasUsedInAssignments);
     }
 
     public function save_settings(stdClass $data)
