@@ -64,11 +64,28 @@ class assign_submission_aiwriter extends assign_submission_plugin
         $mform->addElement('hidden', 'assignsubmission_aiwriter_steps', null);
         $mform->setType('assignsubmission_aiwriter_steps', PARAM_RAW);
 
+        $stepList = array();
+        $step1 = new stdClass();
+        $step1->step = 1;
+        $step1->description = "Test description 1";
+        $step1->mandatory = true;
+        $step1->type = 'text';
+        $step1->removable = false;
+
+        $step2 = new stdClass();
+        $step2->step = 2;
+        $step2->description = "Test description 1";
+        $step2->mandatory = true;
+        $step2->type = 'text';
+        $step1->removable = false;
+
+        array_push($stepList, $step1, $step2);
+
 
         MoodleQuickForm::registerElementType('course_competency_rule',
                                          "$CFG->dirroot/mod/assign/submission/aiwriter/classes/datetime_rule_form_element.php",
                                          'test_element_123');
-        $mform->addElement('course_competency_rule', 'assignsubmission_aiwriter_steps_config');
+        $mform->addElement('course_competency_rule', 'assignsubmission_aiwriter_steps_config', null, null, $stepList);
     }
 
     public function save_settings(stdClass $data)

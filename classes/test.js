@@ -37,11 +37,13 @@ test.init = function(config, stepConfig) {
         $("#ai_writer_submisson_steps").append(rendered);
     }.bind(this));
 
-    $('#ai_writer_submisson_steps').on('change keyup paste', '.step-des', function(e) {
+    $('#ai_writer_submisson_steps').on('change paste', '.step-des', function(e) {
         const stepId = $(e.currentTarget).attr('data-id');
         let step = this.steps.find(e => e.step == stepId);
-        step.description = $(this).val();
-    });
+        step.description = $(e.currentTarget).val();
+        alert(step.description);
+        $('input[name="assignsubmission_aiwriter_steps"]').val(JSON.stringify(this.steps));
+    }.bind(this));
 
     $('#ai_writer_submisson_steps').on('click', '.remove-btn', function(e) {
         e.preventDefault();
