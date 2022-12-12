@@ -1,0 +1,58 @@
+<div id="ai_writer_submisson_steps_section" style="display: block;">
+    <div class="row">
+        <div class="col-md-3 col-form-label d-flex pb-0 pr-md-0">
+            <div class="d-inline word-break">
+                {{#str}} submission_step_label, assignsubmission_pxaiwriter {{/str}}
+            </div>
+            <div class="form-label-addon d-flex align-items-center align-self-start">
+                <a class="btn btn-link p-0" role="button" data-container="body" data-toggle="popover" data-placement="right" data-html="true" tabindex="0" data-trigger="focus" data-original-title="" title="" data-content="<div class=&quot;no-overflow&quot;><p>{{#str}} ai_writer_helper_msg_description, assignsubmission_pxaiwriter {{/str}}</p></div>">
+                    <i class="icon fa fa-question-circle text-info fa-fw " title="{{#str}} ai_writer_helper_msg, assignsubmission_pxaiwriter {{/str}}" aria-label="{{#str}} ai_writer_helper_msg, assignsubmission_pxaiwriter {{/str}}"></i>
+                </a>
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div class="row">
+                <div class="col-md-12" id="ai_writer_submisson_steps"></div>
+                <div class="col-md-12 mb-2">
+                    <div class="row">
+                        <div class="col-md-3"></div>
+                        <div class="col-md-8 text-center"><button id="add_step_btn" class="btn btn-secondary" style="display: none;">{{#str}} add_step_label, assignsubmission_pxaiwriter {{/str}}</button></div>
+                    </div>
+                </div>
+            </div>
+            <div class="row" id="ai_writer_submisson_steps_loader" style="display: block;">
+                <div class="col-md-12 mb-5 mt-5">
+                    <div class="mdl-align">
+                        <i class="icon fa fa-circle-o-notch fa-spin fa-fw " aria-hidden="true"></i>
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Warning Modal -->
+    <div class="modal fade" id="steps-change-warning-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                {{#str}} steps_change_warning, assignsubmission_pxaiwriter {{/str}}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="confirm-ai-writer-change-action">{{#str}} ok_button_label, assignsubmission_pxaiwriter {{/str}}</button>
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/2.3.0/mustache.min.js"></script>
+
+<style>
+    .btn-remove {
+        color: crimson;
+        background-color: unset;
+        border: unset;
+    }
+</style>

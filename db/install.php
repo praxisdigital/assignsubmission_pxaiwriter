@@ -3,7 +3,7 @@
 /**
  * Code run after the plugin database tables have been created.
  */
-function xmldb_assignsubmission_aiwriter_install()
+function xmldb_assignsubmission_pxaiwriter_install()
 {
     global $CFG, $DB, $OUTPUT;
 
@@ -12,7 +12,7 @@ function xmldb_assignsubmission_aiwriter_install()
     require_once($CFG->dirroot . '/mod/assign/locallib.php');
     // set the correct initial order for the plugins
     $assignment = new assignment();
-    $plugin = $assignment->get_submission_plugin_by_type('aiwriter');
+    $plugin = $assignment->get_submission_plugin_by_type('pxaiwriter');
     if ($plugin) {
         $plugin->move('down');
         $plugin->move('down');
