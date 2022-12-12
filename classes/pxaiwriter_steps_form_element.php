@@ -37,7 +37,7 @@ class pxaiwriter_steps_form_element extends HTML_QuickForm_element
      *
      * @deprecated since Moodle 3.1
      */
-    public function test_element_123($elementName = null, $elementLabel = null, $attributes = null, $initvalue = null)
+    public function pxaiwriter_steps_form_element($elementName = null, $elementLabel = null, $attributes = null, $initvalue = null)
     {
         debugging('Use of class name as constructor is deprecated', DEBUG_DEVELOPER);
         self::__construct($elementName, $elementLabel, $attributes, $initvalue);

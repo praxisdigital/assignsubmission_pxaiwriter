@@ -18,16 +18,18 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         $stepList = array();
 
         if ($aiwritersteps == null) {
+            $description = get_string('first_step_description', 'assignsubmission_pxaiwriter');
             $step1 = new stdClass();
             $step1->step = 1;
-            $step1->description = "Test description 1";
+            $step1->description = $description;
             $step1->mandatory = true;
             $step1->type = 'text';
             $step1->removable = false;
 
+            $description = get_string('second_step_description', 'assignsubmission_pxaiwriter');
             $step2 = new stdClass();
             $step2->step = 2;
-            $step2->description = "Test description 1";
+            $step2->description = $description;
             $step2->mandatory = true;
             $step2->type = 'text';
             $step1->removable = false;
