@@ -2,7 +2,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-class backup_assignsubmission_arwriter_subplugin extends backup_subplugin
+class backup_assignsubmission_pxaiwriter_subplugin extends backup_subplugin
 {
     protected function define_submission_subplugin_structure()
     {
@@ -11,7 +11,7 @@ class backup_assignsubmission_arwriter_subplugin extends backup_subplugin
         $subplugin = $this->get_subplugin_element();
         $subpluginwrapper = new backup_nested_element($this->get_recommended_name());
         $subpluginelement = new backup_nested_element(
-            'submission_aiwriter',
+            'submission_pxaiwriter',
             null,
             array('aiwriter', 'onlineformat', 'submission') // TODO Add all the table columns
         );
@@ -22,13 +22,13 @@ class backup_assignsubmission_arwriter_subplugin extends backup_subplugin
 
         // Set source to populate the data.
         $subpluginelement->set_source_table(
-            'assignsubmission_aiwriter',
+            'assignsubmission_pxaiwriter',
             array('submission' => backup::VAR_PARENTID)
         );
 
         $subpluginelement->annotate_files(
-            'assignsubmission_aiwriter',
-            'submissions_aiwriter',
+            'assignsubmission_pxaiwriter',
+            'submissions_pxaiwriter',
             'submission'
         );
         return $subplugin;

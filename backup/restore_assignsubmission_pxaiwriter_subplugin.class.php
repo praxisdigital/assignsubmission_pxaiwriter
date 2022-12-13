@@ -2,7 +2,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-class restore_assignsubmission_arwriter_subplugin extends restore_subplugin
+class restore_assignsubmission_pxaiwriter_subplugin extends restore_subplugin
 {
     protected function define_submission_subplugin_structure()
     {
@@ -12,13 +12,13 @@ class restore_assignsubmission_arwriter_subplugin extends restore_subplugin
         $elename = $this->get_namefor('submission');
 
         // We used get_recommended_name() so this works.
-        $elepath = $this->get_pathfor('/submission_aiwriter');
+        $elepath = $this->get_pathfor('/submission_pxaiwriter');
         $paths[] = new restore_path_element($elename, $elepath);
 
         return $paths;
     }
 
-    public function process_assignsubmission_aiwriter_submission($data)
+    public function process_assignsubmission_pxaiwriter_submission($data)
     {
         global $DB;
 
@@ -29,8 +29,8 @@ class restore_assignsubmission_arwriter_subplugin extends restore_subplugin
         // when a submission node is processed.
         $data->submission = $this->get_mappingid('submission', $data->submission);
 
-        $DB->insert_record('assignsubmission_aiwriter', $data);
+        $DB->insert_record('assignsubmission_pxaiwriter', $data);
 
-        $this->add_related_files('assignsubmission_aiwriter', 'submissions_aiwriter', 'submission', null, $oldsubmissionid);
+        $this->add_related_files('assignsubmission_pxaiwriter', 'submissions_pxaiwriter', 'submission', null, $oldsubmissionid);
     }
 }
