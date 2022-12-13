@@ -9,14 +9,7 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>                                                    
         <FIELD NAME="assignment" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>                               
         <FIELD NAME="submission" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>                               
-        <FIELD NAME="numfiles" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The number of files the student submitted."/>
-
-        <!-- ai generated text
-        student submitted text
-        submitted data
-        time
-        userid -->
-
+        <FIELD NAME="steps_data" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The text for this aiwriter submission."/>
       </FIELDS>                                                                                                                     
       <KEYS>                                                                                                                        
         <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="The unique id for this submission info."/>                          

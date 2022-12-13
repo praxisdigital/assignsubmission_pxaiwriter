@@ -4,6 +4,24 @@ define('ASSIGNSUBMISSION_FILE_MAXFILES', 10);
 
 class assign_submission_pxaiwriter extends assign_submission_plugin
 {
+
+    private function get_assignment_id()
+    {
+        try {
+            $assignmentId = $this->assignment->has_instance() ? $this->assignment->get_instance()->id : null;
+            return $assignmentId;
+        } catch (Exception $e) {
+            return null;
+        }
+    }
+
+    private function get_pxaiwriter_submission($submissionid)
+    {
+        global $DB;
+
+        return $DB->get_record('assignsubmission_pxaiwriter', array('submission' => $submissionid));
+    }
+
     public function get_name()
     {
         return get_string('pluginname', 'assignsubmission_pxaiwriter');
@@ -35,33 +53,24 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             $step1->removable = false;
 
             array_push($stepList, $step1, $step2);
-        }
-
-        else {
+        } else {
             $stepList = json_decode($aiwritersteps);
         }
 
         $assignmentId = $this->get_assignment_id();
 
         $hasUsedInAssignments = $assignmentId != null ? $DB->record_exists('assignsubmission_pxaiwriter', ['assignment' => $assignmentId]) : false;
-        
+
         $mform->addElement('hidden', 'assignsubmission_pxaiwriter_steps', null);
         $mform->setType('assignsubmission_pxaiwriter_steps', PARAM_RAW);
 
 
-        MoodleQuickForm::registerElementType('pxaiwriter_steps_section',
-                                         "$CFG->dirroot/mod/assign/submission/pxaiwriter/classes/pxaiwriter_steps_form_element.php",
-                                         'pxaiwriter_steps_form_element');
+        MoodleQuickForm::registerElementType(
+            'pxaiwriter_steps_section',
+            "$CFG->dirroot/mod/assign/submission/pxaiwriter/classes/pxaiwriter_steps_form_element.php",
+            'pxaiwriter_steps_form_element'
+        );
         $mform->addElement('pxaiwriter_steps_section', 'assignsubmission_pxaiwriter_steps_config', null, null, $stepList, $hasUsedInAssignments);
-    }
-
-    private function get_assignment_id() {
-        try {
-            $assignmentId = $this->assignment->has_instance() ? $this->assignment->get_instance()->id : null;
-            return $assignmentId;
-        } catch(Exception $e) {
-            return null;
-        }
     }
 
     public function save_settings(stdClass $data)
@@ -163,46 +172,54 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         }
     }
 
-    public function get_files($submission, $class)
-    {
-        $result = array();
-        $fs = get_file_storage();
+    // public function get_files($submission, $class)
+    // {
+    //     $result = array();
+    //     $fs = get_file_storage();
 
-        $files = $fs->get_area_files(
-            $this->assignment->get_context()->id,
-            'assignsubmission_pxaiwriter',
-            ASSIGNSUBMISSION_FILE_FILEAREA,
-            $submission->id,
-            'timemodified',
-            false
-        );
+    //     $files = $fs->get_area_files(
+    //         $this->assignment->get_context()->id,
+    //         'assignsubmission_pxaiwriter',
+    //         ASSIGNSUBMISSION_FILE_FILEAREA,
+    //         $submission->id,
+    //         'timemodified',
+    //         false
+    //     );
 
-        foreach ($files as $file) {
-            $result[$file->get_filename()] = $file;
-        }
-        return $result;
-    }
+    //     foreach ($files as $file) {
+    //         $result[$file->get_filename()] = $file;
+    //     }
+    //     return $result;
+    // }
 
     public function view_summary(stdClass $submission, &$showviewlink)
     {
-        $count = $this->count_files($submission->id, ASSIGNSUBMISSION_FILE_FILEAREA);
+        $subm = $this->get_pxaiwriter_submission($submission->id);
 
-        // Show we show a link to view all files for this plugin?                                                                   
-        $showviewlink = $count > ASSIGNSUBMISSION_PXAIWRITER_MAXSUMMARYFILES;
-        if ($count <= ASSIGNSUBMISSION_PXAIWRITER_MAXSUMMARYFILES) {
-            return $this->assignment->render_area_files(
-                'assignsubmission_pxaiwriter',
-                ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
-                $submission->id
-            );
+        if ($subm) {
+            $showviewlink = true;
+            return "Last submission date : ";
         } else {
-            return get_string('countfiles', 'assignsubmission_pxaiwriter', $count);
+            return "N/A";
         }
+        // $count = $this->count_files($submission->id, ASSIGNSUBMISSION_FILE_FILEAREA);
+
+        // // Show we show a link to view all files for this plugin?                                                                   
+        // $showviewlink = $count > ASSIGNSUBMISSION_PXAIWRITER_MAXSUMMARYFILES;
+        // if ($count <= ASSIGNSUBMISSION_PXAIWRITER_MAXSUMMARYFILES) {
+        //     return $this->assignment->render_area_files(
+        //         'assignsubmission_pxaiwriter',
+        //         ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
+        //         $submission->id
+        //     );
+        // } else {
+        //     return get_string('countfiles', 'assignsubmission_pxaiwriter', $count);
+        // }
     }
 
     public function view($submission)
     {
-        return $this->assignment->render_area_files(
+        return $this->assignment->render_editor_content(
             'assignsubmission_pxaiwriter',
             ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
             $submission->id
@@ -325,7 +342,8 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
     public function is_empty(stdClass $submission)
     {
-        return $this->count_files($submission->id, ASSIGNSUBMISSION_FILE_FILEAREA) == 0;
+        $subm = $this->get_pxaiwriter_submission($submission->id);
+        return $subm ? true : false;
     }
 
     public function get_file_areas()
