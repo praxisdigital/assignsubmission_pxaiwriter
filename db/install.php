@@ -9,14 +9,19 @@ function xmldb_assignsubmission_pxaiwriter_install()
 
     // do the install
 
-    require_once($CFG->dirroot . '/mod/assign/locallib.php');
+    //require_once($CFG->dirroot . '/mod/assign/locallib.php');
     // set the correct initial order for the plugins
-    $assignment = new assignment();
-    $plugin = $assignment->get_submission_plugin_by_type('pxaiwriter');
-    if ($plugin) {
-        $plugin->move('down');
-        $plugin->move('down');
-    }
+    // $assignment = new assignment();
+    // $plugin = $assignment->get_submission_plugin_by_type('pxaiwriter');
+    // if ($plugin) {
+    //     $plugin->move('down');
+    //     $plugin->move('down');
+    // }
+    require_once($CFG->dirroot . '/mod/assign/adminlib.php');
+    $pluginmanager = new assign_plugin_manager('assignsubmission');
+
+    $pluginmanager->move_plugin('pxaiwriter', 'up');
+    $pluginmanager->move_plugin('pxaiwriter', 'up');
 
     return true;
 }
