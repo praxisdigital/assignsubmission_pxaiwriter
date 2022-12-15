@@ -133,10 +133,10 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         MoodleQuickForm::registerElementType(
             'pxaiwriter_steps_section',
             "$CFG->dirroot/mod/assign/submission/pxaiwriter/classes/pxaiwriter_steps_student_form_element.php",
-            'pxaiwriter_steps_form_element'
+            'pxaiwriter_steps_student_form_element'
         );
 
-        $mform->addElement('pxaiwriter_steps_section', 'assignsubmission_pxaiwriter_steps_config', null, null, null);
+        $mform->addElement('pxaiwriter_steps_section', 'assignsubmission_pxaiwriter_steps_config', null, null, null, null);
 
         return true;
     }
