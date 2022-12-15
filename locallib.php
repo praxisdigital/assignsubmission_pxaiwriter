@@ -92,37 +92,51 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
      */
     public function get_form_elements($submission, MoodleQuickForm $mform, stdClass $data)
     {
+        global $CFG;
         $elements = array();
 
         $editoroptions = $this->get_edit_options();
         $submissionid = $submission ? $submission->id : 0;
 
-        if (!isset($data->steps_data)) {
-            $data->steps_data = '';
-        }
+        // if (!isset($data->steps_data)) {
+        //     $data->steps_data = '';
+        // }
         // if (!isset($data->pxaiwriterformat)) {
         //     $data->pxaiwriterformat = editors_get_preferred_format();
         // }
 
-        if ($submission) {
-            $pxaiwritersubmission = $this->get_pxaiwriter_submission($submission->id);
-            if ($pxaiwritersubmission) {
-                $data->steps_data = $pxaiwritersubmission->steps_data;
-                //$data->pxaiwriterformat = $pxaiwritersubmission->pxaiwriterformat;
-            }
-        }
+        // if ($submission) {
+        //     $pxaiwritersubmission = $this->get_pxaiwriter_submission($submission->id);
+        //     if ($pxaiwritersubmission) {
+        //         $data->steps_data = $pxaiwritersubmission->steps_data;
+        //         //$data->pxaiwriterformat = $pxaiwritersubmission->pxaiwriterformat;
+        //     }
+        // }
 
-        $data = file_prepare_standard_editor(
-            $data,
-            'steps_data',
-            $editoroptions,
-            $this->assignment->get_context(),
-            'assignsubmission_pxaiwriter',
-            ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
-            $submissionid
+        // $data = file_prepare_standard_editor(
+        //     $data,
+        //     'steps_data',
+        //     $editoroptions,
+        //     $this->assignment->get_context(),
+        //     'assignsubmission_pxaiwriter',
+        //     ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
+        //     $submissionid
+        // );
+
+
+
+        // echo("here the elements are adding to the form");
+        // $mform->addElement('editor', 'pxaiwriter_editor', $this->get_name(), null, $editoroptions);
+
+
+
+        MoodleQuickForm::registerElementType(
+            'pxaiwriter_steps_section',
+            "$CFG->dirroot/mod/assign/submission/pxaiwriter/classes/pxaiwriter_steps_student_form_element.php",
+            'pxaiwriter_steps_form_element'
         );
-        echo("here the elements are adding to the form");
-        $mform->addElement('editor', 'pxaiwriter_editor', $this->get_name(), null, $editoroptions);
+
+        $mform->addElement('pxaiwriter_steps_section', 'assignsubmission_pxaiwriter_steps_config', null, null, null);
 
         return true;
     }
