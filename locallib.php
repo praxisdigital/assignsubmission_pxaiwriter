@@ -1,6 +1,7 @@
 <?php
 
 define('ASSIGNSUBMISSION_FILE_MAXFILES', 10);
+define('ASSIGNSUBMISSION_PXAIWRITER_FILEAREA', 'submissions_pxaiwriter');
 
 class assign_submission_pxaiwriter extends assign_submission_plugin
 {
@@ -19,7 +20,9 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     {
         global $DB;
 
-        return $DB->get_record('assignsubmission_pxaiwriter', array('submission' => $submissionid));
+        $xxxx = $DB->get_record('assignsubmission_pxaiwriter', array('submission' => $submissionid));
+        //echo(var_dump($xxxx->step_data));
+        return $xxxx;
     }
 
     public function get_name()
@@ -91,37 +94,174 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     {
         $elements = array();
 
-        $editoroptions = array(); //$this->get_edit_options();
+        $editoroptions = $this->get_edit_options();
         $submissionid = $submission ? $submission->id : 0;
 
-        if (!isset($data->onlinetext)) {
-            $data->onlinetext = '';
+        if (!isset($data->steps_data)) {
+            $data->steps_data = '';
         }
-        if (!isset($data->onlinetextformat)) {
-            $data->onlinetextformat = editors_get_preferred_format();
-        }
+        // if (!isset($data->pxaiwriterformat)) {
+        //     $data->pxaiwriterformat = editors_get_preferred_format();
+        // }
 
         if ($submission) {
-            $onlinetextsubmission = $this->get_pxaiwriter_submission($submission->id);
-            if ($onlinetextsubmission) {
-                $data->onlinetext = $onlinetextsubmission->onlinetext;
-                $data->onlinetextformat = $onlinetextsubmission->onlineformat;
+            $pxaiwritersubmission = $this->get_pxaiwriter_submission($submission->id);
+            if ($pxaiwritersubmission) {
+                $data->steps_data = $pxaiwritersubmission->steps_data;
+                //$data->pxaiwriterformat = $pxaiwritersubmission->pxaiwriterformat;
             }
         }
 
         $data = file_prepare_standard_editor(
             $data,
-            'onlinetext',
+            'steps_data',
             $editoroptions,
             $this->assignment->get_context(),
-            'assignsubmission_onlinetext',
-            ASSIGNSUBMISSION_ONLINETEXT_FILEAREA,
+            'assignsubmission_pxaiwriter',
+            ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
             $submissionid
         );
+        echo("here the elements are adding to the form");
         $mform->addElement('editor', 'pxaiwriter_editor', $this->get_name(), null, $editoroptions);
 
         return true;
     }
+
+    public function save(stdClass $submission, stdClass $data) {
+        global $USER, $DB;
+
+        $editoroptions = $this->get_edit_options();
+
+        $data = file_postupdate_standard_editor($data,
+                                                'steps_data',
+                                                $editoroptions,
+                                                $this->assignment->get_context(),
+                                                'assignsubmission_pxaiwriter',
+                                                ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
+                                                $submission->id);
+        
+        //echo(var_dump($data));
+
+        $pxaiwritersubmission = $this->get_pxaiwriter_submission($submission->id);
+
+        $fs = get_file_storage();
+
+        $files = $fs->get_area_files($this->assignment->get_context()->id,
+                                     'assignsubmission_pxaiwriter',
+                                     ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
+                                     $submission->id,
+                                     'id',
+                                     false);
+
+        // Check word count before submitting anything.
+        // $exceeded = $this->check_word_count(trim($data->pxaiwriter));
+        // if ($exceeded) {
+        //     $this->set_error($exceeded);
+        //     return false;
+        // }
+
+        $params = array(
+            'context' => context_module::instance($this->assignment->get_course_module()->id),
+            'courseid' => $this->assignment->get_course()->id,
+            'objectid' => $submission->id,
+            'other' => array(
+                'pathnamehashes' => array_keys($files),
+                'content' => trim($data->steps_data),
+                //'format' => $data->pxaiwriter_editor['format']
+            )
+        );
+        if (!empty($submission->userid) && ($submission->userid != $USER->id)) {
+            $params['relateduserid'] = $submission->userid;
+        }
+        if ($this->assignment->is_blind_marking()) {
+            $params['anonymous'] = 1;
+        }
+        $event = \assignsubmission_pxaiwriter\event\assessable_uploaded::create($params);
+        $event->trigger();
+
+        $groupname = null;
+        $groupid = 0;
+        // Get the group name as other fields are not transcribed in the logs and this information is important.
+        if (empty($submission->userid) && !empty($submission->groupid)) {
+            $groupname = $DB->get_field('groups', 'name', array('id' => $submission->groupid), MUST_EXIST);
+            $groupid = $submission->groupid;
+        } else {
+            $params['relateduserid'] = $submission->userid;
+        }
+
+       // $count = count_words($data->onlinetext);
+
+        // Unset the objectid and other field from params for use in submission events.
+        unset($params['objectid']);
+        unset($params['other']);
+        $params['other'] = array(
+            'submissionid' => $submission->id,
+            'submissionattempt' => $submission->attemptnumber,
+            'submissionstatus' => $submission->status,
+           // 'onlinetextwordcount' => $count,
+            'groupid' => $groupid,
+            'groupname' => $groupname
+        );
+
+        if ($pxaiwritersubmission) {
+
+            $pxaiwritersubmission->steps_data = '345';//$data->pxaiwriter_editor['text'];
+            //$pxaiwritersubmission->pxaiwriterformat = $data->pxaiwriter_editor['format'];
+            $params['objectid'] = $pxaiwritersubmission->id;
+            $updatestatus = $DB->update_record('assignsubmission_pxaiwriter', $pxaiwritersubmission);
+            $event = \assignsubmission_pxaiwriter\event\submission_updated::create($params);
+            $event->set_assign($this->assignment);
+            $event->trigger();
+            return $updatestatus;
+        } else {
+            echo(var_dump($data->pxaiwriter_editor['text']));
+            $pxaiwritersubmission = new stdClass();
+            $pxaiwritersubmission->steps_data = 'fshfsHF';//$data->pxaiwriter_editor['text'];
+            //$pxaiwritersubmission->pxaiwriterformat = $data->pxaiwriter_editor['format'];
+
+            $pxaiwritersubmission->submission = $submission->id;
+            $pxaiwritersubmission->assignment = $this->assignment->get_instance()->id;
+            $pxaiwritersubmission->id = $DB->insert_record('assignsubmission_pxaiwriter', $pxaiwritersubmission);
+            $params['objectid'] = $pxaiwritersubmission->id;
+            $event = \assignsubmission_pxaiwriter\event\submission_created::create($params);
+            $event->set_assign($this->assignment);
+            $event->trigger();
+            return $pxaiwritersubmission->id > 0;
+        }
+    }
+
+    private function get_edit_options() {
+        $editoroptions = array(
+            'noclean' => false,
+            'maxfiles' => EDITOR_UNLIMITED_FILES,
+            'maxbytes' => $this->assignment->get_course()->maxbytes,
+            'context' => $this->assignment->get_context(),
+            'return_types' => (FILE_INTERNAL | FILE_EXTERNAL | FILE_CONTROLLED_LINK),
+            'removeorphaneddrafts' => true // Whether or not to remove any draft files which aren't referenced in the text.
+        );
+        return $editoroptions;
+    }
+
+    public function submission_is_empty(stdClass $data) {
+        // if (!isset($data->onlinetext_editor)) {
+        //     return true;
+        // }
+        // $wordcount = 0;
+        // $hasinsertedresources = false;
+
+        // if (isset($data->onlinetext_editor['text'])) {
+        //     $wordcount = count_words(trim((string)$data->onlinetext_editor['text']));
+        //     // Check if the online text submission contains video, audio or image elements
+        //     // that can be ignored and stripped by count_words().
+        //     $hasinsertedresources = preg_match('/<\s*((video|audio)[^>]*>(.*?)<\s*\/\s*(video|audio)>)|(img[^>]*>(.*?))/',
+        //             trim((string)$data->onlinetext_editor['text']));
+        // }
+
+        // return $wordcount == 0 && !$hasinsertedresources;
+        return false;
+    }
+
+    
     // public function save(stdClass $submission, stdClass $data)
     // {
     //     global $USER, $DB;
@@ -187,53 +327,75 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     //     }
     // }
 
-    // public function get_files($submission, $class)
-    // {
-    //     $result = array();
-    //     $fs = get_file_storage();
+    public function get_files($submission, $class)
+    {
+        $result = array();
+        $fs = get_file_storage();
 
-    //     $files = $fs->get_area_files(
-    //         $this->assignment->get_context()->id,
-    //         'assignsubmission_pxaiwriter',
-    //         ASSIGNSUBMISSION_FILE_FILEAREA,
-    //         $submission->id,
-    //         'timemodified',
-    //         false
-    //     );
+        $files = $fs->get_area_files(
+            $this->assignment->get_context()->id,
+            'assignsubmission_pxaiwriter',
+            ASSIGNSUBMISSION_FILE_FILEAREA,
+            $submission->id,
+            'timemodified',
+            false
+        );
 
-    //     foreach ($files as $file) {
-    //         $result[$file->get_filename()] = $file;
-    //     }
-    //     return $result;
-    // }
+        foreach ($files as $file) {
+            $result[$file->get_filename()] = $file;
+        }
+        return $result;
+    }
 
     public function view_summary(stdClass $submission, &$showviewlink)
     {
         $subm = $this->get_pxaiwriter_submission($submission->id);
-
+        //echo(var_dump($subm));
         if ($subm) {
             $showviewlink = true;
-            return "Last submission date : ";
+            return $submission->id;
         } else {
             return "N/A";
         }
     }
 
-    public function view($submission)
-    {
-        global $OUTPUT;
+    public function view(stdClass $submission) {
+        global $CFG;
+        $result = '';
 
-        //  " <h1>I am the result</h1>";
+        $subm = $this->get_pxaiwriter_submission($submission->id);
+        if ($subm) {
+            $plagiarismlinks = $subm->steps_data;
+            //$plagiarismlinks = $plagiarismlinks .' '. $subm->assignment;
+            //$plagiarismlinks = $plagiarismlinks .' '. $subm->steps_data;
+        } else {
+            $plagiarismlinks = 5555;
+        }
+        
 
-         $html = $OUTPUT->render_from_template('<h1>Hello World!</h1>',null);
+        //$pxaiwritersubmission = $this->get_pxaiwriter_submission($submission->id);
 
-         return $html;
+        // if ($pxaiwritersubmission) {
 
-        return $this->assignment->render_editor_content(
-            'pxaiwriter_editor',
-            ASSIGNSUBMISSION_ONLINETEXT_FILEAREA,
-            $submission->id
-        );
+        //     // Render for portfolio API.
+        //     $result .= $this->assignment->render_editor_content(ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
+        //                                                         $pxaiwritersubmission->submission,
+        //                                                         $this->get_type(),
+        //                                                         'steps_data',
+        //                                                         'assignsubmission_pxaiwriter');
+
+        //     // if (!empty($CFG->enableplagiarism)) {
+        //     //     require_once($CFG->libdir . '/plagiarismlib.php');
+
+        //     //     $plagiarismlinks .= plagiarism_get_links(array('userid' => $submission->userid,
+        //     //         'content' => trim($onlinetextsubmission->onlinetext),
+        //     //         'cmid' => $this->assignment->get_course_module()->id,
+        //     //         'course' => $this->assignment->get_course()->id,
+        //     //         'assignment' => $submission->assignment));
+        //     // }
+        // }
+
+        return $plagiarismlinks . $result;
     }
 
     // public function can_upgrade($type, $version)
@@ -352,8 +514,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
     public function is_empty(stdClass $submission)
     {
-        $subm = $this->get_pxaiwriter_submission($submission->id);
-        return $subm ? true : false;
+        return false;
     }
 
     // public function get_file_areas()
