@@ -10,21 +10,23 @@ stepConfigForm.init = function (config, stepConfig) {
     // this.template = stepConfig.template;
     this.steps = stepConfig.steps;
 
-
     $("#pxaiwriter-input-steps-component").on("click", '#go-back', function () {
         changeCurrentStep(-1);
         setElementsVisibility();
     }.bind(this));
 
     $("#pxaiwriter-input-steps-component").on("click", '#advance', function () {
-
-        changeCurrentStep(1);
+        let currentVal = $('[name="pxaiwriter-data-step-' + this.currentStep + '"]').val();
+        changeCurrentStep(1,currentVal);
         setElementsVisibility();
     }.bind(this));
 
-    var changeCurrentStep = function (incoming) {
+    var changeCurrentStep = function (incoming, value = null) {
         if (!(this.steps.length > (this.currentStep + incoming)) || !((this.currentStep + incoming) < 1)) {
             this.currentStep = (this.currentStep + incoming);
+        }
+        if(value) {
+            $('[name="pxaiwriter-data-step-' + this.currentStep + '"]').val(value);
         }
     }.bind(this);
 

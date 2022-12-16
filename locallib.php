@@ -109,14 +109,14 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         //     $data->pxaiwriterformat = editors_get_preferred_format();
         // }
 
+        $data->steps_data = json_decode($this->get_config('pxaiwritersteps'));
+
         if ($submission) {
             $pxaiwritersubmission = $this->get_pxaiwriter_submission($submission->id);
             if ($pxaiwritersubmission) {
                 $data->steps_data =  json_decode($pxaiwritersubmission->steps_data);
                 //$data->pxaiwriterformat = $pxaiwritersubmission->pxaiwriterformat;
             }
-        } else {
-            $data->steps_data = json_decode($this->get_config('pxaiwritersteps'));
         }
 
         // $data = file_prepare_standard_editor(
@@ -129,38 +129,36 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         //     $submissionid
         // );
 
-
-
         // echo("here the elements are adding to the form");
         // $mform->addElement('editor', 'pxaiwriter_editor', $this->get_name(), null, $editoroptions);
 
-        $data->steps_data = [
-            array(
-                "step" => 1,
-                "description" =>  "the description 1 for this!",
-                "mandatory" => "",
-                'type' =>  "",
-                "removable" =>  false,
-                "custom_buttons" =>  ['do_ai_magic', 'expand'],
-                "value" => "",
-            ),
-            array(
-                "step" => 2,
-                "description" =>  "the description 2 for this!",
-                "mandatory" =>  "",
-                'type' =>  "",
-                "removable" =>  false,
-                "value" => "",
-            ),
-            array(
-                "step" =>  3,
-                "description" =>  "the description 3 for this!",
-                "mandatory" =>  "",
-                'type' =>  "",
-                "removable" =>  true,
-                "value" => "",
-            ),
-        ];
+        // $data->steps_data = [
+        //     array(
+        //         "step" => 1,
+        //         "description" =>  "the description 1 for this!",
+        //         "mandatory" => "",
+        //         'type' =>  "",
+        //         "removable" =>  false,
+        //         "custom_buttons" =>  ['do_ai_magic', 'expand'],
+        //         "value" => "",
+        //     ),
+        //     array(
+        //         "step" => 2,
+        //         "description" =>  "the description 2 for this!",
+        //         "mandatory" =>  "",
+        //         'type' =>  "",
+        //         "removable" =>  false,
+        //         "value" => "",
+        //     ),
+        //     array(
+        //         "step" =>  3,
+        //         "description" =>  "the description 3 for this!",
+        //         "mandatory" =>  "",
+        //         'type' =>  "",
+        //         "removable" =>  true,
+        //         "value" => "",
+        //     ),
+        // ];
 
         MoodleQuickForm::registerElementType(
             'pxaiwriter_steps_section',
