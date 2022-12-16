@@ -3,60 +3,36 @@
         <div id="pxaiwriter-input-steps-component" class="row">
 
             <div class="steps-container col-12">
-
-                <div class="steps row mb-3">
-                    
-                    
-                    <div class="step-container col-md-12" data-step="1">
-                        <h4>This is the step 1</h4>
+                <div class="steps row ">
+                    {{#steps_data}}
+                    <div class="step-container col-md-12 mb-3 d-none" data-step="{{step}}">
+                        <h4>{{#str}} steps_title, assignsubmission_pxaiwriter{{/str}} {{step}} </h4>
                         <span class="mb-2">
-                            This is the description of the step 1
+                            {{description}}
                         </span>
-                        <textarea style="width:100%" name="" id="" cols="40"
-                            rows="10">This is the step one description</textarea>
+                        <textarea name="pxaiwriter-data-step-{{step}}" placeholder="" style="width:100%" name="" id="" cols="40" rows="10">{{value}}</textarea>
                     </div>
-
-{{! 
-                    <div class="step-container col-md-12 " data-step="2">
-                        <h4>This is the step 2</h4>
-                        <span class="mb-2">
-                            This is the description of the step 1
-                        </span>
-                        <textarea style="width:100%" name="" id="" cols="40"
-                            rows="10">This is the step 2 description</textarea>
-                    </div>
-                    <div class="step-container col-md-12  " data-step="3">
-                        <h4>This is the step 3</h4>
-                        <span class="mb-2">
-                            This is the description of the step 1
-                        </span>
-                        <textarea style="width:100%" name="" id="" cols="40"
-                            rows="10">This is the step 4 description</textarea>
-                    </div> }}
-
+                    {{/steps_data}}
                 </div>
-                <div class="actions-container row">
-
+                <div class="actions-container mb-3 row">
                     <div class="col-md-6 ">
                         <div class="row">
                             <div class="col-4">
-                                <button id="go-back" name="go-back" type="button"
-                                    class="btn btn-secondary">Previous</button>
+                                <button id="go-back" name="go-back" type="button" class="btn btn-secondary">{{#str}} previous, assignsubmission_pxaiwriter{{/str}}</button>
                             </div>
                             <div class="col-4">
                                 <button id="advance" name="advance" type="button"
-                                    class="btn btn-secondary">Next</button>
+                                    class="btn btn-secondary">{{#str}} next, assignsubmission_pxaiwriter{{/str}}</button>
                             </div>
                         </div>
-
                     </div>
                     <div class="col-md-6">
                         <div class="row">
                             <div class="col-auto">
-                                <button type="button" class="btn btn-secondary" data-step="1">Expand selection</button>
+                                <button type="button" class="btn btn-secondary d-none" data-step="1">{{#str}} expand_selection, assignsubmission_pxaiwriter{{/str}}</button>
                             </div>
                             <div class="col-auto">
-                                <button type="button" class="btn btn-primary" data-step="1">Do AI magic</button>
+                                <button type="button" class="btn btn-primary d-none" data-step="1">{{#str}} do_ai_magic, assignsubmission_pxaiwriter{{/str}}</button>
                             </div>
                         </div>
                     </div>

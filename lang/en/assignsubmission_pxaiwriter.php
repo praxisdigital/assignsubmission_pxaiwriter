@@ -67,3 +67,9 @@ $string['last_modified_description'] = "";
 
 $string['last_modified_by'] = "Last modified by";
 $string['last_modified_description'] = "";
+
+$string['steps_title'] = "Step";
+$string['previous'] = "Previous";
+$string['next'] = "Next";
+$string['expand_selection'] = "Expant selection";
+$string['do_ai_magic'] = "Do AI magic";

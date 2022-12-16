@@ -40,12 +40,15 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
         if ($aiwritersteps == null) {
             $description = get_string('first_step_description', 'assignsubmission_pxaiwriter');
+
             $step1 = new stdClass();
             $step1->step = 1;
             $step1->description = $description;
             $step1->mandatory = true;
             $step1->type = 'text';
             $step1->removable = false;
+            $step1->custom_buttons = ['do_ai_magic', 'expand'];
+            $step1->value = '';
 
             $description = get_string('second_step_description', 'assignsubmission_pxaiwriter');
             $step2 = new stdClass();
@@ -53,7 +56,9 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             $step2->description = $description;
             $step2->mandatory = true;
             $step2->type = 'text';
-            $step1->removable = false;
+            $step2->removable = false;
+            $step2->custom_buttons = ['do_ai_magic', 'expand'];
+            $step2->value = '';
 
             array_push($stepList, $step1, $step2);
         } else {
@@ -66,7 +71,6 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
         $mform->addElement('hidden', 'assignsubmission_pxaiwriter_steps', null);
         $mform->setType('assignsubmission_pxaiwriter_steps', PARAM_RAW);
-
 
         MoodleQuickForm::registerElementType(
             'pxaiwriter_steps_section',
@@ -105,13 +109,15 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         //     $data->pxaiwriterformat = editors_get_preferred_format();
         // }
 
-        // if ($submission) {
-        //     $pxaiwritersubmission = $this->get_pxaiwriter_submission($submission->id);
-        //     if ($pxaiwritersubmission) {
-        //         $data->steps_data = $pxaiwritersubmission->steps_data;
-        //         //$data->pxaiwriterformat = $pxaiwritersubmission->pxaiwriterformat;
-        //     }
-        // }
+        if ($submission) {
+            $pxaiwritersubmission = $this->get_pxaiwriter_submission($submission->id);
+            if ($pxaiwritersubmission) {
+                $data->steps_data =  json_decode($pxaiwritersubmission->steps_data);
+                //$data->pxaiwriterformat = $pxaiwritersubmission->pxaiwriterformat;
+            }
+        } else {
+            $data->steps_data = json_decode($this->get_config('pxaiwritersteps'));
+        }
 
         // $data = file_prepare_standard_editor(
         //     $data,
@@ -128,7 +134,33 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         // echo("here the elements are adding to the form");
         // $mform->addElement('editor', 'pxaiwriter_editor', $this->get_name(), null, $editoroptions);
 
-
+        $data->steps_data = [
+            array(
+                "step" => 1,
+                "description" =>  "the description 1 for this!",
+                "mandatory" => "",
+                'type' =>  "",
+                "removable" =>  false,
+                "custom_buttons" =>  ['do_ai_magic', 'expand'],
+                "value" => "",
+            ),
+            array(
+                "step" => 2,
+                "description" =>  "the description 2 for this!",
+                "mandatory" =>  "",
+                'type' =>  "",
+                "removable" =>  false,
+                "value" => "",
+            ),
+            array(
+                "step" =>  3,
+                "description" =>  "the description 3 for this!",
+                "mandatory" =>  "",
+                'type' =>  "",
+                "removable" =>  false,
+                "value" => "",
+            ),
+        ];
 
         MoodleQuickForm::registerElementType(
             'pxaiwriter_steps_section',
@@ -136,36 +168,41 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             'pxaiwriter_steps_student_form_element'
         );
 
-        $mform->addElement('pxaiwriter_steps_section', 'assignsubmission_pxaiwriter_steps_config', null, null, null, null);
+        $mform->addElement('pxaiwriter_steps_section', 'assignsubmission_pxaiwriter_steps_config', null, null, $data);
 
         return true;
     }
 
-    public function save(stdClass $submission, stdClass $data) {
+    public function save(stdClass $submission, stdClass $data)
+    {
         global $USER, $DB;
 
         $editoroptions = $this->get_edit_options();
 
-        $data = file_postupdate_standard_editor($data,
-                                                'steps_data',
-                                                $editoroptions,
-                                                $this->assignment->get_context(),
-                                                'assignsubmission_pxaiwriter',
-                                                ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
-                                                $submission->id);
-        
+        $data = file_postupdate_standard_editor(
+            $data,
+            'steps_data',
+            $editoroptions,
+            $this->assignment->get_context(),
+            'assignsubmission_pxaiwriter',
+            ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
+            $submission->id
+        );
+
         //echo(var_dump($data));
 
         $pxaiwritersubmission = $this->get_pxaiwriter_submission($submission->id);
 
         $fs = get_file_storage();
 
-        $files = $fs->get_area_files($this->assignment->get_context()->id,
-                                     'assignsubmission_pxaiwriter',
-                                     ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
-                                     $submission->id,
-                                     'id',
-                                     false);
+        $files = $fs->get_area_files(
+            $this->assignment->get_context()->id,
+            'assignsubmission_pxaiwriter',
+            ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
+            $submission->id,
+            'id',
+            false
+        );
 
         // Check word count before submitting anything.
         // $exceeded = $this->check_word_count(trim($data->pxaiwriter));
@@ -203,7 +240,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             $params['relateduserid'] = $submission->userid;
         }
 
-       // $count = count_words($data->onlinetext);
+        // $count = count_words($data->onlinetext);
 
         // Unset the objectid and other field from params for use in submission events.
         unset($params['objectid']);
@@ -212,14 +249,14 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             'submissionid' => $submission->id,
             'submissionattempt' => $submission->attemptnumber,
             'submissionstatus' => $submission->status,
-           // 'onlinetextwordcount' => $count,
+            // 'onlinetextwordcount' => $count,
             'groupid' => $groupid,
             'groupname' => $groupname
         );
 
         if ($pxaiwritersubmission) {
 
-            $pxaiwritersubmission->steps_data = '345';//$data->pxaiwriter_editor['text'];
+            $pxaiwritersubmission->steps_data = '345'; //$data->pxaiwriter_editor['text'];
             //$pxaiwritersubmission->pxaiwriterformat = $data->pxaiwriter_editor['format'];
             $params['objectid'] = $pxaiwritersubmission->id;
             $updatestatus = $DB->update_record('assignsubmission_pxaiwriter', $pxaiwritersubmission);
@@ -228,9 +265,9 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             $event->trigger();
             return $updatestatus;
         } else {
-            echo(var_dump($data->pxaiwriter_editor['text']));
+            echo (var_dump($data->pxaiwriter_editor['text']));
             $pxaiwritersubmission = new stdClass();
-            $pxaiwritersubmission->steps_data = 'fshfsHF';//$data->pxaiwriter_editor['text'];
+            $pxaiwritersubmission->steps_data = 'fshfsHF'; //$data->pxaiwriter_editor['text'];
             //$pxaiwritersubmission->pxaiwriterformat = $data->pxaiwriter_editor['format'];
 
             $pxaiwritersubmission->submission = $submission->id;
@@ -244,7 +281,8 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         }
     }
 
-    private function get_edit_options() {
+    private function get_edit_options()
+    {
         $editoroptions = array(
             'noclean' => false,
             'maxfiles' => EDITOR_UNLIMITED_FILES,
@@ -256,7 +294,8 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         return $editoroptions;
     }
 
-    public function submission_is_empty(stdClass $data) {
+    public function submission_is_empty(stdClass $data)
+    {
         // if (!isset($data->onlinetext_editor)) {
         //     return true;
         // }
@@ -275,7 +314,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         return false;
     }
 
-    
+
     // public function save(stdClass $submission, stdClass $data)
     // {
     //     global $USER, $DB;
@@ -373,7 +412,8 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         }
     }
 
-    public function view(stdClass $submission) {
+    public function view(stdClass $submission)
+    {
         global $CFG;
         $result = '';
 
@@ -385,7 +425,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         } else {
             $plagiarismlinks = 5555;
         }
-        
+
 
         //$pxaiwritersubmission = $this->get_pxaiwriter_submission($submission->id);
 

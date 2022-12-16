@@ -22,9 +22,20 @@ class pxaiwriter_steps_student_form_element extends HTML_QuickForm_element
 {
 
     private $_value = array();
+    private $_init = null;
 
     public function __construct($elementName = null, $elementLabel = null, $attributes = null, $initvalue = null)
     {
+        $this->_init = $initvalue;
+
+
+        // echo (var_dump($elementName));
+        // echo (var_dump($elementLabel));
+        // echo (var_dump($attributes));
+        // echo (var_dump($initvalue));
+
+
+
         parent::__construct($elementName, $elementLabel, $attributes);
     }
 
@@ -94,9 +105,10 @@ class pxaiwriter_steps_student_form_element extends HTML_QuickForm_element
         //                             </div>
         //                         </div>';
         // $stepConfigForm->hasUsed = $this->_has_used;
+        $stepConfigForm->steps = $this->_init->steps_data;
 
         $html = "";
-        $html .= $OUTPUT->render_from_template('assignsubmission_pxaiwriter/assignsubmission_pxaiwriter_steps_student_form', null);
+        $html .= $OUTPUT->render_from_template('assignsubmission_pxaiwriter/assignsubmission_pxaiwriter_steps_student_form', $this->_init);
         $module = array('name' => 'assignsubmission_pxaiwriter_stepconfig_form', 'fullpath' => '/mod/assign/submission/pxaiwriter/classes/pxaiwriter-step-form-config.js');
         $PAGE->requires->js_init_call('stepConfigForm.init', array($stepConfigForm), true, $module);
         return $html;

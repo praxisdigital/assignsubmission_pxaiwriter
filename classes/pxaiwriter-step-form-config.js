@@ -1,13 +1,83 @@
-// stepConfig = {};
+stepConfigForm = {};
 // stepConfig.template = null;
 // stepConfig.hasUsed = false;
 // stepConfig.hasRaised = false;
-// stepConfig.steps = [];
+stepConfigForm.steps = [];
+stepConfigForm.currentStep = 1;
 
 stepConfigForm.init = function (config, stepConfig) {
 
     // this.template = stepConfig.template;
-    // this.steps = stepConfig.steps;
+    this.steps = stepConfig.steps;
+
+
+    $("#pxaiwriter-input-steps-component").on("click", '#go-back', function () {
+        changeCurrentStep(-1);
+        setElementsVisibility();
+    }.bind(this));
+
+    $("#pxaiwriter-input-steps-component").on("click", '#advance', function () {
+
+        changeCurrentStep(1);
+        setElementsVisibility();
+    }.bind(this));
+
+    var changeCurrentStep = function (incoming) {
+        if (!(this.steps.length > (this.currentStep + incoming)) || !((this.currentStep + incoming) < 1)) {
+            this.currentStep = (this.currentStep + incoming);
+        }
+    }.bind(this);
+
+    var setElementsVisibility = function () {
+        this.steps.forEach(element => {
+            if (element['step'] == this.currentStep) {
+                let elements = document.querySelectorAll('[data-step="' + element['step'] + '"]');
+                elements.forEach(e => { // meka pennanna
+                    // element.classList.add("mystyle");
+                    e.classList.remove("d-none");
+                });
+            } else {
+                let elements = document.querySelectorAll('[data-step="' + element['step'] + '"]');
+                elements.forEach(e => {
+                    e.classList.add("d-none");
+                    // element.classList.remove("mystyle");
+                });
+            }
+        });
+
+        let back = document.querySelectorAll('[id="go-back"]');
+        let advance = document.querySelectorAll('[id="advance"]');
+
+        if (this.currentStep == 1) {
+            back.forEach(e => {
+                e.classList.add("d-none");
+            });
+            advance.forEach(e => {
+                e.classList.remove("d-none");
+            });
+        }
+
+        if (this.currentStep > 1) {
+            back.forEach(e => {
+                e.classList.remove("d-none");
+            });
+            advance.forEach(e => {
+                e.classList.remove("d-none");
+            });
+        }
+
+        if (this.currentStep == this.steps.length) {
+            advance.forEach(e => {
+                e.classList.add("d-none");
+            });
+            back.forEach(e => {
+                e.classList.remove("d-none");
+            });
+        }
+
+    }.bind(this);
+
+    setElementsVisibility();
     // this.hasUsed = stepConfig.hasUsed;
 
     // this.steps.forEach(step => {
