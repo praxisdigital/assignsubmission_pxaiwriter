@@ -57,7 +57,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             $step2->mandatory = true;
             $step2->type = 'text';
             $step2->removable = false;
-            $step2->custom_buttons = ['do_ai_magic', 'expand'];
+            $step2->custom_buttons = [];
             $step2->value = '';
 
             array_push($stepList, $step1, $step2);
@@ -157,7 +157,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
                 "description" =>  "the description 3 for this!",
                 "mandatory" =>  "",
                 'type' =>  "",
-                "removable" =>  false,
+                "removable" =>  true,
                 "value" => "",
             ),
         ];
