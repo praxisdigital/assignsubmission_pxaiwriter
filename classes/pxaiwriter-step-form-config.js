@@ -17,15 +17,22 @@ stepConfigForm.init = function (config, stepConfig) {
 
     $("#pxaiwriter-input-steps-component").on("click", '#advance', function () {
         let currentVal = $('[name="pxaiwriter-data-step-' + this.currentStep + '"]').val();
-        changeCurrentStep(1,currentVal);
+        changeCurrentStep(1, currentVal);
         setElementsVisibility();
+    }.bind(this));
+
+    $('.steps textarea').bind('mouseup mousemove', function (e) {
+        var innerHeight = $(e.target).height();
+        const elements = $("textarea").each(function (index, item) {
+            $(item).height(innerHeight);
+        });
     }.bind(this));
 
     var changeCurrentStep = function (incoming, value = null) {
         if (!(this.steps.length > (this.currentStep + incoming)) || !((this.currentStep + incoming) < 1)) {
             this.currentStep = (this.currentStep + incoming);
         }
-        if(value) {
+        if (value) {
             $('[name="pxaiwriter-data-step-' + this.currentStep + '"]').val(value);
         }
     }.bind(this);

@@ -7,9 +7,9 @@
                     {{#steps_data}}
                     <div class="step-container col-md-12 mb-3 d-none" data-step="{{step}}">
                         <h4>{{#str}} steps_title, assignsubmission_pxaiwriter{{/str}} {{step}} </h4>
-                        <span class="mb-2">
-                            {{description}}
-                        </span>
+                        <div class="mb-2">
+                           <span> {{description}} </span>
+                        </div>
                         <textarea class="form-control " name="pxaiwriter-data-step-{{step}}" placeholder="" style="width:100%" name="" id="" cols="40" rows="10">{{value}}</textarea>
                     </div>
                     {{/steps_data}}
