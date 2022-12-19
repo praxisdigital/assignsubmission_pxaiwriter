@@ -170,6 +170,9 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
         $mform->addElement('pxaiwriter_steps_section', 'assignsubmission_pxaiwriter_steps_config', null, null, $data);
 
+        $mform->addElement('hidden', 'assignsubmission_pxaiwriter_student_data', null);
+        $mform->setType('assignsubmission_pxaiwriter_student_data', PARAM_RAW);
+
         return true;
     }
 

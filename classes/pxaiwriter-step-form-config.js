@@ -28,12 +28,32 @@ stepConfigForm.init = function (config, stepConfig) {
         });
     }.bind(this));
 
+    $('.pxaiwriter-student-data').bind('paste keyup keypress blur change', function (e) {
+
+        const currentStep = $(e.target).data("input-step");
+        const value = $(e.target).val();
+        this.steps[currentStep - 1]['value'] = value;
+        $('[name="assignsubmission_pxaiwriter_student_data"]').val(JSON.stringify(this.steps));
+
+    }.bind(this));
+
+    // assignsubmission_pxaiwriter_student_data
+
+    var setSaveContent = function () {
+
+    }.bind(this);
+
     var changeCurrentStep = function (incoming, value = null) {
         if (!(this.steps.length > (this.currentStep + incoming)) || !((this.currentStep + incoming) < 1)) {
             this.currentStep = (this.currentStep + incoming);
         }
         if (value) {
-            $('[name="pxaiwriter-data-step-' + this.currentStep + '"]').val(value);
+            if (!this.steps[this.currentStep - 1]['value']) {
+                $('[name="pxaiwriter-data-step-' + this.currentStep + '"]').val(value);
+                this.steps[this.currentStep - 1]['value'] = value;
+                $('[name="assignsubmission_pxaiwriter_student_data"]').val(JSON.stringify(this.steps));
+            }
+
         }
     }.bind(this);
 
