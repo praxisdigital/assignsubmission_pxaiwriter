@@ -1,6 +1,6 @@
 <?php
 
-function xmldb_submission_pxaiwriter_upgrade($oldversion)
+function xmldb_assignsubmission_pxaiwriter_upgrade($oldversion)
 {
     global $CFG, $DB, $OUTPUT;
 
