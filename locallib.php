@@ -627,4 +627,30 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     //     return true;
     // }
 
+    function sendCurlRequest($endpoint, $data = [], $method = "GET", $headerConfig = array('Content-Type: application/json', 'Accept: application/json'))
+    {
+
+        try {
+
+            $postdata = json_encode($data);
+
+            $url = $endpoint;
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headerConfig);
+            $result = curl_exec($ch);
+
+            if ($result === false) {
+                echo 'Curl error: ' . curl_error($ch);
+            }
+
+            curl_close($ch);
+            return $result;
+        } catch (Exception $ex) {
+            return $ex->getMessage();
+        }
+    }
 }
