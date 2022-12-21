@@ -17,16 +17,43 @@ stepConfigForm.init = function (config, stepConfig) {
 
     $("#pxaiwriter-input-steps-component").on("click", '#advance', function () {
         let currentVal = $('[name="pxaiwriter-data-step-' + this.currentStep + '"]').val();
-        changeCurrentStep(1,currentVal);
+        changeCurrentStep(1, currentVal);
         setElementsVisibility();
     }.bind(this));
+
+    $('.steps textarea').bind('mouseup mousemove', function (e) {
+        var innerHeight = $(e.target).height();
+        const elements = $("textarea").each(function (index, item) {
+            $(item).height(innerHeight);
+        });
+    }.bind(this));
+
+    $('.pxaiwriter-student-data').bind('paste keyup keypress blur change', function (e) {
+
+        const currentStep = $(e.target).data("input-step");
+        const value = $(e.target).val();
+        this.steps[currentStep - 1]['value'] = value;
+        $('[name="assignsubmission_pxaiwriter_student_data"]').val(JSON.stringify(this.steps));
+
+    }.bind(this));
+
+    // assignsubmission_pxaiwriter_student_data
+
+    var setSaveContent = function () {
+
+    }.bind(this);
 
     var changeCurrentStep = function (incoming, value = null) {
         if (!(this.steps.length > (this.currentStep + incoming)) || !((this.currentStep + incoming) < 1)) {
             this.currentStep = (this.currentStep + incoming);
         }
-        if(value) {
-            $('[name="pxaiwriter-data-step-' + this.currentStep + '"]').val(value);
+        if (value) {
+            if (!this.steps[this.currentStep - 1]['value']) {
+                $('[name="pxaiwriter-data-step-' + this.currentStep + '"]').val(value);
+                this.steps[this.currentStep - 1]['value'] = value;
+                $('[name="assignsubmission_pxaiwriter_student_data"]').val(JSON.stringify(this.steps));
+            }
+
         }
     }.bind(this);
 

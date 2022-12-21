@@ -25,8 +25,9 @@ $string['ai_writer_helper_msg_description'] = "If AI writer submissions are enab
 $string['first_step_description'] = "In this step you have to write some keywords to generate a text to work with. In the next step, you must validate the grammar and examine whether the claims in the text are correct.";
 $string['second_step_description'] = "In this step you can format the text and add .....";
 
-$string['steps_change_warning'] = "These steps are already used in assignment submission. Your changes will be applied to the future submissions of same assignment";
+$string['steps_change_warning'] = "These steps are already used in assignment submission. Your changes will be applied to the future submissions of same assignment. Do you want to continue?";
 $string['ok_button_label'] = "OK";
+$string['cancel_button_label'] = "Cancel";
 // $string['maximumsubmissionsize'] = "";
 // $string['maximumsubmissionsize'] = "";
 // $string['maximumsubmissionsize'] = "";
