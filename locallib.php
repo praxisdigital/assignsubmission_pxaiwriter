@@ -2,7 +2,7 @@
 
 define('ASSIGNSUBMISSION_FILE_MAXFILES', 10);
 define('ASSIGNSUBMISSION_PXAIWRITER_FILEAREA', 'submissions_pxaiwriter');
-require_once '/app/vendor/autoload.php';
+//require_once '/app/vendor/autoload.php';
 
 class assign_submission_pxaiwriter extends assign_submission_plugin
 {
@@ -191,12 +191,12 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
         $editoroptions = $this->get_edit_options();
 
-        // $mpdf = new \Mpdf\Mpdf(['tempDir'=>__DIR__.'/temp']);
-        // $mpdf->WriteHTML('Hello World');
-        // // Other code
-        // //$mpdf->Output();
-        // echo(var_dump($mpdf));
-        // $data->setps_data_file_filemanager = $mpdf;
+        $mpdf = new \Mpdf\Mpdf(['tempDir'=>__DIR__.'/temp']);
+        $mpdf->WriteHTML('Hello World');
+        // Other code
+        //$mpdf->Output();
+        echo(var_dump($mpdf));
+        $data->setps_data_file_filemanager = $mpdf;
 
         $data = file_postupdate_standard_editor(
             $data,
@@ -212,16 +212,16 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
         $pxaiwritersubmission = $this->get_pxaiwriter_submission($submission->id);
 
-        // $fs = get_file_storage();
+        $fs = get_file_storage();
 
-        // $files = $fs->get_area_files(
-        //     $this->assignment->get_context()->id,
-        //     'assignsubmission_pxaiwriter',
-        //     ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
-        //     $submission->id,
-        //     'id',
-        //     false
-        // );
+        $files = $fs->get_area_files(
+            $this->assignment->get_context()->id,
+            'assignsubmission_pxaiwriter',
+            ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
+            $submission->id,
+            'id',
+            false
+        );
 
         // Check word count before submitting anything.
         // $exceeded = $this->check_word_count(trim($data->pxaiwriter));
@@ -234,20 +234,20 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             'context' => context_module::instance($this->assignment->get_course_module()->id),
             'courseid' => $this->assignment->get_course()->id,
             'objectid' => $submission->id,
-            // 'other' => array(
-            //     'pathnamehashes' => array_keys($files),
-            //     'content' => trim($data->steps_data),
-            //     //'format' => $data->pxaiwriter_editor['format']
-            // )
+            'other' => array(
+                'pathnamehashes' => array_keys($files),
+                'content' => trim($data->steps_data),
+                //'format' => $data->pxaiwriter_editor['format']
+            )
         );
-        // if (!empty($submission->userid) && ($submission->userid != $USER->id)) {
-        //     $params['relateduserid'] = $submission->userid;
-        // }
-        // if ($this->assignment->is_blind_marking()) {
-        //     $params['anonymous'] = 1;
-        // }
-        // $event = \assignsubmission_pxaiwriter\event\assessable_uploaded::create($params);
-        // $event->trigger();
+        if (!empty($submission->userid) && ($submission->userid != $USER->id)) {
+            $params['relateduserid'] = $submission->userid;
+        }
+        if ($this->assignment->is_blind_marking()) {
+            $params['anonymous'] = 1;
+        }
+        $event = \assignsubmission_pxaiwriter\event\assessable_uploaded::create($params);
+        $event->trigger();
 
         $groupname = null;
         $groupid = 0;
@@ -274,9 +274,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         );
 
         if ($pxaiwritersubmission) {
-
-            $pxaiwritersubmission->steps_data = $data->assignsubmission_pxaiwriter_student_data; //$data->pxaiwriter_editor['text'];
-            //$pxaiwritersubmission->pxaiwriterformat = $data->pxaiwriter_editor['format'];
+            $pxaiwritersubmission->steps_data = $data->assignsubmission_pxaiwriter_student_data;
             $params['objectid'] = $pxaiwritersubmission->id;
             $updatestatus = $DB->update_record('assignsubmission_pxaiwriter', $pxaiwritersubmission);
             $event = \assignsubmission_pxaiwriter\event\submission_updated::create($params);
@@ -284,11 +282,8 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             $event->trigger();
             return $updatestatus;
         } else {
-            // echo (var_dump($data->pxaiwriter_editor['text']));
             $pxaiwritersubmission = new stdClass();
-            $pxaiwritersubmission->steps_data = $data->assignsubmission_pxaiwriter_student_data; //$data->pxaiwriter_editor['text'];
-            //$pxaiwritersubmission->pxaiwriterformat = $data->pxaiwriter_editor['format'];
-
+            $pxaiwritersubmission->steps_data = $data->assignsubmission_pxaiwriter_student_data;
             $pxaiwritersubmission->submission = $submission->id;
             $pxaiwritersubmission->assignment = $this->assignment->get_instance()->id;
             $pxaiwritersubmission->id = $DB->insert_record('assignsubmission_pxaiwriter', $pxaiwritersubmission);
@@ -334,70 +329,22 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     }
 
 
-    // public function save(stdClass $submission, stdClass $data)
-    // {
-    //     global $USER, $DB;
+    /**
+     * Remove a submission.
+     *
+     * @param stdClass $submission The submission
+     * @return boolean
+     */
+    public function remove(stdClass $submission) {
+        global $DB;
 
-    //     $fileoptions = $this->get_file_options();
+        $submissionid = $submission ? $submission->id : 0;
+        if ($submissionid) {
+            $DB->delete_records('assignsubmission_pxaiwriter', array('submission' => $submissionid));
+        }
+        return true;
+    }
 
-    //     $data = file_postupdate_standard_filemanager(
-    //         $data,
-    //         'files',
-    //         $fileoptions,
-    //         $this->assignment->get_context(),
-    //         'assignsubmission_pxaiwriter',
-    //         ASSIGNSUBMISSION_FILE_FILEAREA,
-    //         $submission->id
-    //     );
-
-    //     $filesubmission = $this->get_file_submission($submission->id);
-
-    //     // Plagiarism code event trigger when files are uploaded.                                                                   
-
-    //     $fs = get_file_storage();
-    //     $files = $fs->get_area_files(
-    //         $this->assignment->get_context()->id,
-    //         'assignsubmission_pxaiwriter',
-    //         ASSIGNSUBMISSION_FILE_FILEAREA,
-    //         $submission->id,
-    //         'id',
-    //         false
-    //     );
-
-    //     $count = $this->count_files($submission->id, ASSIGNSUBMISSION_FILE_FILEAREA);
-
-    //     // Send files to event system.                                                                                              
-    //     // This lets Moodle know that an assessable file was uploaded (eg for plagiarism detection).                                
-    //     $eventdata = new stdClass();
-    //     $eventdata->modulename = 'assign';
-    //     $eventdata->cmid = $this->assignment->get_course_module()->id;
-    //     $eventdata->itemid = $submission->id;
-    //     $eventdata->courseid = $this->assignment->get_course()->id;
-    //     $eventdata->userid = $USER->id;
-    //     if ($count > 1) {
-    //         $eventdata->files = $files;
-    //     }
-    //     $eventdata->file = $files;
-    //     $eventdata->pathnamehashes = array_keys($files);
-    //     events_trigger('assessable_file_uploaded', $eventdata);
-
-    //     if ($filesubmission) {
-    //         $filesubmission->numfiles = $this->count_files(
-    //             $submission->id,
-    //             ASSIGNSUBMISSION_FILE_FILEAREA
-    //         );
-    //         return $DB->update_record('assignsubmission_pxaiwriter', $filesubmission);
-    //     } else {
-    //         $filesubmission = new stdClass();
-    //         $filesubmission->numfiles = $this->count_files(
-    //             $submission->id,
-    //             ASSIGNSUBMISSION_FILE_FILEAREA
-    //         );
-    //         $filesubmission->submission = $submission->id;
-    //         $filesubmission->assignment = $this->assignment->get_instance()->id;
-    //         return $DB->insert_record('assignsubmission_pxaiwriter', $filesubmission) > 0;
-    //     }
-    // }
 
     public function get_files($submission, $class)
     {
