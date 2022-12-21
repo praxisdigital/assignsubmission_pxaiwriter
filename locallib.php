@@ -2,6 +2,7 @@
 
 define('ASSIGNSUBMISSION_FILE_MAXFILES', 10);
 define('ASSIGNSUBMISSION_PXAIWRITER_FILEAREA', 'submissions_pxaiwriter');
+require_once '/app/vendor/autoload.php';
 
 class assign_submission_pxaiwriter extends assign_submission_plugin
 {
@@ -102,6 +103,14 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         $editoroptions = $this->get_edit_options();
         $submissionid = $submission ? $submission->id : 0;
 
+        $data = file_prepare_standard_filemanager($data,
+                                                  'setps_data_file',
+                                                  $editoroptions,
+                                                  $this->assignment->get_context(),
+                                                  'assignsubmission_pxaiwriter',
+                                                  ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
+                                                  $submissionid);
+
         // if (!isset($data->steps_data)) {
         //     $data->steps_data = '';
         // }
@@ -177,9 +186,30 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
         $editoroptions = $this->get_edit_options();
 
+        // $dompdf = new Dompdf();
+        // $dompdf->loadHtml('
+        // <table border=1 align=center width=400>
+        // <tr><td>Name : </td><td>'.$_POST['name'].'</td></tr>
+        // <tr><td>Email : </td><td>'.$_POST['email'].'</td></tr>
+        // <tr><td>Age : </td><td>'.$_POST['age'].'</td></tr>
+        // <tr><td>Country : </td><td>'.$_POST['country'].'</td></tr>
+        // </table>
+        // ');
+        // $dompdf->setPaper('A4', 'landscape');
+        // //$dompdf->render();
+        // echo(var_dump($dompdf));
+        // $data->setps_data_file_filemanager = $dompdf;
+
+        $mpdf = new \Mpdf\Mpdf(['tempDir'=>__DIR__.'/temp']);
+        $mpdf->WriteHTML('Hello World');
+        // Other code
+        //$mpdf->Output();
+        echo(var_dump($mpdf));
+        $data->setps_data_file_filemanager = $mpdf;
+
         $data = file_postupdate_standard_editor(
             $data,
-            'steps_data',
+            'setps_data_file',
             $editoroptions,
             $this->assignment->get_context(),
             'assignsubmission_pxaiwriter',
