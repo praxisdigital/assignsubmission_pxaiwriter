@@ -39,6 +39,23 @@ stepConfigForm.init = function (config, stepConfig) {
 
     // assignsubmission_pxaiwriter_student_data
 
+    $(".actions-container").on("click", '#pxaiwriter-expand-selection', function () {
+        // var promises = Ajax.call([
+        //     {
+        //         methodname: "mod_mod_assign_submission_pxaiwriter_doaimagic",
+        //         args: { contextid: this.contextId, jsonformdata: JSON.stringify(formData) },
+        //         done: this.handleResponse.bind(this),
+        //         fail: this.handleFailure.bind(this),
+        //     },
+        // ]);
+        alert("meemaaaw")
+    }.bind(this));
+
+    $(".actions-container").on("click", '#pxaiwriter-do-ai-magic', function () {
+        alert("meemaaaw do")
+    }.bind(this));
+
+
     var setSaveContent = function () {
 
     }.bind(this);
