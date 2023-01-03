@@ -111,6 +111,9 @@ class pxaiwriter_steps_student_form_element extends HTML_QuickForm_element
         $html .= $OUTPUT->render_from_template('assignsubmission_pxaiwriter/assignsubmission_pxaiwriter_steps_student_form', $this->_init);
         $module = array('name' => 'assignsubmission_pxaiwriter_stepconfig_form', 'fullpath' => '/mod/assign/submission/pxaiwriter/classes/pxaiwriter-step-form-config.js');
         $PAGE->requires->js_init_call('stepConfigForm.init', array($stepConfigForm), true, $module);
+
+        $PAGE->requires->js_call_amd('assignsubmission_pxaiwriter/pxaiendpoint', 'init', ['id' => 1, 'cmid' => 100]);
+
         return $html;
     }
 }

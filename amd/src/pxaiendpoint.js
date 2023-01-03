@@ -1,6 +1,6 @@
 define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory', "core/modal_events"], function ($, Ajax, Str, Templates, ModalFactory, ModalEvents) {
     var EventCreator = function (formItem, events) {
-        // this.contextId = 1; // Sys context
+        this.contextId = 1; // Sys context
         // this.instanceid = formItem.instanceid;
         this.init();
     }
@@ -8,6 +8,37 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
     EventCreator.prototype.init = function () {
         $('.createnew').on('click', function () {
 
+        }.bind(this));
+
+        // assignsubmission_pxaiwriter_student_data
+
+        $(".actions-container").on("click", '#pxaiwriter-expand-selection', function () {
+
+            let formData = new FormData();
+            formData.append('text', "hello dolly!");
+
+            var promises = Ajax.call([
+                {
+                    methodname: "mod_mod_assign_submission_pxaiwriter_expand",
+                    args: { contextid: this.contextId, jsondata: JSON.stringify(formData) },
+                    done: this.handleResponse.bind(this),
+                    fail: this.handleFailure.bind(this),
+                },
+            ]);
+            alert("meemaaaw")
+        }.bind(this));
+
+        $(".actions-container").on("click", '#pxaiwriter-do-ai-magic', function () {
+
+            var promises = Ajax.call([
+                {
+                    methodname: "mod_mod_assign_submission_pxaiwriter_doaimagic",
+                    args: { contextid: this.contextId, jsondata: JSON.stringify(formData) },
+                    done: this.handleResponse.bind(this),
+                    fail: this.handleFailure.bind(this),
+                },
+            ]);
+            alert("meemaaaw do")
         }.bind(this));
 
     }
