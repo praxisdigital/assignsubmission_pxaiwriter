@@ -10,7 +10,10 @@
                         <div class="mb-2">
                            <span> {{description}} </span>
                         </div>
-                        <textarea class="form-control pxaiwriter-student-data" data-input-step="{{step}}" name="pxaiwriter-data-step-{{step}}" placeholder="" style="width:100%" name="" id="" cols="40" rows="10">{{value}}</textarea>
+                        {{#isreadonly}}
+                            <input id="pxaiwriter-title" type="text" class="form-control pxaiwriter-student-data mb-1" data-input-step="{{step}}" data-step="1" placeholder="{{#str}} title_place_holder, assignsubmission_pxaiwriter{{/str}}">
+                        {{/isreadonly}}
+                        <textarea {{readonly}} class="form-control pxaiwriter-student-data" data-input-step="{{step}}" name="pxaiwriter-data-step-{{step}}" placeholder="" style="width:100%" name="" id="" cols="40" rows="10">{{value}}</textarea>
                     </div>
                     {{/steps_data}}
                 </div>
@@ -44,6 +47,33 @@
 
         </div>
 
+
+
+    <div class="modal fade" id="title-required-warning-modal" tabindex="-1" role="dialog" aria-labelledby="title-required-warning-modal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                {{#str}} title-required-warning, assignsubmission_pxaiwriter {{/str}}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">{{#str}} close_button_label, assignsubmission_pxaiwriter {{/str}}</button>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="text-selection-required-warning-modal" tabindex="-1" role="dialog" aria-labelledby="text-selection-required-warning-modal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                {{#str}} selection-required-warning, assignsubmission_pxaiwriter {{/str}}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">{{#str}} close_button_label, assignsubmission_pxaiwriter {{/str}}</button>
+            </div>
+        </div>
+        </div>
+    </div>
 
 
     </div>

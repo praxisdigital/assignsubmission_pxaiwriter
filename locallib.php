@@ -39,7 +39,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
         $stepList = array();
 
-        if ($aiwritersteps == null) {
+        if (!$aiwritersteps) {
             $description = get_string('first_step_description', 'assignsubmission_pxaiwriter');
 
             $step1 = new stdClass();
@@ -48,6 +48,8 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             $step1->mandatory = true;
             $step1->type = 'text';
             $step1->removable = false;
+            $step1->isreadonly = true;
+            $step1->readonly = 'readonly';
             $step1->custom_buttons = ['do_ai_magic', 'expand'];
             $step1->value = '';
 
@@ -58,6 +60,8 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             $step2->mandatory = true;
             $step2->type = 'text';
             $step2->removable = false;
+            $step2->isreadonly = false;
+            $step2->readonly = '';
             $step2->custom_buttons = [];
             $step2->value = '';
 
@@ -103,13 +107,15 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         $editoroptions = $this->get_edit_options();
         $submissionid = $submission ? $submission->id : 0;
 
-        $data = file_prepare_standard_filemanager($data,
-                                                  'setps_data_file',
-                                                  $editoroptions,
-                                                  $this->assignment->get_context(),
-                                                  'assignsubmission_pxaiwriter',
-                                                  ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
-                                                  $submissionid);
+        $data = file_prepare_standard_filemanager(
+            $data,
+            'setps_data_file',
+            $editoroptions,
+            $this->assignment->get_context(),
+            'assignsubmission_pxaiwriter',
+            ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
+            $submissionid
+        );
 
         // if (!isset($data->steps_data)) {
         //     $data->steps_data = '';
@@ -191,11 +197,11 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
         $editoroptions = $this->get_edit_options();
 
-        $mpdf = new \Mpdf\Mpdf(['tempDir'=>__DIR__.'/temp']);
+        $mpdf = new \Mpdf\Mpdf(['tempDir' => __DIR__ . '/temp']);
         $mpdf->WriteHTML('Hello World');
         // Other code
         //$mpdf->Output();
-        echo(var_dump($mpdf));
+        echo (var_dump($mpdf));
         $data->setps_data_file_filemanager = $mpdf;
 
         $data = file_postupdate_standard_editor(
@@ -335,7 +341,8 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
      * @param stdClass $submission The submission
      * @return boolean
      */
-    public function remove(stdClass $submission) {
+    public function remove(stdClass $submission)
+    {
         global $DB;
 
         $submissionid = $submission ? $submission->id : 0;

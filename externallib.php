@@ -29,6 +29,14 @@ class mod_assign_submission_pxaiwriter_external extends external_api
         $data = array();
         parse_str($serialiseddata, $data);
 
+
+
+
+        // CALL THE API!
+
+
+
+
         return json_encode(
             array(
                 'success' => true,
@@ -77,6 +85,10 @@ class mod_assign_submission_pxaiwriter_external extends external_api
 
         $data = array();
         parse_str($serialiseddata, $data);
+
+
+        // CALL THE API!
+
 
         return json_encode(
             array(
