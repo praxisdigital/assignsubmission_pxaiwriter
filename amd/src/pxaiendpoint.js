@@ -5,6 +5,9 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
         this.cmid = cmid;
         this.contextId = contextid;
         this.steps = steps_data;
+        this.currStep = 0;
+        this.selStart = 0;
+        this.selEnd = 0;
 
         this.init();
     }
@@ -18,7 +21,9 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
             txtarea = (txtarea && txtarea.length > 0) ? txtarea[0] : null;
             if (txtarea) {
                 var start = txtarea.selectionStart;
+                this.selStart = start;
                 var finish = txtarea.selectionEnd;
+                this.selEnd = finish;
                 selText = txtarea.value.substring(start, finish);
             } else {
                 console.log("pxaiwriter : no known text selecable source");
@@ -27,22 +32,11 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
 
         }.bind(this);
 
-
-        var getSelectedInput = function (textElement) {
-            if (typeof elem != "undefined") {
-                s = elem[0].selectionStart;
-                e = elem[0].selectionEnd;
-                return elem.val().substring(s, e);
-            }
-            else {
-                return '';
-            }
-        }.bind(this);
-
         $(".actions-container").on("click", '#pxaiwriter-expand-selection', function (e) {
 
             const currentStep = $(e.target).data("step");
-            stepData = this.steps.find(({ step }) => step == currentStep);
+            this.currStep = currentStep;
+            // let stepData = this.steps.find(({ step }) => step == currentStep);
             const textElement = $('textarea[name="pxaiwriter-data-step-' + currentStep + '"]');
             const selectedText = getSelectedTextareaText("pxaiwriter-data-step-" + currentStep);
 
@@ -51,17 +45,15 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
                 return;
             }
 
-            console.log(selectedText);
+            let formData = { 'text': selectedText };
 
-            let formData = new FormData();
-            formData.append('text', selectedText);
-
+            $(':button').prop('disabled', true);
             var promises = Ajax.call([
                 {
                     methodname: "mod_mod_assign_submission_pxaiwriter_expand",
                     args: { contextid: this.contextId, jsondata: JSON.stringify(formData) },
-                    done: this.handleResponse.bind(this),
-                    fail: this.handleFailure.bind(this),
+                    done: this.handleExpandResponse.bind(this),
+                    fail: this.handleExpandFailure.bind(this),
                 },
             ]);
 
@@ -70,24 +62,26 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
         $(".actions-container").on("click", '#pxaiwriter-do-ai-magic', function (e) {
 
             const currentStep = $(e.target).data("step");
-            stepData = this.steps.find(({ step }) => step == currentStep);
+            this.currStep = currentStep;
 
-            $titleText = $("#pxaiwriter-title").val();
+            // let stepData = this.steps.find(({ step }) => step == currentStep);
 
-            if (!$titleText) {
+            const titleText = $("#pxaiwriter-title").val();
+
+            if (!titleText) {
                 $('#title-required-warning-modal').modal('show');
                 return;
             }
 
-            let formData = new FormData();
-            formData.append('text', $titleText);
+            let formData = { 'text': titleText };
 
+            $(':button').prop('disabled', true);
             var promises = Ajax.call([
                 {
                     methodname: "mod_mod_assign_submission_pxaiwriter_doaimagic",
                     args: { contextid: this.contextId, jsondata: JSON.stringify(formData) },
-                    done: this.handleResponse.bind(this),
-                    fail: this.handleFailure.bind(this),
+                    done: this.handleAiMagicResponse.bind(this),
+                    fail: this.handleAiMagicFailure.bind(this),
                 },
             ]);
 
@@ -95,23 +89,55 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
 
     }
 
-    EventCreator.prototype.handleResponse = function (response) {
+    EventCreator.prototype.handleAiMagicResponse = function (response) {
+        $(':button').prop('disabled', false);
         responseObj = JSON.parse(response);
-        if (responseObj.success == false) {
-            let error = responseObj.message;
-            if (responseObj.errors && responseObj.errors.overlapping_events_error) {
-                error = responseObj.errors.overlapping_events_error;
-            }
-            $('#error-text').css('display', 'block');
-            $('#error-text').text(error);
-            $('[data-action="save"]').prop('disabled', false);
+        if (responseObj.success == true) {
+            var element = $('textarea[name="pxaiwriter-data-step-' + this.currStep + '"]').val(responseObj.data);
+            $('textarea[name="pxaiwriter-data-step-' + this.currStep + '"]').trigger("change");
+        } else {
+            alert("fail!")
         }
     }
 
-    EventCreator.prototype.handleFailure = function (data) {
-        $('#error-text').css('display', 'block');
-        $('#error-text').text("An error occurred during creating event");
-        $('[data-action="save"]').prop('disabled', false);
+    EventCreator.prototype.handleAiMagicFailure = function (data) {
+        $(':button').prop('disabled', false);
+        // $('#error-text').css('display', 'block');
+        // $('#error-text').text("An error occurred during creating event");
+        // $('[data-action="save"]').prop('disabled', false);
+    }
+
+
+
+
+    EventCreator.prototype.handleExpandResponse = function (response) {
+        $(':button').prop('disabled', false);
+        responseObj = JSON.parse(response);
+        if (responseObj.success == true) {
+
+            let expandedText = responseObj.data;
+            let elementText = $('textarea[name="pxaiwriter-data-step-' + this.currStep + '"]').val();
+
+            let finalText = elementText.substring(0, this.selStart) + expandedText + elementText.substring(this.selEnd);
+            var element = $('textarea[name="pxaiwriter-data-step-' + this.currStep + '"]').val(finalText);
+            $('textarea[name="pxaiwriter-data-step-' + this.currStep + '"]').trigger("change");
+            // let error = responseObj.message;
+            // if (responseObj.errors && responseObj.errors.overlapping_events_error) {
+            //     error = responseObj.errors.overlapping_events_error;
+            // }
+            // $('#error-text').css('display', 'block');
+            // $('#error-text').text(error);
+            // $('[data-action="save"]').prop('disabled', false);
+        } else {
+            alert("fail!")
+        }
+    }
+
+    EventCreator.prototype.handleExpandFailure = function (data) {
+        $(':button').prop('disabled', false);
+        // $('#error-text').css('display', 'block');
+        // $('#error-text').text("An error occurred during creating event");
+        // $('[data-action="save"]').prop('disabled', false);
     }
 
     return {

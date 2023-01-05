@@ -6,8 +6,27 @@ stepConfigForm.init = function (config, stepConfig) {
 
     // this.template = stepConfig.template;
     this.steps = stepConfig.steps;
+    this.backStepContent = "";
+
+
+    $(".actions-container").on("click", '#pxaiwriter-expand-selection', function (e) {
+        this.steps.forEach((element, index) => {
+            if (this.steps[index]['step'] != this.currentStep) {
+                this.steps[index]['value'] = "";
+            }
+        });
+    }.bind(this));
+
+    $(".actions-container").on("click", '#pxaiwriter-do-ai-magic', function (e) {
+        this.steps.forEach((element, index) => {
+            if (this.steps[index]['step'] != this.currentStep) {
+                this.steps[index]['value'] = "";
+            }
+        });
+    }.bind(this));
 
     $("#pxaiwriter-input-steps-component").on("click", '#go-back', function () {
+        let currentVal = $('[name="pxaiwriter-data-step-' + (this.currentStep - 1) + '"]').val();
         changeCurrentStep(-1);
         setElementsVisibility();
     }.bind(this));
