@@ -48,6 +48,8 @@ stepConfig.init = function (config, stepConfig) {
                 mandatory: true,
                 type: 'text',
                 removable: true,
+                readonly: '',
+                isreadonly: false,
                 custom_buttons: [],
                 value: ""
             };

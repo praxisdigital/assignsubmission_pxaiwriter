@@ -37,7 +37,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
         $stepList = array();
 
-        if ($aiwritersteps == null) {
+        if (!$aiwritersteps) {
             $description = get_string('first_step_description', 'assignsubmission_pxaiwriter');
 
             $step1 = new stdClass();
@@ -46,6 +46,8 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             $step1->mandatory = true;
             $step1->type = 'text';
             $step1->removable = false;
+            $step1->isreadonly = true;
+            $step1->readonly = 'readonly';
             $step1->custom_buttons = ['do_ai_magic', 'expand'];
             $step1->value = '';
 
@@ -56,6 +58,8 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             $step2->mandatory = true;
             $step2->type = 'text';
             $step2->removable = false;
+            $step2->isreadonly = false;
+            $step2->readonly = '';
             $step2->custom_buttons = [];
             $step2->value = '';
 
@@ -101,6 +105,29 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         $editoroptions = $this->get_edit_options();
         $submissionid = $submission ? $submission->id : 0;
 
+<<<<<<< HEAD
+=======
+        $data = file_prepare_standard_filemanager(
+            $data,
+            'setps_data_file',
+            $editoroptions,
+            $this->assignment->get_context(),
+            'assignsubmission_pxaiwriter',
+            ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
+            $submissionid
+        );
+
+        // if (!isset($data->steps_data)) {
+        //     $data->steps_data = '';
+        // }
+        // if (!isset($data->pxaiwriterformat)) {
+        //     $data->pxaiwriterformat = editors_get_preferred_format();
+        // }
+
+
+
+        // if ($submission) {
+>>>>>>> 94ff3c8d536f6727e8796a4920c0d5d55b57ff02
         $pxaiwritersubmission = $this->get_pxaiwriter_submission($submission->id);
         if ($pxaiwritersubmission) {
             $data->steps_data =  json_decode($pxaiwritersubmission->steps_data);
@@ -137,6 +164,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
         //$editoroptions = $this->get_edit_options();
 
+<<<<<<< HEAD
         $assignmentid = $this->get_assignment_id();
         $filename = $this->get_pdf_file_name($assignmentid, $USER->id);
 
@@ -169,6 +197,24 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         //     ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
         //     $submission->id
         // );
+=======
+        $mpdf = new \Mpdf\Mpdf(['tempDir' => __DIR__ . '/temp']);
+        $mpdf->WriteHTML('Hello World');
+        // Other code
+        //$mpdf->Output();
+        echo (var_dump($mpdf));
+        $data->setps_data_file_filemanager = $mpdf;
+
+        $data = file_postupdate_standard_editor(
+            $data,
+            'setps_data_file',
+            $editoroptions,
+            $this->assignment->get_context(),
+            'assignsubmission_pxaiwriter',
+            ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
+            $submission->id
+        );
+>>>>>>> 94ff3c8d536f6727e8796a4920c0d5d55b57ff02
 
         //echo(var_dump($data));
 
@@ -322,7 +368,8 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
      * @param stdClass $submission The submission
      * @return boolean
      */
-    public function remove(stdClass $submission) {
+    public function remove(stdClass $submission)
+    {
         global $DB;
 
         $submissionid = $submission ? $submission->id : 0;
@@ -584,30 +631,5 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     //     return true;
     // }
 
-    function sendCurlRequest($endpoint, $data = [], $method = "GET", $headerConfig = array('Content-Type: application/json', 'Accept: application/json'))
-    {
 
-        try {
-
-            $postdata = json_encode($data);
-
-            $url = $endpoint;
-            $ch = curl_init($url);
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headerConfig);
-            $result = curl_exec($ch);
-
-            if ($result === false) {
-                echo 'Curl error: ' . curl_error($ch);
-            }
-
-            curl_close($ch);
-            return $result;
-        } catch (Exception $ex) {
-            return $ex->getMessage();
-        }
-    }
 }

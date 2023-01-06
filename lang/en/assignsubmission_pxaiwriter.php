@@ -28,10 +28,7 @@ $string['second_step_description'] = "In this step you can format the text and a
 $string['steps_change_warning'] = "These steps are already used in assignment submission. Your changes will be applied to the future submissions of same assignment. Do you want to continue?";
 $string['ok_button_label'] = "OK";
 $string['cancel_button_label'] = "Cancel";
-// $string['maximumsubmissionsize'] = "";
-// $string['maximumsubmissionsize'] = "";
-// $string['maximumsubmissionsize'] = "";
-// $string['maximumsubmissionsize'] = "";
+$string['close_button_label'] = "Close";
 $string['open_ai_request_settings'] = "Open API request settings";
 $string['open_ai_request_settings_description'] = "";
 
@@ -72,5 +69,10 @@ $string['last_modified_description'] = "";
 $string['steps_title'] = "Step";
 $string['previous'] = "Previous";
 $string['next'] = "Next";
-$string['expand_selection'] = "Expant selection";
+$string['expand_selection'] = "Expand selection";
 $string['do_ai_magic'] = "Do AI magic";
+
+$string['title_place_holder'] = "Type your title here";
+$string['title-required-warning'] = "Title is a mandatory field for this action. Please insert an appropriate title to proceed.";
+
+$string['selection-required-warning'] = "Please select a valid phrase or text with in the text container to proceed with this action.";
