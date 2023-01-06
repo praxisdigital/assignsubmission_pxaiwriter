@@ -105,8 +105,6 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         $editoroptions = $this->get_edit_options();
         $submissionid = $submission ? $submission->id : 0;
 
-<<<<<<< HEAD
-=======
         $data = file_prepare_standard_filemanager(
             $data,
             'setps_data_file',
@@ -127,7 +125,6 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
 
         // if ($submission) {
->>>>>>> 94ff3c8d536f6727e8796a4920c0d5d55b57ff02
         $pxaiwritersubmission = $this->get_pxaiwriter_submission($submission->id);
         if ($pxaiwritersubmission) {
             $data->steps_data =  json_decode($pxaiwritersubmission->steps_data);
@@ -164,7 +161,6 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
         //$editoroptions = $this->get_edit_options();
 
-<<<<<<< HEAD
         $assignmentid = $this->get_assignment_id();
         $filename = $this->get_pdf_file_name($assignmentid, $USER->id);
 
@@ -197,24 +193,6 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         //     ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
         //     $submission->id
         // );
-=======
-        $mpdf = new \Mpdf\Mpdf(['tempDir' => __DIR__ . '/temp']);
-        $mpdf->WriteHTML('Hello World');
-        // Other code
-        //$mpdf->Output();
-        echo (var_dump($mpdf));
-        $data->setps_data_file_filemanager = $mpdf;
-
-        $data = file_postupdate_standard_editor(
-            $data,
-            'setps_data_file',
-            $editoroptions,
-            $this->assignment->get_context(),
-            'assignsubmission_pxaiwriter',
-            ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
-            $submission->id
-        );
->>>>>>> 94ff3c8d536f6727e8796a4920c0d5d55b57ff02
 
         //echo(var_dump($data));
 
