@@ -168,7 +168,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         $diff = new FineDiff\Diff();
         echo $diff->render('string one', 'string two');*/
 
-        require_once ($CFG->libdir . '/tcpdf/tcpdf.php');
+        require_once($CFG->libdir . '/tcpdf/tcpdf.php');
 
         $pdf = new TCPDF();
         $pdf->AddPage();
@@ -181,7 +181,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         EOD;
 
         $pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
-        $file = $pdf->Output($filename,'S');
+        $file = $pdf->Output($filename, 'S');
         //echo(var_dump($fileC));
 
         // $data = file_postupdate_standard_editor(
@@ -220,10 +220,11 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             'userid' => $submission->userid,
             'author' => $USER->name,
             'source' => $filename,
-            'filename' => $filename); // any filename
+            'filename' => $filename
+        ); // any filename
 
         $fs->create_file_from_string($fileinfo, $file);
-        
+
         $files = $fs->get_area_files(
             $this->assignment->get_context()->id,
             'assignsubmission_pxaiwriter',
@@ -232,7 +233,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             'id',
             false
         );
-        
+
         // foreach($files as $fs) {
         //     $contents = $fs->get_content();
         //     echo(var_dump($contents));
@@ -302,7 +303,8 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         }
     }
 
-    private function get_pdf_file_name(int $assignmentid, int $userid) {
+    private function get_pdf_file_name(int $assignmentid, int $userid)
+    {
         return $assignmentid . "_" . $userid . "_" . strtotime("now") . ".pdf";
     }
 
@@ -358,25 +360,28 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     }
 
 
-    public function get_files(stdClass $submission, stdClass $user) {
+    public function get_files(stdClass $submission, stdClass $user)
+    {
         $result = array();
         $fs = get_file_storage();
 
-        $files = $fs->get_area_files($this->assignment->get_context()->id,
-                                     'assignsubmission_pxaiwriter',
-                                     ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
-                                     $submission->id,
-                                     'timemodified',
-                                     false);
-        echo("here");
-        echo(var_dump($files));
+        $files = $fs->get_area_files(
+            $this->assignment->get_context()->id,
+            'assignsubmission_pxaiwriter',
+            ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
+            $submission->id,
+            'timemodified',
+            false
+        );
+        // echo("here");
+        // echo(var_dump($files));
 
         foreach ($files as $file) {
             // Do we return the full folder path or just the file name?
             if (isset($submission->exportfullpath) && $submission->exportfullpath == false) {
                 $result[$file->get_filename()] = $file;
             } else {
-                $result[$file->get_filepath().$file->get_filename()] = $file;
+                $result[$file->get_filepath() . $file->get_filename()] = $file;
             }
         }
         return $result;
@@ -398,9 +403,11 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     {
         global $CFG;
         $result = '';
-        return $this->assignment->render_area_files('assignsubmission_pxaiwriter',
-                                       ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
-                                                   $submission->id);
+        return $this->assignment->render_area_files(
+            'assignsubmission_pxaiwriter',
+            ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
+            $submission->id
+        );
 
         // $subm = $this->get_pxaiwriter_submission($submission->id);
         // if ($subm) {
@@ -590,24 +597,22 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     //     return true;
     // }
 
-    // public function format_for_log(stdClass $submission)
-    // {
-    //     // format the info for each submission plugin add_to_log                                                                    
-    //     $filecount = $this->count_files($submission->id, ASSIGNSUBMISSION_FILE_FILEAREA);
-    //     $fileloginfo = '';
-    //     $fileloginfo .= ' the number of file(s) : ' . $filecount . " file(s).<br>";
+    public function format_for_log(stdClass $submission)
+    {
+        // format the info for each submission plugin add_to_log                                                                    
 
-    //     return $fileloginfo;
-    // }
+        $fileloginfo = '';
+        $fileloginfo .= 'PXAIWriter submission.<br>';
 
-    // public function delete_instance()
-    // {
-    //     global $DB;
-    //     // will throw exception on failure                                                                                          
-    //     $DB->delete_records('assignsubmission_pxaiwriter', array('assignment' => $this->assignment->get_instance()->id));
+        return $fileloginfo;
+    }
 
-    //     return true;
-    // }
+    public function delete_instance()
+    {
+        global $DB;
+        // will throw exception on failure                                                                                          
+        $DB->delete_records('assignsubmission_pxaiwriter', array('assignment' => $this->assignment->get_instance()->id));
 
-
+        return true;
+    }
 }
