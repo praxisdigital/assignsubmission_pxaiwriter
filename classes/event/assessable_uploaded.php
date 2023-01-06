@@ -43,6 +43,13 @@ defined('MOODLE_INTERNAL') || die();
 class assessable_uploaded extends \core\event\assessable_uploaded {
 
     /**
+     * Legacy event files.
+     *
+     * @var array
+     */
+    protected $legacyfiles = array();
+    
+    /**
      * Returns description of what happened.
      *
      * @return string
@@ -64,10 +71,11 @@ class assessable_uploaded extends \core\event\assessable_uploaded {
         $eventdata->itemid = $this->objectid;
         $eventdata->courseid = $this->courseid;
         $eventdata->userid = $this->userid;
-        $eventdata->content = $this->other['content'];
-        if ($this->other['pathnamehashes']) {
-            $eventdata->pathnamehashes = $this->other['pathnamehashes'];
+        if (count($this->legacyfiles) > 1) {
+            $eventdata->files = $this->legacyfiles;
         }
+        $eventdata->file = $this->legacyfiles;
+        $eventdata->pathnamehashes = array_keys($this->legacyfiles);
         return $eventdata;
     }
 
@@ -77,7 +85,7 @@ class assessable_uploaded extends \core\event\assessable_uploaded {
      * @return string
      */
     public static function get_legacy_eventname() {
-        return 'assessable_content_uploaded';
+        return 'assessable_file_uploaded';
     }
 
     /**
@@ -87,6 +95,10 @@ class assessable_uploaded extends \core\event\assessable_uploaded {
      */
     public static function get_name() {
         return get_string('eventassessableuploaded', 'assignsubmission_pxaiwriter');
+    }
+
+    public function set_legacy_files($legacyfiles) {
+        $this->legacyfiles = $legacyfiles;
     }
 
     /**

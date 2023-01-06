@@ -21,9 +21,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     {
         global $DB;
 
-        $xxxx = $DB->get_record('assignsubmission_pxaiwriter', array('submission' => $submissionid));
-        //echo(var_dump($xxxx->step_data));
-        return $xxxx;
+        return $DB->get_record('assignsubmission_pxaiwriter', array('submission' => $submissionid));
     }
 
     public function get_name()
@@ -103,24 +101,6 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         $editoroptions = $this->get_edit_options();
         $submissionid = $submission ? $submission->id : 0;
 
-        $data = file_prepare_standard_filemanager($data,
-                                                  'setps_data_file',
-                                                  $editoroptions,
-                                                  $this->assignment->get_context(),
-                                                  'assignsubmission_pxaiwriter',
-                                                  ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
-                                                  $submissionid);
-
-        // if (!isset($data->steps_data)) {
-        //     $data->steps_data = '';
-        // }
-        // if (!isset($data->pxaiwriterformat)) {
-        //     $data->pxaiwriterformat = editors_get_preferred_format();
-        // }
-
-
-
-        // if ($submission) {
         $pxaiwritersubmission = $this->get_pxaiwriter_submission($submission->id);
         if ($pxaiwritersubmission) {
             $data->steps_data =  json_decode($pxaiwritersubmission->steps_data);
@@ -128,54 +108,20 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         } else {
             $data->steps_data = json_decode($this->get_config('pxaiwritersteps'));
         }
-        // }
-
-        // $data = file_prepare_standard_editor(
-        //     $data,
-        //     'steps_data',
-        //     $editoroptions,
-        //     $this->assignment->get_context(),
-        //     'assignsubmission_pxaiwriter',
-        //     ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
-        //     $submissionid
-        // );
-
-        // echo("here the elements are adding to the form");
-        // $mform->addElement('editor', 'pxaiwriter_editor', $this->get_name(), null, $editoroptions);
-
-        // $data->steps_data = [
-        //     array(
-        //         "step" => 1,
-        //         "description" =>  "the description 1 for this!",
-        //         "mandatory" => "",
-        //         'type' =>  "",
-        //         "removable" =>  false,
-        //         "custom_buttons" =>  ['do_ai_magic', 'expand'],
-        //         "value" => "",
-        //     ),
-        //     array(
-        //         "step" => 2,
-        //         "description" =>  "the description 2 for this!",
-        //         "mandatory" =>  "",
-        //         'type' =>  "",
-        //         "removable" =>  false,
-        //         "value" => "",
-        //     ),
-        //     array(
-        //         "step" =>  3,
-        //         "description" =>  "the description 3 for this!",
-        //         "mandatory" =>  "",
-        //         'type' =>  "",
-        //         "removable" =>  true,
-        //         "value" => "",
-        //     ),
-        // ];
 
         MoodleQuickForm::registerElementType(
             'pxaiwriter_steps_section',
             "$CFG->dirroot/mod/assign/submission/pxaiwriter/classes/pxaiwriter_steps_student_form_element.php",
             'pxaiwriter_steps_student_form_element'
         );
+
+        // $data = file_prepare_standard_filemanager($data,
+        //     'steps_data_file',
+        //     $editoroptions,
+        //     $this->assignment->get_context(),
+        //     'assignsubmission_pxaiwriter',
+        //     ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
+        //     $submission->id);
 
         $mform->addElement('pxaiwriter_steps_section', 'assignsubmission_pxaiwriter_steps_config', null, null, $data);
 
@@ -187,26 +133,42 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
     public function save(stdClass $submission, stdClass $data)
     {
-        global $USER, $DB;
+        global $USER, $DB, $CFG;
 
-        $editoroptions = $this->get_edit_options();
+        //$editoroptions = $this->get_edit_options();
 
-        $mpdf = new \Mpdf\Mpdf(['tempDir'=>__DIR__.'/temp']);
-        $mpdf->WriteHTML('Hello World');
-        // Other code
-        //$mpdf->Output();
-        echo(var_dump($mpdf));
-        $data->setps_data_file_filemanager = $mpdf;
+        $assignmentid = $this->get_assignment_id();
+        $filename = $this->get_pdf_file_name($assignmentid, $USER->id);
 
-        $data = file_postupdate_standard_editor(
-            $data,
-            'setps_data_file',
-            $editoroptions,
-            $this->assignment->get_context(),
-            'assignsubmission_pxaiwriter',
-            ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
-            $submission->id
-        );
+        /*require_once ('/php-finediff/src/Diff.php');
+        $diff = new FineDiff\Diff();
+        echo $diff->render('string one', 'string two');*/
+
+        require_once ($CFG->libdir . '/tcpdf/tcpdf.php');
+
+        $pdf = new TCPDF();
+        $pdf->AddPage();
+        $html = <<<EOD
+        <h1>Welcome 12345678901 to <a href="http://www.tcpdf.org" style="text-decoration:none;background-color:#CC0000;color:black;">&nbsp;<span style="color:black;">TC</span><span style="color:white;">PDF</span>&nbsp;</a>!</h1>
+        <i>This is the first example of TCPDF library.</i>
+        <p>This text is printed using the <i>writeHTMLCell()</i> method but you can also use: <i>Multicell(), writeHTML(), Write(), Cell() and Text()</i>.</p>
+        <p>Please check the source code documentation and other examples for further information.</p>
+        <p style="color:#CC0000;">TO IMPROVE AND EXPAND TCPDF I NEED YOUR SUPPORT, PLEASE <a href="http://sourceforge.net/donate/index.php?group_id=128076">MAKE A DONATION!</a></p>
+        EOD;
+
+        $pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
+        $file = $pdf->Output($filename,'S');
+        //echo(var_dump($fileC));
+
+        // $data = file_postupdate_standard_editor(
+        //     $data,
+        //     'steps_data_file',
+        //     $editoroptions,
+        //     $this->assignment->get_context(),
+        //     'assignsubmission_pxaiwriter',
+        //     ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
+        //     $submission->id
+        // );
 
         //echo(var_dump($data));
 
@@ -223,11 +185,33 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             false
         );
 
-        // Check word count before submitting anything.
-        // $exceeded = $this->check_word_count(trim($data->pxaiwriter));
-        // if ($exceeded) {
-        //     $this->set_error($exceeded);
-        //     return false;
+
+        // Prepare file record object
+        $fileinfo = array(
+            'contextid' => $this->assignment->get_context()->id, // ID of context
+            'component' => 'assignsubmission_pxaiwriter',     // usually = table name
+            'filearea' => ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,     // usually = table name
+            'itemid' => $submission->id,               // usually = ID of row in table
+            'filepath' => '/',           // any path beginning and ending in /
+            'userid' => $submission->userid,
+            'author' => $USER->name,
+            'source' => $filename,
+            'filename' => $filename); // any filename
+
+        $fs->create_file_from_string($fileinfo, $file);
+        
+        $files = $fs->get_area_files(
+            $this->assignment->get_context()->id,
+            'assignsubmission_pxaiwriter',
+            ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
+            $submission->id,
+            'id',
+            false
+        );
+        
+        // foreach($files as $fs) {
+        //     $contents = $fs->get_content();
+        //     echo(var_dump($contents));
         // }
 
         $params = array(
@@ -236,7 +220,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             'objectid' => $submission->id,
             'other' => array(
                 'pathnamehashes' => array_keys($files),
-                'content' => trim($data->steps_data),
+                'content' => '',
                 //'format' => $data->pxaiwriter_editor['format']
             )
         );
@@ -247,6 +231,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             $params['anonymous'] = 1;
         }
         $event = \assignsubmission_pxaiwriter\event\assessable_uploaded::create($params);
+        $event->set_legacy_files($files);
         $event->trigger();
 
         $groupname = null;
@@ -258,8 +243,6 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         } else {
             $params['relateduserid'] = $submission->userid;
         }
-
-        // $count = count_words($data->onlinetext);
 
         // Unset the objectid and other field from params for use in submission events.
         unset($params['objectid']);
@@ -293,6 +276,10 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             $event->trigger();
             return $pxaiwritersubmission->id > 0;
         }
+    }
+
+    private function get_pdf_file_name(int $assignmentid, int $userid) {
+        return $assignmentid . "_" . $userid . "_" . strtotime("now") . ".pdf";
     }
 
     private function get_edit_options()
@@ -346,22 +333,26 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     }
 
 
-    public function get_files($submission, $class)
-    {
+    public function get_files(stdClass $submission, stdClass $user) {
         $result = array();
         $fs = get_file_storage();
 
-        $files = $fs->get_area_files(
-            $this->assignment->get_context()->id,
-            'assignsubmission_pxaiwriter',
-            ASSIGNSUBMISSION_FILE_FILEAREA,
-            $submission->id,
-            'timemodified',
-            false
-        );
+        $files = $fs->get_area_files($this->assignment->get_context()->id,
+                                     'assignsubmission_pxaiwriter',
+                                     ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
+                                     $submission->id,
+                                     'timemodified',
+                                     false);
+        echo("here");
+        echo(var_dump($files));
 
         foreach ($files as $file) {
-            $result[$file->get_filename()] = $file;
+            // Do we return the full folder path or just the file name?
+            if (isset($submission->exportfullpath) && $submission->exportfullpath == false) {
+                $result[$file->get_filename()] = $file;
+            } else {
+                $result[$file->get_filepath().$file->get_filename()] = $file;
+            }
         }
         return $result;
     }
@@ -372,7 +363,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         //echo(var_dump($subm));
         if ($subm) {
             $showviewlink = true;
-            return $submission->id;
+            return "View Submission";
         } else {
             return "N/A";
         }
@@ -382,15 +373,18 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     {
         global $CFG;
         $result = '';
+        return $this->assignment->render_area_files('assignsubmission_pxaiwriter',
+                                       ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
+                                                   $submission->id);
 
-        $subm = $this->get_pxaiwriter_submission($submission->id);
-        if ($subm) {
-            $plagiarismlinks = $subm->steps_data;
-            //$plagiarismlinks = $plagiarismlinks .' '. $subm->assignment;
-            //$plagiarismlinks = $plagiarismlinks .' '. $subm->steps_data;
-        } else {
-            $plagiarismlinks = 5555;
-        }
+        // $subm = $this->get_pxaiwriter_submission($submission->id);
+        // if ($subm) {
+        //     $plagiarismlinks = $subm->steps_data;
+        //     //$plagiarismlinks = $plagiarismlinks .' '. $subm->assignment;
+        //     //$plagiarismlinks = $plagiarismlinks .' '. $subm->steps_data;
+        // } else {
+        //     $plagiarismlinks = 5555;
+        // }
 
 
         //$pxaiwritersubmission = $this->get_pxaiwriter_submission($submission->id);
@@ -415,7 +409,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         //     // }
         // }
 
-        return $plagiarismlinks . $result;
+        //return $plagiarismlinks . $result;
     }
 
     // public function can_upgrade($type, $version)
@@ -537,10 +531,10 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         return false;
     }
 
-    // public function get_file_areas()
-    // {
-    //     return array(ASSIGNSUBMISSION_FILE_FILEAREA => $this->get_name());
-    // }
+    public function get_file_areas()
+    {
+        return array(ASSIGNSUBMISSION_PXAIWRITER_FILEAREA => $this->get_name());
+    }
 
     // public function copy_submission(stdClass $sourcesubmission, stdClass $destsubmission)
     // {
