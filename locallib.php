@@ -35,6 +35,10 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
         $aiwritersteps = $this->get_config('pxaiwritersteps');
 
+
+        echo $this->getDiffRenderedHtml("Hello There! I am doing really good!", "Hello friend! I am doig very sad!");
+
+
         $stepList = array();
 
         if (!$aiwritersteps) {
@@ -159,14 +163,16 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     {
         global $USER, $DB, $CFG;
 
+
+
         //$editoroptions = $this->get_edit_options();
 
         $assignmentid = $this->get_assignment_id();
         $filename = $this->get_pdf_file_name($assignmentid, $USER->id);
 
-        /*require_once ('/php-finediff/src/Diff.php');
-        $diff = new FineDiff\Diff();
-        echo $diff->render('string one', 'string two');*/
+        /*require_once ('/php-finediff/src/Diff.php');*/
+        // $diff = new FineDiff\Diff();
+        // echo $diff->render('string one', 'string two');
 
         require_once($CFG->libdir . '/tcpdf/tcpdf.php');
 
@@ -614,5 +620,53 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         $DB->delete_records('assignsubmission_pxaiwriter', array('assignment' => $this->assignment->get_instance()->id));
 
         return true;
+    }
+
+    /**
+     * Summary : Creates the comparrison view of two string in HTML
+     *
+     * @param [type] $textOne
+     * @param [type] $textTwo
+     * @param [type] $granularity
+     * @param string $delReplaceTag
+     * @return void
+     */
+    public function getDiffRenderedHtml($textOne, $textTwo, $granularity = "word", $delReplaceTag = '<del style="color:red;background:#fdd;text-decoration:line-through;">', $insReplaceTag = '<ins style="color:green;background:#dfd;text-decoration:none;">')
+    {
+        global $CFG;
+        require_once("$CFG->dirroot/mod/assign/submission/pxaiwriter/vendor/autoload.php");
+
+        $grOption = null;
+        switch ($granularity) {
+            case "word":
+                $grOption = new FineDiff\Granularity\Word();
+                break;
+            case "sentence":
+                $grOption = new FineDiff\Granularity\Sentence();
+                break;
+            case "paragraph":
+                $grOption = new FineDiff\Granularity\Paragraph();
+                break;
+            default:
+                $grOption = new FineDiff\Granularity\Character();
+                break;
+        }
+
+        $diff = new FineDiff\Diff();
+        $diff->setGranularity($grOption);
+
+        $optionCode =  $diff->getOperationCodes($textOne, $textTwo);
+        $renderer = new FineDiff\Render\Html();
+        $result = $renderer->process($textOne, $optionCode);
+
+        if ($delReplaceTag) {
+            $result = str_replace("<del>", $delReplaceTag, $result);
+        }
+
+        if ($insReplaceTag) {
+            $result = str_replace("<ins>", $insReplaceTag, $result);
+        }
+
+        return $result;
     }
 }
