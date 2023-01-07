@@ -579,7 +579,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
      * @param string $delReplaceTag
      * @return void
      */
-    public function getDiffRenderedHtml($textOne, $textTwo, $granularity = "word", $delReplaceTag = '<span style="color:red;background-color:#ffdddd;text-decoration:line-through;">', $insReplaceTag = '<span style="color:green;background-color:#ddffdd;text-decoration:none;">')
+    public function getDiffRenderedHtml($textOne, $textTwo, $granularity = "word", $delReplaceTag = '<del style="color:red;background-color:#ffdddd;text-decoration:line-through;">', $insReplaceTag = '<ins style="color:green;background-color:#ddffdd;text-decoration:none;">')
     {
         global $CFG;
         require_once("$CFG->dirroot/mod/assign/submission/pxaiwriter/vendor/autoload.php");
@@ -609,12 +609,10 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
         if ($delReplaceTag) {
             $result = str_replace("<del>", $delReplaceTag, $result);
-            $result = str_replace("</del>", "</span>", $result);
         }
 
         if ($insReplaceTag) {
             $result = str_replace("<ins>", $insReplaceTag, $result);
-            $result = str_replace("</ins>", "</span>", $result);
         }
 
         return $result;
