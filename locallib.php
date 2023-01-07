@@ -115,20 +115,9 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             $submissionid
         );
 
-        // if (!isset($data->steps_data)) {
-        //     $data->steps_data = '';
-        // }
-        // if (!isset($data->pxaiwriterformat)) {
-        //     $data->pxaiwriterformat = editors_get_preferred_format();
-        // }
-
-
-
-        // if ($submission) {
         $pxaiwritersubmission = $this->get_pxaiwriter_submission($submission->id);
         if ($pxaiwritersubmission) {
             $data->steps_data =  json_decode($pxaiwritersubmission->steps_data);
-            //$data->pxaiwriterformat = $pxaiwritersubmission->pxaiwriterformat;
         } else {
             $data->steps_data = json_decode($this->get_config('pxaiwritersteps'));
         }
@@ -138,14 +127,6 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             "$CFG->dirroot/mod/assign/submission/pxaiwriter/classes/pxaiwriter_steps_student_form_element.php",
             'pxaiwriter_steps_student_form_element'
         );
-
-        // $data = file_prepare_standard_filemanager($data,
-        //     'steps_data_file',
-        //     $editoroptions,
-        //     $this->assignment->get_context(),
-        //     'assignsubmission_pxaiwriter',
-        //     ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
-        //     $submission->id);
 
         $mform->addElement('pxaiwriter_steps_section', 'assignsubmission_pxaiwriter_steps_config', null, null, $data);
 
@@ -159,48 +140,37 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     {
         global $USER, $DB, $CFG;
 
+        $pxaiwritersubmission = $this->get_pxaiwriter_submission($submission->id);
 
-
-        //$editoroptions = $this->get_edit_options();
+        // delete existing file when updating a submission
+        if ($pxaiwritersubmission) {
+            $this->delete_pdf_file($submission->id);
+        }
 
         $assignmentid = $this->get_assignment_id();
         $filename = $this->get_pdf_file_name($assignmentid, $USER->id);
 
-        /*require_once ('/php-finediff/src/Diff.php');*/
-        // $diff = new FineDiff\Diff();
-        // echo $diff->render('string one', 'string two');
+        $steps_data_string = $data->assignsubmission_pxaiwriter_student_data;
+        $steps_data = json_decode($steps_data_string);
+        $steps_data_count = count($steps_data);
+        $initvalue = $steps_data[0]->value;
+        $finalvalue = $steps_data[$steps_data_count-1]->value;
+
+        $diffhtmlcontent = $this->getDiffRenderedHtml($initvalue, $finalvalue);
 
         require_once($CFG->libdir . '/tcpdf/tcpdf.php');
 
         $pdf = new TCPDF();
         $pdf->AddPage();
-        $html = '<h1>Welcome 12345678901 to <a href="http://www.tcpdf.org" style="text-decoration:none;background-color:#CC0000;color:black;">&nbsp;<span style="color:black;">TC</span><span style="color:white;">PDF</span>&nbsp;</a>!</h1>
-        <i>This is the first example of TCPDF library.</i>
-        <p>This text is printed using the <i>writeHTMLCell()</i> method but you can also use: <i>Multicell(), writeHTML(), Write(), Cell() and Text()</i>.</p>
-        <p>Please check the source code documentation and other examples for further information.</p>
-        <p style="color:#CC0000;">TO IMPROVE AND EXPAND TCPDF I NEED YOUR SUPPORT, PLEASE <a href="http://sourceforge.net/donate/index.php?group_id=128076">MAKE A DONATION!</a></p>';
+        // $html = '<h1>Welcome 12345678901 to <a href="http://www.tcpdf.org" style="text-decoration:none;background-color:#ddffdd;color:green;">&nbsp;<span style="color:yellow;">TC</span><span style="color:white;">PDF</span>&nbsp;</a>!</h1>
+        // <i>This is the first example of TCPDF library.</i>
+        // <p>This text is printed using the <i>writeHTMLCell()</i> method but you can also use: <i>Multicell(), writeHTML(), Write(), Cell() and Text()</i>.</p>';
 
-        // $pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
-        $pdf->writeHTML($html, true, false, true, false, '');
+        $pdf->writeHTML($diffhtmlcontent, false, false, true, false, '');
 
         $pdf->lastPage();
 
         $file = $pdf->Output($filename, 'S');
-        //echo(var_dump($fileC));
-
-        // $data = file_postupdate_standard_editor(
-        //     $data,
-        //     'steps_data_file',
-        //     $editoroptions,
-        //     $this->assignment->get_context(),
-        //     'assignsubmission_pxaiwriter',
-        //     ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
-        //     $submission->id
-        // );
-
-        //echo(var_dump($data));
-
-        $pxaiwritersubmission = $this->get_pxaiwriter_submission($submission->id);
 
         $fs = get_file_storage();
 
@@ -222,10 +192,10 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             'itemid' => $submission->id,               // usually = ID of row in table
             'filepath' => '/',           // any path beginning and ending in /
             'userid' => $submission->userid,
-            'author' => $USER->name,
+            //'author' => $USER->name,
             'source' => $filename,
             'filename' => $filename
-        ); // any filename
+        );
 
         $fs->create_file_from_string($fileinfo, $file);
 
@@ -237,11 +207,6 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             'id',
             false
         );
-
-        // foreach($files as $fs) {
-        //     $contents = $fs->get_content();
-        //     echo(var_dump($contents));
-        // }
 
         $params = array(
             'context' => context_module::instance($this->assignment->get_course_module()->id),
@@ -285,7 +250,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             'groupname' => $groupname
         );
 
-        if ($pxaiwritersubmission) {
+        if ($pxaiwritersubmission) { //when editing a submission
             $pxaiwritersubmission->steps_data = $data->assignsubmission_pxaiwriter_student_data;
             $params['objectid'] = $pxaiwritersubmission->id;
             $updatestatus = $DB->update_record('assignsubmission_pxaiwriter', $pxaiwritersubmission);
@@ -293,7 +258,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             $event->set_assign($this->assignment);
             $event->trigger();
             return $updatestatus;
-        } else {
+        } else { // when it is new submission
             $pxaiwritersubmission = new stdClass();
             $pxaiwritersubmission->steps_data = $data->assignsubmission_pxaiwriter_student_data;
             $pxaiwritersubmission->submission = $submission->id;
@@ -325,23 +290,24 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         return $editoroptions;
     }
 
+    private function delete_pdf_file($submissionid) {
+        $fs = get_file_storage();
+        $existingfiles = $fs->get_area_files(
+            $this->assignment->get_context()->id,
+            'assignsubmission_pxaiwriter',
+            ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
+            $submissionid
+        );
+
+        foreach($existingfiles as $ef) {
+            if ($ef) {
+                $ef->delete();
+            }
+        }
+    }
+
     public function submission_is_empty(stdClass $data)
     {
-        // if (!isset($data->onlinetext_editor)) {
-        //     return true;
-        // }
-        // $wordcount = 0;
-        // $hasinsertedresources = false;
-
-        // if (isset($data->onlinetext_editor['text'])) {
-        //     $wordcount = count_words(trim((string)$data->onlinetext_editor['text']));
-        //     // Check if the online text submission contains video, audio or image elements
-        //     // that can be ignored and stripped by count_words().
-        //     $hasinsertedresources = preg_match('/<\s*((video|audio)[^>]*>(.*?)<\s*\/\s*(video|audio)>)|(img[^>]*>(.*?))/',
-        //             trim((string)$data->onlinetext_editor['text']));
-        // }
-
-        // return $wordcount == 0 && !$hasinsertedresources;
         return false;
     }
 
@@ -358,7 +324,10 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
         $submissionid = $submission ? $submission->id : 0;
         if ($submissionid) {
-            $DB->delete_records('assignsubmission_pxaiwriter', array('submission' => $submissionid));
+            $reponse = $DB->delete_records('assignsubmission_pxaiwriter', array('submission' => $submissionid));
+            if($reponse) {
+                $this->delete_pdf_file($submissionid);
+            }
         }
         return true;
     }
@@ -377,8 +346,6 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             'timemodified',
             false
         );
-        // echo("here");
-        // echo(var_dump($files));
 
         foreach ($files as $file) {
             // Do we return the full folder path or just the file name?
@@ -394,7 +361,6 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     public function view_summary(stdClass $submission, &$showviewlink)
     {
         $subm = $this->get_pxaiwriter_submission($submission->id);
-        //echo(var_dump($subm));
         if ($subm) {
             $showviewlink = true;
             return "View Submission";
@@ -405,47 +371,17 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
     public function view(stdClass $submission)
     {
-        global $CFG;
         $result = '';
-        return $this->assignment->render_area_files(
-            'assignsubmission_pxaiwriter',
-            ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
-            $submission->id
-        );
 
-        // $subm = $this->get_pxaiwriter_submission($submission->id);
-        // if ($subm) {
-        //     $plagiarismlinks = $subm->steps_data;
-        //     //$plagiarismlinks = $plagiarismlinks .' '. $subm->assignment;
-        //     //$plagiarismlinks = $plagiarismlinks .' '. $subm->steps_data;
-        // } else {
-        //     $plagiarismlinks = 5555;
-        // }
+        $subm = $this->get_pxaiwriter_submission($submission->id);
+        if ($subm) {
+            $steps_data = json_decode($subm->steps_data);
+            $steps_data_count = count($steps_data);
+            $finalvalue = $steps_data[$steps_data_count-1]->value;
+            $result = $finalvalue;
+        }
 
-
-        //$pxaiwritersubmission = $this->get_pxaiwriter_submission($submission->id);
-
-        // if ($pxaiwritersubmission) {
-
-        //     // Render for portfolio API.
-        //     $result .= $this->assignment->render_editor_content(ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
-        //                                                         $pxaiwritersubmission->submission,
-        //                                                         $this->get_type(),
-        //                                                         'steps_data',
-        //                                                         'assignsubmission_pxaiwriter');
-
-        //     // if (!empty($CFG->enableplagiarism)) {
-        //     //     require_once($CFG->libdir . '/plagiarismlib.php');
-
-        //     //     $plagiarismlinks .= plagiarism_get_links(array('userid' => $submission->userid,
-        //     //         'content' => trim($onlinetextsubmission->onlinetext),
-        //     //         'cmid' => $this->assignment->get_course_module()->id,
-        //     //         'course' => $this->assignment->get_course()->id,
-        //     //         'assignment' => $submission->assignment));
-        //     // }
-        // }
-
-        //return $plagiarismlinks . $result;
+        return $result;
     }
 
     // public function can_upgrade($type, $version)
@@ -615,7 +551,21 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     {
         global $DB;
         // will throw exception on failure                                                                                          
-        $DB->delete_records('assignsubmission_pxaiwriter', array('assignment' => $this->assignment->get_instance()->id));
+        $response = $DB->delete_records('assignsubmission_pxaiwriter', array('assignment' => $this->assignment->get_instance()->id));
+
+        $fs = get_file_storage();
+
+        $existingfiles = $fs->get_area_files(
+            $this->assignment->get_context()->id,
+            'assignsubmission_pxaiwriter',
+            ASSIGNSUBMISSION_PXAIWRITER_FILEAREA
+        );
+
+        foreach($existingfiles as $ef) {
+            if ($ef) {
+                $ef->delete();
+            }
+        }
 
         return true;
     }
@@ -629,7 +579,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
      * @param string $delReplaceTag
      * @return void
      */
-    public function getDiffRenderedHtml($textOne, $textTwo, $granularity = "word", $delReplaceTag = '<del style="color:red;background:#fdd;text-decoration:line-through;">', $insReplaceTag = '<ins style="color:green;background:#dfd;text-decoration:none;">')
+    public function getDiffRenderedHtml($textOne, $textTwo, $granularity = "word", $delReplaceTag = '<span style="color:red;background-color:#ffdddd;text-decoration:line-through;">', $insReplaceTag = '<span style="color:green;background-color:#ddffdd;text-decoration:none;">')
     {
         global $CFG;
         require_once("$CFG->dirroot/mod/assign/submission/pxaiwriter/vendor/autoload.php");
@@ -659,10 +609,12 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
         if ($delReplaceTag) {
             $result = str_replace("<del>", $delReplaceTag, $result);
+            $result = str_replace("</del>", "</span>", $result);
         }
 
         if ($insReplaceTag) {
             $result = str_replace("<ins>", $insReplaceTag, $result);
+            $result = str_replace("</ins>", "</span>", $result);
         }
 
         return $result;
