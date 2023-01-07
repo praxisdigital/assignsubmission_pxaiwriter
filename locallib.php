@@ -159,29 +159,33 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     {
         global $USER, $DB, $CFG;
 
+
+
         //$editoroptions = $this->get_edit_options();
 
         $assignmentid = $this->get_assignment_id();
         $filename = $this->get_pdf_file_name($assignmentid, $USER->id);
 
-        /*require_once ('/php-finediff/src/Diff.php');
-        $diff = new FineDiff\Diff();
-        echo $diff->render('string one', 'string two');*/
+        /*require_once ('/php-finediff/src/Diff.php');*/
+        // $diff = new FineDiff\Diff();
+        // echo $diff->render('string one', 'string two');
 
-        require_once ($CFG->libdir . '/tcpdf/tcpdf.php');
+        require_once($CFG->libdir . '/tcpdf/tcpdf.php');
 
         $pdf = new TCPDF();
         $pdf->AddPage();
-        $html = <<<EOD
-        <h1>Welcome 12345678901 to <a href="http://www.tcpdf.org" style="text-decoration:none;background-color:#CC0000;color:black;">&nbsp;<span style="color:black;">TC</span><span style="color:white;">PDF</span>&nbsp;</a>!</h1>
+        $html = '<h1>Welcome 12345678901 to <a href="http://www.tcpdf.org" style="text-decoration:none;background-color:#CC0000;color:black;">&nbsp;<span style="color:black;">TC</span><span style="color:white;">PDF</span>&nbsp;</a>!</h1>
         <i>This is the first example of TCPDF library.</i>
         <p>This text is printed using the <i>writeHTMLCell()</i> method but you can also use: <i>Multicell(), writeHTML(), Write(), Cell() and Text()</i>.</p>
         <p>Please check the source code documentation and other examples for further information.</p>
-        <p style="color:#CC0000;">TO IMPROVE AND EXPAND TCPDF I NEED YOUR SUPPORT, PLEASE <a href="http://sourceforge.net/donate/index.php?group_id=128076">MAKE A DONATION!</a></p>
-        EOD;
+        <p style="color:#CC0000;">TO IMPROVE AND EXPAND TCPDF I NEED YOUR SUPPORT, PLEASE <a href="http://sourceforge.net/donate/index.php?group_id=128076">MAKE A DONATION!</a></p>';
 
-        $pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
-        $file = $pdf->Output($filename,'S');
+        // $pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
+        $pdf->writeHTML($html, true, false, true, false, '');
+
+        $pdf->lastPage();
+
+        $file = $pdf->Output($filename, 'S');
         //echo(var_dump($fileC));
 
         // $data = file_postupdate_standard_editor(
@@ -220,10 +224,11 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             'userid' => $submission->userid,
             'author' => $USER->name,
             'source' => $filename,
-            'filename' => $filename); // any filename
+            'filename' => $filename
+        ); // any filename
 
         $fs->create_file_from_string($fileinfo, $file);
-        
+
         $files = $fs->get_area_files(
             $this->assignment->get_context()->id,
             'assignsubmission_pxaiwriter',
@@ -232,7 +237,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             'id',
             false
         );
-        
+
         // foreach($files as $fs) {
         //     $contents = $fs->get_content();
         //     echo(var_dump($contents));
@@ -302,7 +307,8 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         }
     }
 
-    private function get_pdf_file_name(int $assignmentid, int $userid) {
+    private function get_pdf_file_name(int $assignmentid, int $userid)
+    {
         return $assignmentid . "_" . $userid . "_" . strtotime("now") . ".pdf";
     }
 
@@ -358,25 +364,28 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     }
 
 
-    public function get_files(stdClass $submission, stdClass $user) {
+    public function get_files(stdClass $submission, stdClass $user)
+    {
         $result = array();
         $fs = get_file_storage();
 
-        $files = $fs->get_area_files($this->assignment->get_context()->id,
-                                     'assignsubmission_pxaiwriter',
-                                     ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
-                                     $submission->id,
-                                     'timemodified',
-                                     false);
-        echo("here");
-        echo(var_dump($files));
+        $files = $fs->get_area_files(
+            $this->assignment->get_context()->id,
+            'assignsubmission_pxaiwriter',
+            ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
+            $submission->id,
+            'timemodified',
+            false
+        );
+        // echo("here");
+        // echo(var_dump($files));
 
         foreach ($files as $file) {
             // Do we return the full folder path or just the file name?
             if (isset($submission->exportfullpath) && $submission->exportfullpath == false) {
                 $result[$file->get_filename()] = $file;
             } else {
-                $result[$file->get_filepath().$file->get_filename()] = $file;
+                $result[$file->get_filepath() . $file->get_filename()] = $file;
             }
         }
         return $result;
@@ -398,9 +407,11 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     {
         global $CFG;
         $result = '';
-        return $this->assignment->render_area_files('assignsubmission_pxaiwriter',
-                                       ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
-                                                   $submission->id);
+        return $this->assignment->render_area_files(
+            'assignsubmission_pxaiwriter',
+            ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
+            $submission->id
+        );
 
         // $subm = $this->get_pxaiwriter_submission($submission->id);
         // if ($subm) {
@@ -590,24 +601,70 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     //     return true;
     // }
 
-    // public function format_for_log(stdClass $submission)
-    // {
-    //     // format the info for each submission plugin add_to_log                                                                    
-    //     $filecount = $this->count_files($submission->id, ASSIGNSUBMISSION_FILE_FILEAREA);
-    //     $fileloginfo = '';
-    //     $fileloginfo .= ' the number of file(s) : ' . $filecount . " file(s).<br>";
+    public function format_for_log(stdClass $submission)
+    {
+        // format the info for each submission plugin add_to_log                                                                    
 
-    //     return $fileloginfo;
-    // }
+        $fileloginfo = '';
+        $fileloginfo .= 'PXAIWriter submission.<br>';
 
-    // public function delete_instance()
-    // {
-    //     global $DB;
-    //     // will throw exception on failure                                                                                          
-    //     $DB->delete_records('assignsubmission_pxaiwriter', array('assignment' => $this->assignment->get_instance()->id));
+        return $fileloginfo;
+    }
 
-    //     return true;
-    // }
+    public function delete_instance()
+    {
+        global $DB;
+        // will throw exception on failure                                                                                          
+        $DB->delete_records('assignsubmission_pxaiwriter', array('assignment' => $this->assignment->get_instance()->id));
 
+        return true;
+    }
 
+    /**
+     * Summary : Creates the comparrison view of two string in HTML
+     *
+     * @param [type] $textOne
+     * @param [type] $textTwo
+     * @param [type] $granularity
+     * @param string $delReplaceTag
+     * @return void
+     */
+    public function getDiffRenderedHtml($textOne, $textTwo, $granularity = "word", $delReplaceTag = '<del style="color:red;background:#fdd;text-decoration:line-through;">', $insReplaceTag = '<ins style="color:green;background:#dfd;text-decoration:none;">')
+    {
+        global $CFG;
+        require_once("$CFG->dirroot/mod/assign/submission/pxaiwriter/vendor/autoload.php");
+
+        $grOption = null;
+        switch ($granularity) {
+            case "word":
+                $grOption = new FineDiff\Granularity\Word();
+                break;
+            case "sentence":
+                $grOption = new FineDiff\Granularity\Sentence();
+                break;
+            case "paragraph":
+                $grOption = new FineDiff\Granularity\Paragraph();
+                break;
+            default:
+                $grOption = new FineDiff\Granularity\Character();
+                break;
+        }
+
+        $diff = new FineDiff\Diff();
+        $diff->setGranularity($grOption);
+
+        $optionCode =  $diff->getOperationCodes($textOne, $textTwo);
+        $renderer = new FineDiff\Render\Html();
+        $result = $renderer->process($textOne, $optionCode);
+
+        if ($delReplaceTag) {
+            $result = str_replace("<del>", $delReplaceTag, $result);
+        }
+
+        if ($insReplaceTag) {
+            $result = str_replace("<ins>", $insReplaceTag, $result);
+        }
+
+        return $result;
+    }
 }
