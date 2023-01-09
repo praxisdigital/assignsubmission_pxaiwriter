@@ -51,7 +51,7 @@ class mod_assign_submission_pxaiwriter_external extends external_api
                 return json_encode(
                     array(
                         'success' => false,
-                        'message' => "Failure :", get_string('ai_attempt_exceed_msg', 'assignsubmission_pxaiwriter'),
+                        'message' => "Failure :" . get_string('ai_attempt_exceed_msg', 'assignsubmission_pxaiwriter'),
                         'errors'  => [get_string('ai_attempt_exceed_msg', 'assignsubmission_pxaiwriter')]
                     )
                 );
@@ -149,7 +149,7 @@ class mod_assign_submission_pxaiwriter_external extends external_api
                 return json_encode(
                     array(
                         'success' => false,
-                        'message' => "Failure :", get_string('ai_attempt_exceed_msg', 'assignsubmission_pxaiwriter'),
+                        'message' => "Failure :" . get_string('ai_attempt_exceed_msg', 'assignsubmission_pxaiwriter'),
                         'errors'  => [get_string('ai_attempt_exceed_msg', 'assignsubmission_pxaiwriter')]
                     )
                 );
