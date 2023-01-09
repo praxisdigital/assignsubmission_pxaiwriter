@@ -13,7 +13,7 @@ class backup_assignsubmission_pxaiwriter_subplugin extends backup_subplugin
         $subpluginelement = new backup_nested_element(
             'submission_pxaiwriter',
             null,
-            array('aiwriter', 'onlineformat', 'submission') // TODO Add all the table columns
+            array('steps_data', 'submission')
         );
 
         // Connect XML elements into the tree.
