@@ -8,7 +8,6 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
         this.currStep = 0;
         this.selStart = 0;
         this.selEnd = 0;
-        this.userid = userid;
         this.assignmentid = assignmentid
 
         this.init();
@@ -93,7 +92,7 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
 
     EventCreator.prototype.handleAiMagicResponse = function (response) {
         $(':button').prop('disabled', false);
-        responseObj = JSON.parse(response);
+        let responseObj = JSON.parse(response);
         if (responseObj.success == true) {
             var element = $('textarea[name="pxaiwriter-data-step-' + this.currStep + '"]').val(responseObj.data);
             $('textarea[name="pxaiwriter-data-step-' + this.currStep + '"]').trigger("change");
@@ -102,8 +101,10 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
         }
     }
 
-    EventCreator.prototype.handleAiMagicFailure = function (data) {
+    EventCreator.prototype.handleAiMagicFailure = function (response) {
         $(':button').prop('disabled', false);
+        let responseObj = JSON.parse(response);
+        alert(responseObj.message);
         // $('#error-text').css('display', 'block');
         // $('#error-text').text("An error occurred during creating event");
         // $('[data-action="save"]').prop('disabled', false);
@@ -114,7 +115,7 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
 
     EventCreator.prototype.handleExpandResponse = function (response) {
         $(':button').prop('disabled', false);
-        responseObj = JSON.parse(response);
+        let responseObj = JSON.parse(response);
         if (responseObj.success == true) {
 
             let expandedText = responseObj.data;
@@ -137,6 +138,8 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
 
     EventCreator.prototype.handleExpandFailure = function (data) {
         $(':button').prop('disabled', false);
+        let responseObj = JSON.parse(response);
+        alert(responseObj.message);
         // $('#error-text').css('display', 'block');
         // $('#error-text').text("An error occurred during creating event");
         // $('[data-action="save"]').prop('disabled', false);
