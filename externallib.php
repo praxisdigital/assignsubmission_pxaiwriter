@@ -60,7 +60,7 @@ class mod_assign_submission_pxaiwriter_external extends external_api
             if (!$attempt_record) {
                 $attempt_record = new stdClass();
                 $attempt_record->assignment = $assignmentid;
-                $attempt_record->user = $userid;
+                $attempt_record->userid = $userid;
             }
             
             $payload = $config = $url = "";
@@ -143,7 +143,7 @@ class mod_assign_submission_pxaiwriter_external extends external_api
             $assignmentid = intval($serialiseddata->assignmentid);
             $userid = intval($USER->id);
 
-            $attempt_record = $DB->get_record('pxaiwriter_api_attempts', array('assignment' => $assignmentid, 'user' => $userid, 'api_attempt_date' => strtotime("today")));
+            $attempt_record = $DB->get_record('pxaiwriter_api_attempts', array('assignment' => $assignmentid, 'userid' => $userid, 'api_attempt_date' => strtotime("today")));
 
             if (self::isExceedingAttemptCount($attempt_record)) {
                 return json_encode(
@@ -158,7 +158,7 @@ class mod_assign_submission_pxaiwriter_external extends external_api
             if (!$attempt_record) {
                 $attempt_record = new stdClass();
                 $attempt_record->assignment = $assignmentid;
-                $attempt_record->user = $userid;
+                $attempt_record->userid = $userid;
             }
 
             self::getOpenAIRequestConfig($payload, $config, $url);
