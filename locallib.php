@@ -153,8 +153,8 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         $steps_data_string = $data->assignsubmission_pxaiwriter_student_data;
         $steps_data = json_decode($steps_data_string);
         $steps_data_count = count($steps_data);
-        $initvalue = $steps_data[0]->value;
-        $finalvalue = $steps_data[$steps_data_count-1]->value;
+        $initvalue = str_replace("\n", "<br>", $steps_data[0]->value);
+        $finalvalue = str_replace("\n", "<br>", $steps_data[$steps_data_count-1]->value);
 
         $diffhtmlcontent = $this->getDiffRenderedHtml($initvalue, $finalvalue);
 
@@ -162,12 +162,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
         $pdf = new TCPDF();
         $pdf->AddPage();
-        // $html = '<h1>Welcome 12345678901 to <a href="http://www.tcpdf.org" style="text-decoration:none;background-color:#ddffdd;color:green;">&nbsp;<span style="color:yellow;">TC</span><span style="color:white;">PDF</span>&nbsp;</a>!</h1>
-        // <i>This is the first example of TCPDF library.</i>
-        // <p>This text is printed using the <i>writeHTMLCell()</i> method but you can also use: <i>Multicell(), writeHTML(), Write(), Cell() and Text()</i>.</p>';
-
         $pdf->writeHTML($diffhtmlcontent, false, false, true, false, '');
-
         $pdf->lastPage();
 
         $file = $pdf->Output($filename, 'S');
@@ -192,7 +187,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             'itemid' => $submission->id,               // usually = ID of row in table
             'filepath' => '/',           // any path beginning and ending in /
             'userid' => $submission->userid,
-            //'author' => $USER->name,
+            'author' => $USER->firstname . ' ' . $USER->lastname,
             'source' => $filename,
             'filename' => $filename
         );
@@ -272,6 +267,12 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         }
     }
 
+    /**
+     * Get a unique file name for the pdf for given submission.
+     *
+     * @param int $submissionid The submission Id
+     * @param int $userid The student's user Id
+     */
     private function get_pdf_file_name(int $assignmentid, int $userid)
     {
         return $assignmentid . "_" . $userid . "_" . strtotime("now") . ".pdf";
@@ -290,6 +291,11 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         return $editoroptions;
     }
 
+    /**
+     * Delete pdf files from the store for given submission.
+     *
+     * @param int $submissionid The submission Id
+     */
     private function delete_pdf_file($submissionid) {
         $fs = get_file_storage();
         $existingfiles = $fs->get_area_files(
@@ -378,7 +384,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             $steps_data = json_decode($subm->steps_data);
             $steps_data_count = count($steps_data);
             $finalvalue = $steps_data[$steps_data_count-1]->value;
-            $result = $finalvalue;
+            $result = str_replace("\n", "<br>", $finalvalue);
         }
 
         return $result;
@@ -579,7 +585,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
      * @param string $delReplaceTag
      * @return void
      */
-    public function getDiffRenderedHtml($textOne, $textTwo, $granularity = "word", $delReplaceTag = '<del style="color:red;background-color:#ffdddd;text-decoration:line-through;">', $insReplaceTag = '<ins style="color:green;background-color:#ddffdd;text-decoration:none;">')
+    public function getDiffRenderedHtml($textOne, $textTwo, $granularity = "word", $delReplaceTag = '<span style="color:red;background-color:#ffdddd;text-decoration:line-through;">', $insReplaceTag = '<span style="color:green;background-color:#ddffdd;text-decoration:none;">')
     {
         global $CFG;
         require_once("$CFG->dirroot/mod/assign/submission/pxaiwriter/vendor/autoload.php");
@@ -609,10 +615,12 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
         if ($delReplaceTag) {
             $result = str_replace("<del>", $delReplaceTag, $result);
+            $result = str_replace("</del>", "</span>", $result);
         }
 
         if ($insReplaceTag) {
             $result = str_replace("<ins>", $insReplaceTag, $result);
+            $result = str_replace("</ins>", "</span>", $result);
         }
 
         return $result;
