@@ -30,10 +30,22 @@ class mod_assign_submission_pxaiwriter_external extends external_api
             $data = array();
             parse_str($serialiseddata, $data);
 
-            $assignmentid = $serialiseddata->assignmentid;
-            $userid = $USER->id;
+            $assignmentid = intval($serialiseddata->assignmentid);
+            $userid = intval($USER->id);
+            $date = strtotime("today");
 
-            $attempt_record = $DB->get_record('pxaiwriter_api_attempts', array('assignment' => $assignmentid, 'user' => $userid, 'api_attempt_date' => strtotime("today")));
+            $attempt_record = $DB->get_record('pxaiwriter_api_attempts', array('assignment' => $assignmentid, 'userid' => $userid, 'api_attempt_date' => strtotime("today")));
+
+            // return json_encode(
+            //     array(
+            //         'success' => false,
+            //         'data' => $attempt_record,
+            //         'userid' => $userid,
+            //         'date' => $date,
+            //         'message' => "Successful",
+            //         'errors'  => []
+            //     )
+            // );
 
             if (self::isExceedingAttemptCount($attempt_record)) {
                 return json_encode(
@@ -66,7 +78,7 @@ class mod_assign_submission_pxaiwriter_external extends external_api
                 $genText = $result->choices[0]->text;
             }
 
-            self::updateAttemptsHistory($attempt_record, $assignmentid);
+            self::updateAttemptsHistory($attempt_record);
 
             return json_encode(
                 array(
@@ -80,7 +92,7 @@ class mod_assign_submission_pxaiwriter_external extends external_api
             return json_encode(
                 array(
                     'success' => false,
-                    'message' => "Failure :", $ex->getMessage(),
+                    'message' => "Failure :". $ex->getMessage(),
                     'errors'  => [$ex]
                 )
             );
@@ -128,8 +140,8 @@ class mod_assign_submission_pxaiwriter_external extends external_api
             $data = array();
             parse_str($serialiseddata, $data);
 
-            $assignmentid = $serialiseddata->assignmentid;
-            $userid = $USER->id;
+            $assignmentid = intval($serialiseddata->assignmentid);
+            $userid = intval($USER->id);
 
             $attempt_record = $DB->get_record('pxaiwriter_api_attempts', array('assignment' => $assignmentid, 'user' => $userid, 'api_attempt_date' => strtotime("today")));
 
@@ -163,7 +175,7 @@ class mod_assign_submission_pxaiwriter_external extends external_api
                 $genText = $result->choices[0]->text;
             }
 
-            self::updateAttemptsHistory($serialiseddata->assignmentid);
+            self::updateAttemptsHistory($attempt_record);
 
             return json_encode(
                 array(
@@ -326,11 +338,11 @@ class mod_assign_submission_pxaiwriter_external extends external_api
 
         if ($attempt_record->id) {
             $attempt_record->api_attempts = $attempt_record->api_attempts + 1;
-            $DB->update_record('assignsubmission_pxaiwriter_api_attempt_history', $attempt_record);
+            $DB->update_record('pxaiwriter_api_attempts', $attempt_record);
         } else {
             $attempt_record->api_attempt_date = strtotime("today");
             $attempt_record->api_attempts = 1;
-            $DB->insert_record('assignsubmission_pxaiwriter_api_attempt_history', $attempt_record);
+            $DB->insert_record('pxaiwriter_api_attempts', $attempt_record);
         }
     }
 
