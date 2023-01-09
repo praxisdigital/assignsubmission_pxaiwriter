@@ -41,7 +41,7 @@ $settings->add(new admin_setting_configselect(
     new lang_string('content_type', 'assignsubmission_pxaiwriter'),
     "", //new lang_string('content_type_description', 'assignsubmission_pxaiwriter'),
     'json',
-    ["json" => "JSON", "javascript" => "Javascript", 'text' => "Text", 'html' => "HTML", 'xml' => "XML"]
+    ["application/json" => "JSON", "application/javascript" => "Javascript", 'application/text' => "Text", 'application/html' => "HTML", 'application/xml' => "XML"]
 ));
 
 // authorization
@@ -117,4 +117,33 @@ $settings->add(new admin_setting_configselect(
     "", //new lang_string('last_modified_by_description', 'assignsubmission_pxaiwriter'),
     $USER->id,
     [$USER->id => $USER->firstname . ' ' . $USER->lastname]
+));
+
+
+$settings->add(new admin_setting_heading(
+    'assignsubmissioncomparerheading',
+    new lang_string('open_ai_comparer_settings', 'assignsubmission_pxaiwriter'),
+    new lang_string('open_ai_comparer_settings_description', 'assignsubmission_pxaiwriter'),
+));
+
+$settings->add(new admin_setting_configselect(
+    'assignsubmission_pxaiwriter/granularity',
+    new lang_string('granularity', 'assignsubmission_pxaiwriter'),
+    "", //new lang_string('content_type_description', 'assignsubmission_pxaiwriter'),
+    'json',
+    ["word" => "Word", "sentence" => "Sentence", 'paragraph' => "Paragraph", 'character' => "Character"]
+));
+
+
+$settings->add(new admin_setting_heading(
+    'assignsubmissionassignmentheading',
+    new lang_string('open_ai_assignment_settings', 'assignsubmission_pxaiwriter'),
+    new lang_string('open_ai_assignment_settings_description', 'assignsubmission_pxaiwriter'),
+));
+
+$settings->add(new admin_setting_configtext(
+    'assignsubmission_pxaiwriter/attempt_count',
+    new lang_string('attempt_count', 'assignsubmission_pxaiwriter'),
+    "", //new lang_string('url_description', 'assignsubmission_pxaiwriter'),
+    ""
 ));

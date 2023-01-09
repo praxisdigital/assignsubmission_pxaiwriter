@@ -2,7 +2,6 @@
 
 define('ASSIGNSUBMISSION_FILE_MAXFILES', 10);
 define('ASSIGNSUBMISSION_PXAIWRITER_FILEAREA', 'submissions_pxaiwriter');
-//require_once '/app/vendor/autoload.php';
 
 class assign_submission_pxaiwriter extends assign_submission_plugin
 {
@@ -153,10 +152,13 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         $steps_data_string = $data->assignsubmission_pxaiwriter_student_data;
         $steps_data = json_decode($steps_data_string);
         $steps_data_count = count($steps_data);
-        $initvalue = str_replace("\n", "<br>", $steps_data[0]->value);
-        $finalvalue = str_replace("\n", "<br>", $steps_data[$steps_data_count-1]->value);
+        // $initvalue = str_replace("\n", "<br>", $steps_data[0]->value);
+        // $finalvalue = str_replace("\n", "<br>", $steps_data[$steps_data_count - 1]->value);
+        $initvalue = $steps_data[0]->value;
+        $finalvalue = $steps_data[$steps_data_count - 1]->value;
 
-        $diffhtmlcontent = $this->getDiffRenderedHtml($initvalue, $finalvalue);
+        $granularity = self::getPluginAdminSettings('granularity');
+        $diffhtmlcontent = $this->getDiffRenderedHtml($initvalue, $finalvalue, $granularity);
 
         require_once($CFG->libdir . '/tcpdf/tcpdf.php');
 
@@ -296,7 +298,8 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
      *
      * @param int $submissionid The submission Id
      */
-    private function delete_pdf_file($submissionid) {
+    private function delete_pdf_file($submissionid)
+    {
         $fs = get_file_storage();
         $existingfiles = $fs->get_area_files(
             $this->assignment->get_context()->id,
@@ -305,7 +308,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             $submissionid
         );
 
-        foreach($existingfiles as $ef) {
+        foreach ($existingfiles as $ef) {
             if ($ef) {
                 $ef->delete();
             }
@@ -331,7 +334,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         $submissionid = $submission ? $submission->id : 0;
         if ($submissionid) {
             $reponse = $DB->delete_records('assignsubmission_pxaiwriter', array('submission' => $submissionid));
-            if($reponse) {
+            if ($reponse) {
                 $this->delete_pdf_file($submissionid);
             }
         }
@@ -383,7 +386,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         if ($subm) {
             $steps_data = json_decode($subm->steps_data);
             $steps_data_count = count($steps_data);
-            $finalvalue = $steps_data[$steps_data_count-1]->value;
+            $finalvalue = $steps_data[$steps_data_count - 1]->value;
             $result = str_replace("\n", "<br>", $finalvalue);
         }
 
@@ -567,7 +570,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             ASSIGNSUBMISSION_PXAIWRITER_FILEAREA
         );
 
-        foreach($existingfiles as $ef) {
+        foreach ($existingfiles as $ef) {
             if ($ef) {
                 $ef->delete();
             }
@@ -612,6 +615,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         $optionCode =  $diff->getOperationCodes($textOne, $textTwo);
         $renderer = new FineDiff\Render\Html();
         $result = $renderer->process($textOne, $optionCode);
+        $result = str_replace("\n", "<br>", $result);
 
         if ($delReplaceTag) {
             $result = str_replace("<del>", $delReplaceTag, $result);
@@ -624,5 +628,63 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         }
 
         return $result;
+    }
+
+    /**
+     * Summary : Gets the pxaiwriter admin settings from config_plugins table
+     *              PLEASE RE-USE THIS FUNCTION!!!
+     * Created By : Nilaksha
+     * Created At : 05/01/2023
+     *
+     * @param [type] $setting
+     * @return object
+     */
+    function getPluginAdminSettings($setting = "", $pluginName = 'assignsubmission_pxaiwriter')
+    {
+
+        // last_modified_by
+        // api_key
+        // presence_penalty
+        // frequency_penalty
+        // top_p
+        // max_tokens
+        // temperature
+        // model
+        // authorization
+        // content_type
+        // url
+        // default
+        // installrunning
+        // version
+        // granularity
+
+        global $DB;
+        if ($setting) {
+            $dbparams = array(
+                'plugin' => $pluginName,
+                'name' => $setting
+            );
+            $result = $DB->get_record('config_plugins', $dbparams, '*', IGNORE_MISSING);
+
+            if ($result) {
+                return $result->value;
+            }
+
+            return false;
+        }
+
+        $dbparams = array(
+            'plugin' => $pluginName,
+        );
+        $results = $DB->get_records('config_plugins', $dbparams);
+
+        $config = new stdClass();
+        if (is_array($results)) {
+            foreach ($results as $setting) {
+                $name = $setting->name;
+                $config->$name = $setting->value;
+            }
+        }
+        return $config;
     }
 }

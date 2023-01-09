@@ -32,6 +32,9 @@ $string['close_button_label'] = "Close";
 $string['open_ai_request_settings'] = "Open API request settings";
 $string['open_ai_request_settings_description'] = "";
 
+$string['open_ai_comparer_settings'] = "Open API text comparer settings";
+$string['open_ai_comparer_settings_description'] = "";
+
 $string['url'] = "URL";
 $string['url_description'] = "Open API URL";
 
@@ -76,3 +79,12 @@ $string['title_place_holder'] = "Type your title here";
 $string['title-required-warning'] = "Title is a mandatory field for this action. Please insert an appropriate title to proceed.";
 
 $string['selection-required-warning'] = "Please select a valid phrase or text with in the text container to proceed with this action.";
+
+$string['granularity'] = "Granularity";
+
+
+$string['open_ai_assignment_settings'] = "Assignment Settings";
+$string['open_ai_assignment_settings_description'] = "";
+
+
+$string["attempt_count"] = "Attempt count";
