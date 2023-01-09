@@ -10,13 +10,26 @@
         <FIELD NAME="assignment" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>                               
         <FIELD NAME="submission" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>                               
         <FIELD NAME="steps_data" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The text for this aiwriter submission."/>
-        <FIELD NAME="api_attempts" TYPE="int" NOTNULL="false" SEQUENCE="false" COMMENT="Count of API calls made"/>
-        <FIELD NAME="api_attempt_date" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Count of API calls made"/>
       </FIELDS>                                                                                                                     
       <KEYS>                                                                                                                        
         <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="The unique id for this submission info."/>                          
         <KEY NAME="assignment" TYPE="foreign" FIELDS="assignment" REFTABLE="assign" REFFIELDS="id" COMMENT="The assignment instance this submission relates to"/>
         <KEY NAME="submission" TYPE="foreign" FIELDS="submission" REFTABLE="assign_submission" REFFIELDS="id" COMMENT="The submission this AI writer submission relates to."/>
+      </KEYS>                                                                                                                       
+    </TABLE>
+
+    <TABLE NAME="pxaiwriter_api_attempts" COMMENT="Info about AI writer attempts">                                      
+      <FIELDS>                                                                                                                      
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>                                                    
+        <FIELD NAME="assignment" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>                               
+        <FIELD NAME="user" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="api_attempts" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Count of API calls made"/>
+        <FIELD NAME="api_attempt_date" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Count of API calls made"/>
+      </FIELDS>                                                                                                                     
+      <KEYS>                                                                                                                        
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="The unique id for this submission info."/>                          
+        <KEY NAME="assignment" TYPE="foreign" FIELDS="assignment" REFTABLE="assign" REFFIELDS="id" COMMENT="The assignment instance this submission relates to"/>
+        <KEY NAME="user" TYPE="foreign" FIELDS="user" REFTABLE="user" REFFIELDS="id" COMMENT="The user to map to an id"/>
       </KEYS>                                                                                                                       
     </TABLE>                                                                                                                        
   </TABLES>                                                                                                                         

@@ -17,6 +17,7 @@ class mod_assign_submission_pxaiwriter_external extends external_api
      */
     public static function do_ai_magic($contextid, $jsondata)
     {
+        global $USER, $DB;
         try {
 
             $params = self::validate_parameters(self::do_ai_magic_parameters(), ['contextid' => $contextid, 'jsondata' => $jsondata]);
@@ -29,6 +30,27 @@ class mod_assign_submission_pxaiwriter_external extends external_api
             $data = array();
             parse_str($serialiseddata, $data);
 
+            $assignmentid = $serialiseddata->assignmentid;
+            $userid = $USER->id;
+
+            $attempt_record = $DB->get_record('pxaiwriter_api_attempts', array('assignment' => $assignmentid, 'user' => $userid, 'api_attempt_date' => strtotime("today")));
+
+            if (self::isExceedingAttemptCount($attempt_record)) {
+                return json_encode(
+                    array(
+                        'success' => false,
+                        'message' => "Failure :", get_string('ai_attempt_exceed_msg', 'assignsubmission_pxaiwriter'),
+                        'errors'  => [get_string('ai_attempt_exceed_msg', 'assignsubmission_pxaiwriter')]
+                    )
+                );
+            }
+
+            if (!$attempt_record) {
+                $attempt_record = new stdClass();
+                $attempt_record->assignment = $assignmentid;
+                $attempt_record->user = $userid;
+            }
+            
             $payload = $config = $url = "";
             self::getOpenAIRequestConfig($payload, $config, $url);
 
@@ -43,6 +65,8 @@ class mod_assign_submission_pxaiwriter_external extends external_api
             if (count($result->choices)) {
                 $genText = $result->choices[0]->text;
             }
+
+            self::updateAttemptsHistory($attempt_record, $assignmentid);
 
             return json_encode(
                 array(
@@ -92,6 +116,7 @@ class mod_assign_submission_pxaiwriter_external extends external_api
      */
     public static function expand($contextid, $jsondata)
     {
+        global $USER, $DB;
         try {
             $params = self::validate_parameters(self::expand_parameters(), ['contextid' => $contextid, 'jsondata' => $jsondata]);
             $context = context::instance_by_id($params['contextid'], MUST_EXIST);
@@ -102,6 +127,27 @@ class mod_assign_submission_pxaiwriter_external extends external_api
 
             $data = array();
             parse_str($serialiseddata, $data);
+
+            $assignmentid = $serialiseddata->assignmentid;
+            $userid = $USER->id;
+
+            $attempt_record = $DB->get_record('pxaiwriter_api_attempts', array('assignment' => $assignmentid, 'user' => $userid, 'api_attempt_date' => strtotime("today")));
+
+            if (self::isExceedingAttemptCount($attempt_record)) {
+                return json_encode(
+                    array(
+                        'success' => false,
+                        'message' => "Failure :", get_string('ai_attempt_exceed_msg', 'assignsubmission_pxaiwriter'),
+                        'errors'  => [get_string('ai_attempt_exceed_msg', 'assignsubmission_pxaiwriter')]
+                    )
+                );
+            }
+
+            if (!$attempt_record) {
+                $attempt_record = new stdClass();
+                $attempt_record->assignment = $assignmentid;
+                $attempt_record->user = $userid;
+            }
 
             self::getOpenAIRequestConfig($payload, $config, $url);
 
@@ -116,6 +162,8 @@ class mod_assign_submission_pxaiwriter_external extends external_api
             if (count($result->choices)) {
                 $genText = $result->choices[0]->text;
             }
+
+            self::updateAttemptsHistory($serialiseddata->assignmentid);
 
             return json_encode(
                 array(
@@ -271,5 +319,23 @@ class mod_assign_submission_pxaiwriter_external extends external_api
             }
         }
         return $config;
+    }
+
+    function updateAttemptsHistory($attempt_record) {
+        global $DB;
+
+        if ($attempt_record->id) {
+            $attempt_record->api_attempts = $attempt_record->api_attempts + 1;
+            $DB->update_record('assignsubmission_pxaiwriter_api_attempt_history', $attempt_record);
+        } else {
+            $attempt_record->api_attempt_date = strtotime("today");
+            $attempt_record->api_attempts = 1;
+            $DB->insert_record('assignsubmission_pxaiwriter_api_attempt_history', $attempt_record);
+        }
+    }
+
+    function isExceedingAttemptCount($attempt_record) {
+        $maxattempts = self::getPluginAdminSettings('attempt_count');
+        return !($attempt_record->api_attempts < $maxattempts);
     }
 }

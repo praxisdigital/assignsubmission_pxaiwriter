@@ -17,6 +17,16 @@
                     </div>
                     {{/steps_data}}
                 </div>
+                <div class="row">
+                    <div class="col-auto">
+                        {{#is_due_submission}}
+                            <i>{{#str}} submission_due_msg, assignsubmission_pxaiwriter{{/str}}</i>
+                        {{/is_due_submission}}
+                        {{#exceeds_max_attempts}}
+                            <i>{{#str}} ai_attempt_exceed_msg, assignsubmission_pxaiwriter{{/str}}</i>
+                        {{/exceeds_max_attempts}}
+                    </div>
+                </div>
                 <div class="actions-container mb-3 row">
                     <div class="col-md-6 ">
                         <div class="row">
@@ -31,12 +41,14 @@
                     </div>
                     <div class="col-md-6">
                         <div class="row">
+                            {{#enabled_ai_actions}}
                             <div class="col-auto">
                                 <button id="pxaiwriter-expand-selection" type="button" class="btn btn-secondary d-none" data-step="1">{{#str}} expand_selection, assignsubmission_pxaiwriter{{/str}}</button>
                             </div>
                             <div class="col-auto">
                                 <button id="pxaiwriter-do-ai-magic" type="button" class="btn btn-primary d-none" data-step="1">{{#str}} do_ai_magic, assignsubmission_pxaiwriter{{/str}}</button>
                             </div>
+                            {{/enabled_ai_actions}}
                         </div>
                     </div>
 

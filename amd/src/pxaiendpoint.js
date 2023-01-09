@@ -1,5 +1,5 @@
 define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory', "core/modal_events"], function ($, Ajax, Str, Templates, ModalFactory, ModalEvents) {
-    var EventCreator = function (id, cmid, contextid, steps_data) {
+    var EventCreator = function (id, cmid, contextid, steps_data, assignmentid) {
 
         this.instanceid = id;
         this.cmid = cmid;
@@ -8,6 +8,8 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
         this.currStep = 0;
         this.selStart = 0;
         this.selEnd = 0;
+        this.userid = userid;
+        this.assignmentid = assignmentid
 
         this.init();
     }
@@ -45,7 +47,7 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
                 return;
             }
 
-            let formData = { 'text': selectedText };
+            let formData = { 'text': selectedText, 'assignmentid': this.assignmentid };
 
             $(':button').prop('disabled', true);
             var promises = Ajax.call([
@@ -73,7 +75,7 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
                 return;
             }
 
-            let formData = { 'text': titleText };
+            let formData = { 'text': titleText, 'assignmentid': this.assignmentid };
 
             $(':button').prop('disabled', true);
             var promises = Ajax.call([
@@ -96,7 +98,7 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
             var element = $('textarea[name="pxaiwriter-data-step-' + this.currStep + '"]').val(responseObj.data);
             $('textarea[name="pxaiwriter-data-step-' + this.currStep + '"]').trigger("change");
         } else {
-            alert("fail!")
+            alert(responseObj.message);
         }
     }
 
@@ -129,7 +131,7 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
             // $('#error-text').text(error);
             // $('[data-action="save"]').prop('disabled', false);
         } else {
-            alert("fail!")
+            alert(responseObj.message);
         }
     }
 
@@ -141,8 +143,8 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
     }
 
     return {
-        init: function (id, cmid, contextid, steps_data) {
-            return new EventCreator(id, cmid, contextid, steps_data);
+        init: function (id, cmid, contextid, steps_data, assignmentid) {
+            return new EventCreator(id, cmid, contextid, steps_data, assignmentid);
         }
     };
 });

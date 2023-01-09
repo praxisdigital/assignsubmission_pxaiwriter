@@ -16,6 +16,16 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         }
     }
 
+    private function get_assignment_duedate()
+    {
+        try {
+            $duedate = $this->assignment->has_instance() ? $this->assignment->get_instance()->duedate : null;
+            return $duedate;
+        } catch (Exception $e) {
+            return null;
+        }
+    }
+
     private function get_pxaiwriter_submission($submissionid)
     {
         global $DB;
@@ -98,23 +108,29 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
      */
     public function get_form_elements($submission, MoodleQuickForm $mform, stdClass $data)
     {
-        global $CFG;
-        $elements = array();
-
-        $editoroptions = $this->get_edit_options();
-        $submissionid = $submission ? $submission->id : 0;
-
-        $data = file_prepare_standard_filemanager(
-            $data,
-            'setps_data_file',
-            $editoroptions,
-            $this->assignment->get_context(),
-            'assignsubmission_pxaiwriter',
-            ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
-            $submissionid
-        );
+        global $CFG, $DB, $USER;
 
         $pxaiwritersubmission = $this->get_pxaiwriter_submission($submission->id);
+        $data->assignmentid = $this->get_assignment_id();
+
+        $duedate = $this->get_assignment_duedate();
+        $data->is_due_submission = $duedate < time();
+        
+        $maxaiattempts = self::getPluginAdminSettings('attempt_count') ?? 0;
+        $aiattempthistoryfortoday = $DB->get_record('pxaiwriter_api_attempts', array('assignment' => $data->assignmentid, 'user' => $USER->id, 'api_attempt_date' => strtotime("today")));
+        $data->exceeds_max_attempts = $aiattempthistoryfortoday ? $aiattempthistoryfortoday->api_attempts >= $maxaiattempts : false;
+        $data->enabled_ai_actions = !$data->exeeds_max_attempts && !$data->is_due_submission;
+
+        // $data = file_prepare_standard_filemanager(
+        //     $data,
+        //     'setps_data_file',
+        //     $editoroptions,
+        //     $this->assignment->get_context(),
+        //     'assignsubmission_pxaiwriter',
+        //     ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
+        //     $submissionid
+        // );
+
         if ($pxaiwritersubmission) {
             $data->steps_data =  json_decode($pxaiwritersubmission->steps_data);
         } else {
@@ -149,13 +165,11 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         $assignmentid = $this->get_assignment_id();
         $filename = $this->get_pdf_file_name($assignmentid, $USER->id);
 
-        $steps_data_string = $data->assignsubmission_pxaiwriter_student_data;
-        $steps_data = json_decode($steps_data_string);
-        $steps_data_count = count($steps_data);
-        // $initvalue = str_replace("\n", "<br>", $steps_data[0]->value);
-        // $finalvalue = str_replace("\n", "<br>", $steps_data[$steps_data_count - 1]->value);
-        $initvalue = $steps_data[0]->value;
-        $finalvalue = $steps_data[$steps_data_count - 1]->value;
+        $stepsdatastring = $data->assignsubmission_pxaiwriter_student_data;
+        $stepsdata = json_decode($stepsdatastring);
+        $stepsdatacount = count($stepsdata);
+        $initvalue = $stepsdata[0]->value;
+        $finalvalue = $stepsdata[$stepsdatacount - 1]->value;
 
         $granularity = self::getPluginAdminSettings('granularity');
         $diffhtmlcontent = $this->getDiffRenderedHtml($initvalue, $finalvalue, $granularity);
@@ -384,9 +398,9 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
         $subm = $this->get_pxaiwriter_submission($submission->id);
         if ($subm) {
-            $steps_data = json_decode($subm->steps_data);
-            $steps_data_count = count($steps_data);
-            $finalvalue = $steps_data[$steps_data_count - 1]->value;
+            $stepsdata = json_decode($subm->steps_data);
+            $stepsdatacount = count($stepsdata);
+            $finalvalue = $stepsdata[$stepsdatacount - 1]->value;
             $result = str_replace("\n", "<br>", $finalvalue);
         }
 
