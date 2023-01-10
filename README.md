@@ -51,7 +51,7 @@ You can access these set of settings here : https://<site>/admin/settings.php?se
 
 ## Release notes
 
-- **v1.0.0.15** (2023011000)
+- **v1.0.0.16** (2023011001)
   - Admin settings Open API request settings
   - Admin settings Open API text comparer settings 
   - Admin settings Assignment Settings 
