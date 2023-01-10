@@ -75,7 +75,7 @@ $string['next'] = "Next";
 $string['expand_selection'] = "Expand selection";
 $string['do_ai_magic'] = "Do AI magic";
 
-$string['title_place_holder'] = "Type your title here";
+$string['title_place_holder'] = "Write an instruction to the AI : ex. 'Write an essay on computers'";
 $string['title-required-warning'] = "Title is a mandatory field for this action. Please insert an appropriate title to proceed.";
 
 $string['selection-required-warning'] = "Please select a valid phrase or text with in the text container to proceed with this action.";
@@ -90,4 +90,4 @@ $string['open_ai_assignment_settings_description'] = "";
 $string["attempt_count"] = "Attempt count";
 
 $string["submission_due_msg"] = "Your assignment submission is due. You are restricted from using AI feature for this submission.";
-$string["ai_attempt_exceed_msg"] = "Your daily limit for using AI feature is exceeded";
+$string["ai_attempt_exceed_msg"] = "Your daily limit for using the AI feature is exceeded";
