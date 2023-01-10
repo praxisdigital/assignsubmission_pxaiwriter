@@ -122,7 +122,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             $data->exceeds_max_attempts = $aiattempthistoryfortoday ? $aiattempthistoryfortoday->api_attempts >= $maxaiattempts : false;
             $data->enabled_ai_actions = !$data->exceeds_max_attempts && !$data->is_due_submission;
         } else {
-            $data->enabled_ai_actions = true;
+            $data->enabled_ai_actions = false;
         }
         
 
