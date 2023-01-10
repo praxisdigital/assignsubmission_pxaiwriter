@@ -97,7 +97,9 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
             var element = $('textarea[name="pxaiwriter-data-step-' + this.currStep + '"]').val(responseObj.data);
             $('textarea[name="pxaiwriter-data-step-' + this.currStep + '"]').trigger("change");
         } else {
-            alert(responseObj.message);
+            if (responseObj.errors && responseObj.errors.includes("max_attempt_exceed_error")) {
+                $('#max-attempt-exceeds-error-msg-modal').modal('show');
+            }
         }
     }
 
@@ -132,7 +134,9 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
             // $('#error-text').text(error);
             // $('[data-action="save"]').prop('disabled', false);
         } else {
-            alert(responseObj.message);
+            if (responseObj.errors && responseObj.errors.includes("max_attempt_exceed_error")) {
+                $('#max-attempt-exceeds-error-msg-modal').modal('show');
+            }
         }
     }
 

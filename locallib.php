@@ -116,10 +116,15 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         $duedate = $this->get_assignment_duedate();
         $data->is_due_submission = $duedate < time();
         
-        $maxaiattempts = self::getPluginAdminSettings('attempt_count') ?? 0;
-        $aiattempthistoryfortoday = $DB->get_record('pxaiwriter_api_attempts', array('assignment' => $data->assignmentid, 'userid' => $USER->id, 'api_attempt_date' => strtotime("today")));
-        $data->exceeds_max_attempts = $aiattempthistoryfortoday ? $aiattempthistoryfortoday->api_attempts >= $maxaiattempts : false;
-        $data->enabled_ai_actions = !$data->exceeds_max_attempts && !$data->is_due_submission;
+        if (!$data->is_due_submission) {
+            $maxaiattempts = self::getPluginAdminSettings('attempt_count') ?? 0;
+            $aiattempthistoryfortoday = $DB->get_record('pxaiwriter_api_attempts', array('assignment' => $data->assignmentid, 'userid' => $USER->id, 'api_attempt_date' => strtotime("today")));
+            $data->exceeds_max_attempts = $aiattempthistoryfortoday ? $aiattempthistoryfortoday->api_attempts >= $maxaiattempts : false;
+            $data->enabled_ai_actions = !$data->exceeds_max_attempts && !$data->is_due_submission;
+        } else {
+            $data->enabled_ai_actions = false;
+        }
+        
 
         // $data = file_prepare_standard_filemanager(
         //     $data,
@@ -394,7 +399,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
     public function view(stdClass $submission)
     {
-        $result = '';
+        $result = '<br><br>';
 
         $subm = $this->get_pxaiwriter_submission($submission->id);
         if ($subm) {

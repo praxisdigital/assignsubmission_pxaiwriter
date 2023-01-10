@@ -36,23 +36,12 @@ class mod_assign_submission_pxaiwriter_external extends external_api
 
             $attempt_record = $DB->get_record('pxaiwriter_api_attempts', array('assignment' => $assignmentid, 'userid' => $userid, 'api_attempt_date' => strtotime("today")));
 
-            // return json_encode(
-            //     array(
-            //         'success' => false,
-            //         'data' => $attempt_record,
-            //         'userid' => $userid,
-            //         'date' => $date,
-            //         'message' => "Successful",
-            //         'errors'  => []
-            //     )
-            // );
-
             if (self::isExceedingAttemptCount($attempt_record)) {
                 return json_encode(
                     array(
                         'success' => false,
-                        'message' => "Failure :" . get_string('ai_attempt_exceed_msg', 'assignsubmission_pxaiwriter'),
-                        'errors'  => [get_string('ai_attempt_exceed_msg', 'assignsubmission_pxaiwriter')]
+                        'message' => "Failure : " . get_string('ai_attempt_exceed_msg', 'assignsubmission_pxaiwriter'),
+                        'errors'  => ["max_attempt_exceed_error"]
                     )
                 );
             }
@@ -92,7 +81,7 @@ class mod_assign_submission_pxaiwriter_external extends external_api
             return json_encode(
                 array(
                     'success' => false,
-                    'message' => "Failure :". $ex->getMessage(),
+                    'message' => "Failure : ". $ex->getMessage(),
                     'errors'  => [$ex]
                 )
             );
@@ -149,8 +138,8 @@ class mod_assign_submission_pxaiwriter_external extends external_api
                 return json_encode(
                     array(
                         'success' => false,
-                        'message' => "Failure :" . get_string('ai_attempt_exceed_msg', 'assignsubmission_pxaiwriter'),
-                        'errors'  => [get_string('ai_attempt_exceed_msg', 'assignsubmission_pxaiwriter')]
+                        'message' => "Failure : " . get_string('ai_attempt_exceed_msg', 'assignsubmission_pxaiwriter'),
+                        'errors'  => ["max_attempt_exceed_error"]
                     )
                 );
             }
