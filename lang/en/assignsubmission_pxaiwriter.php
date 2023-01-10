@@ -90,4 +90,4 @@ $string['open_ai_assignment_settings_description'] = "";
 $string["attempt_count"] = "Attempt count";
 
 $string["submission_due_msg"] = "Your assignment submission is due. You are restricted from using the AI feature for this submission.";
-$string["ai_attempt_exceed_msg"] = "Your daily limit for using the AI feature is exceeded";
+$string["ai_attempt_exceed_msg"] = "Your daily limit for using the AI feature is exceeded.";
