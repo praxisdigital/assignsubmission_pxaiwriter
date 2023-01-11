@@ -115,7 +115,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
         $duedate = $this->get_assignment_duedate();
         $data->is_due_submission = $duedate < time();
-        
+
         if (!$data->is_due_submission) {
             $maxaiattempts = self::getPluginAdminSettings('attempt_count') ?? 0;
             $aiattempthistoryfortoday = $DB->get_record('pxaiwriter_api_attempts', array('assignment' => $data->assignmentid, 'userid' => $USER->id, 'api_attempt_date' => strtotime("today")));
@@ -124,7 +124,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         } else {
             $data->enabled_ai_actions = false;
         }
-        
+
 
         // $data = file_prepare_standard_filemanager(
         //     $data,
@@ -536,34 +536,34 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         return array(ASSIGNSUBMISSION_PXAIWRITER_FILEAREA => $this->get_name());
     }
 
-    // public function copy_submission(stdClass $sourcesubmission, stdClass $destsubmission)
-    // {
-    //     global $DB;
+    public function copy_submission(stdClass $sourcesubmission, stdClass $destsubmission)
+    {
+        global $DB;
 
-    //     // Copy the files across.                                                                                                   
-    //     $contextid = $this->assignment->get_context()->id;
-    //     $fs = get_file_storage();
-    //     $files = $fs->get_area_files(
-    //         $contextid,
-    //         'assignsubmission_pxaiwriter',
-    //         ASSIGNSUBMISSION_FILE_FILEAREA,
-    //         $sourcesubmission->id,
-    //         'id',
-    //         false
-    //     );
-    //     foreach ($files as $file) {
-    //         $fieldupdates = array('itemid' => $destsubmission->id);
-    //         $fs->create_file_from_storedfile($fieldupdates, $file);
-    //     }
+        // Copy the files across.                                                                                                   
+        $contextid = $this->assignment->get_context()->id;
+        // $fs = get_file_storage();
+        // $files = $fs->get_area_files(
+        //     $contextid,
+        //     'assignsubmission_pxaiwriter',
+        //     ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
+        //     $sourcesubmission->id,
+        //     'id',
+        //     false
+        // );
+        // foreach ($files as $file) {
+        //     $fieldupdates = array('itemid' => $destsubmission->id);
+        //     $fs->create_file_from_storedfile($fieldupdates, $file);
+        // }
 
-    //     // Copy the assignsubmission_pxaiwriter record.                                                                                   
-    //     if ($filesubmission = $this->get_file_submission($sourcesubmission->id)) {
-    //         unset($filesubmission->id);
-    //         $filesubmission->submission = $destsubmission->id;
-    //         $DB->insert_record('assignsubmission_pxaiwriter', $filesubmission);
-    //     }
-    //     return true;
-    // }
+        // Copy the assignsubmission_pxaiwriter record.                                                                                   
+        if ($pxaisubmission = $this->get_pxaiwriter_submission($sourcesubmission->id)) {
+            unset($pxaisubmission->id);
+            $pxaisubmission->submission = $destsubmission->id;
+            $DB->insert_record('assignsubmission_pxaiwriter', $pxaisubmission);
+        }
+        return true;
+    }
 
     public function format_for_log(stdClass $submission)
     {
@@ -705,5 +705,10 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             }
         }
         return $config;
+    }
+
+    public function get_config_for_external()
+    {
+        return (array) $this->get_config();
     }
 }
