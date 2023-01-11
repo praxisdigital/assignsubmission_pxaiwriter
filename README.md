@@ -37,31 +37,21 @@ You can access these set of settings here : https://<site>/admin/settings.php?se
 ## Setup
 
 - Install plugin
-- Goto https://\<site>/my/indexsys.php
-- Insert the new block
-- Turn on editing
-- Setup "Instance setting" above and hit save
-- Now create a post, with an image as the admin user and set it to a cohort a student can see.
-- Log in as a student and validate that the image is visible and the post is viewable.
-- If there is needed for change Archive page title
-  - Goto http://\<site>**/admin/tool/customlang/**
-  - Choose language that you wish to be edit
-  - Select **block_pxcohortnews** & type string name **"archive_header"**
-    - For the button in the block string name is **"goto_archive_button"**
-  - Change language string and save
-- Create user profile fields (in order to use department label on the news)
-  1. Go to /user/profile/index.php
-  2. Create a new "text input" field
-  3. Fill short name with "department"
-  4. Fill full name after customer see fit (Niels Brock set it as "Tilknyt din afdeling:")
+- Go to https://<site>/admin/settings.php?section=assignsubmission_pxaiwriter and complete the settings and save. 
+- Go to the Course view and add a new assignment. On the edit view, you can choose 'AI writer submission' as submission type. 
+- Change/add steps. You cannot delete the mandatory (frist two) steps.  
+- You may select 'Annotate PDF' feedback type, in case you may want to see the AI generated text vs final submission text by the student.
+- Either click on 'Save and return to course' or 'Save and display' button to save the submission configuration.
+
 
 **Database tables:**
 
-- assignsubmission_pxaiwriter - This records the course assignment submissions for the pxai writer
+- assignsubmission_pxaiwriter - This records the course assignment submissions for the pxai writer.
+- pxaiwriter_api_attempts - This records the API endpoint attempts by users by the assignment.
 
 ## Release notes
 
-- **v1.0.0.14** (2023010901)
+- **v1.0.0.16** (2023011001)
   - Admin settings Open API request settings
   - Admin settings Open API text comparer settings 
   - Admin settings Assignment Settings 
