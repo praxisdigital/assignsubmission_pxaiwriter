@@ -501,17 +501,17 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     //     return array('onlinetext' => get_string('pluginname', 'assignsubmission_pxaiwriter'));
     // }
 
-    // public function get_editor_text($name, $submissionid)
-    // {
-    //     if ($name == 'onlinetext') {
-    //         $onlinetextsubmission = $this->get_onlinetext_submission($submissionid);
-    //         if ($onlinetextsubmission) {
-    //             return $onlinetextsubmission->onlinetext;
-    //         }
-    //     }
+    public function get_editor_text($name, $submissionid)
+    {
+        if ($name == 'pxaiwriter') {
+            $pxaiwritersubmission = $this->get_pxaiwriter_submission($submissionid);
+            if ($pxaiwritersubmission) {
+                return $pxaiwritersubmission->steps_data;
+            }
+        }
 
-    //     return '';
-    // }
+        return '';
+    }
 
 
     // public function get_editor_format($name, $submissionid)

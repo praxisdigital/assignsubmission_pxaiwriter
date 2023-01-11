@@ -55,7 +55,7 @@ class provider implements
         $detail = [
                     'assignment' => 'privacy:metadata:assignmentid',
                     'submission' => 'privacy:metadata:submissionpurpose',
-                    'onlinetext' => 'privacy:metadata:textpurpose'
+                    'steps_data' => 'privacy:metadata:textpurpose'
                   ];
         $collection->add_database_table('assignsubmission_pxaiwriter', $detail, 'privacy:metadata:tablepurpose');
         $collection->link_subsystem('core_files', 'privacy:metadata:filepurpose');
@@ -106,14 +106,14 @@ class provider implements
         $assign = $exportdata->get_assign();
         $plugin = $assign->get_plugin_by_type('assignsubmission', 'pxaiwriter');
         $submission = $exportdata->get_pluginobject();
-        $editortext = $plugin->get_editor_text('pxaiwriter', $submission->id);
+        $stepsdata = $plugin->get_editor_text('pxaiwriter', $submission->id);
         $context = $exportdata->get_context();
-        if (!empty($editortext)) {
+        if (!empty($stepsdata)) {
             $submissiontext = new \stdClass();
             $currentpath = $exportdata->get_subcontext();
             $currentpath[] = get_string('privacy:path', 'assignsubmission_pxaiwriter');
             $submissiontext->text = writer::with_context($context)->rewrite_pluginfile_urls($currentpath,
-                    'assignsubmission_pxaiwriter', 'submissions_pxaiwriter', $submission->id, $editortext);
+                    'assignsubmission_pxaiwriter', 'submissions_pxaiwriter', $submission->id, $stepsdata);
             writer::with_context($context)
                     ->export_area_files($currentpath, 'assignsubmission_pxaiwriter', 'submissions_pxaiwriter', $submission->id)
                     // Add the text to the exporter.
@@ -126,7 +126,7 @@ class provider implements
                 'cmid' => $context->instanceid,
                 'course' => $coursecontext->instanceid,
                 'userid' => $userid,
-                'content' => $editortext,
+                'content' => $stepsdata,
                 'assignment' => $submission->assignment
             ]);
         }
