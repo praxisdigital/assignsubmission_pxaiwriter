@@ -181,10 +181,10 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
         foreach ($stepsdata as $key => $step) {
 
-            $initvalue = $stepsdata[0]->value;
 
-            if (!$key) {
-                $initvalue = "";
+            $initvalue = "";
+            if ($key) {
+                $initvalue = $stepsdata[($key - 1)]->value;
             }
 
             $diffhtmlcontent .= '<h4 style="margin: 10px 0px 10px 0px;"><b>Step ' . $step->step .  "</b></h4>";
