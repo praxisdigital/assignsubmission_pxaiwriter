@@ -135,12 +135,15 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         //     ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
         //     $submissionid
         // );
+        $steps_data_string = "";
 
-        if ($pxaiwritersubmission) {
-            $data->steps_data =  json_decode($pxaiwritersubmission->steps_data);
+        if ($pxaiwritersubmission && $pxaiwritersubmission->steps_data) {
+            $steps_data_string = $pxaiwritersubmission->steps_data;
         } else {
-            $data->steps_data = json_decode($this->get_config('pxaiwritersteps'));
+            $steps_data_string = $this->get_config('pxaiwritersteps');
         }
+
+        $data->steps_data = json_decode($steps_data_string);
 
         MoodleQuickForm::registerElementType(
             'pxaiwriter_steps_section',
@@ -150,7 +153,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
         $mform->addElement('pxaiwriter_steps_section', 'assignsubmission_pxaiwriter_steps_config', null, null, $data);
 
-        $mform->addElement('hidden', 'assignsubmission_pxaiwriter_student_data', null);
+        $mform->addElement('hidden', 'assignsubmission_pxaiwriter_student_data', $steps_data_string);
         $mform->setType('assignsubmission_pxaiwriter_student_data', PARAM_RAW);
 
         return true;
@@ -172,12 +175,24 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
         $stepsdatastring = $data->assignsubmission_pxaiwriter_student_data;
         $stepsdata = json_decode($stepsdatastring);
-        $stepsdatacount = count($stepsdata);
-        $initvalue = $stepsdata[0]->value;
-        $finalvalue = $stepsdata[$stepsdatacount - 1]->value;
-
         $granularity = self::getPluginAdminSettings('granularity');
-        $diffhtmlcontent = $this->getDiffRenderedHtml($initvalue, $finalvalue, $granularity);
+
+        $diffhtmlcontent = "";
+
+        foreach ($stepsdata as $key => $step) {
+
+            $initvalue = $stepsdata[0]->value;
+
+            if (!$key) {
+                $initvalue = "";
+            }
+
+            $diffhtmlcontent .= '<h4 style="margin: 10px 0px 10px 0px;"><b>Step ' . $step->step .  "</b></h4>";
+            $diffhtmlcontent .= '<div style="color:#808080;margin: 0px 0px 10px 0px;"><span><i>' . $step->description .  "</i></span></div>";
+            $diffhtmlcontent .= '<hr><div style="margin: 0px 0px 10px 0px;"></div>';
+            $diffhtmlcontent .= $this->getDiffRenderedHtml($initvalue, $step->value, $granularity);
+            $diffhtmlcontent .=  ($step->step == count($stepsdata)) ? "" : '<br pagebreak="true" />';
+        }
 
         require_once($CFG->libdir . '/tcpdf/tcpdf.php');
 
@@ -476,9 +491,6 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     //         return false;
     //     }
 
-
-
-
     //     // now copy the area files
     //     $this->assignment->copy_area_files_for_upgrade(
     //         $oldcontext->id,
@@ -513,18 +525,6 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         return '';
     }
 
-
-    // public function get_editor_format($name, $submissionid)
-    // {
-    //     if ($name == 'onlinetext') {
-    //         $onlinetext_submission = $this->get_onlinetext_submission($submissionid);
-    //         if ($onlinetext_submission) {
-    //             return $onlinetext_submission->onlineformat;
-    //         }
-    //     }
-
-    //     return 0;
-    // }
 
     public function is_empty(stdClass $submission)
     {
