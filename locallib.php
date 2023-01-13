@@ -6,6 +6,11 @@ define('ASSIGNSUBMISSION_PXAIWRITER_FILEAREA', 'submissions_pxaiwriter');
 class assign_submission_pxaiwriter extends assign_submission_plugin
 {
 
+    /**
+     * Gets the current assignment id by the loaded object
+     *
+     * @return void
+     */
     private function get_assignment_id()
     {
         try {
@@ -16,6 +21,11 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         }
     }
 
+    /**
+     * Helper function to get the due date of the currently loaded assignment
+     *
+     * @return void
+     */
     private function get_assignment_duedate()
     {
         try {
@@ -26,6 +36,12 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         }
     }
 
+    /**
+     * Returns the availale submission for a particular submission ID
+     *
+     * @param [type] $submissionid
+     * @return void
+     */
     private function get_pxaiwriter_submission($submissionid)
     {
         global $DB;
@@ -33,11 +49,22 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         return $DB->get_record('assignsubmission_pxaiwriter', array('submission' => $submissionid));
     }
 
+    /**
+     * Gets the plugin name fom the locale
+     *
+     * @return void
+     */
     public function get_name()
     {
         return get_string('pluginname', 'assignsubmission_pxaiwriter');
     }
 
+    /**
+     * Gets the assignment specific settings of the PXAIWriter plugin
+     *
+     * @param MoodleQuickForm $mform
+     * @return void
+     */
     public function get_settings(MoodleQuickForm $mform)
     {
         global $CFG, $DB;
@@ -56,8 +83,10 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             $step1->type = 'text';
             $step1->removable = false;
             $step1->isreadonly = true;
-            $step1->readonly = 'readonly';
-            $step1->custom_buttons = ['do_ai_magic', 'expand'];
+            $step1->readonly = '';
+            $step1->custom_buttons = array('name' => 'do_ai_magic', 'name' => 'expand');
+            $step1->ai_element = true;
+            $step1->ai_expand_element = true;
             $step1->value = '';
 
             $description = get_string('second_step_description', 'assignsubmission_pxaiwriter');
@@ -69,7 +98,9 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             $step2->removable = false;
             $step2->isreadonly = false;
             $step2->readonly = '';
-            $step2->custom_buttons = [];
+            $step2->custom_buttons = array();
+            $step2->ai_element = false;
+            $step2->ai_expand_element = false;
             $step2->value = '';
 
             array_push($stepList, $step1, $step2);
@@ -92,6 +123,12 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         $mform->addElement('pxaiwriter_steps_section', 'assignsubmission_pxaiwriter_steps_config', null, null, $stepList, $hasUsedInAssignments);
     }
 
+    /**
+     * Helper for saving the settings
+     *
+     * @param stdClass $data
+     * @return void
+     */
     public function save_settings(stdClass $data)
     {
         $this->set_config('pxaiwritersteps', $data->assignsubmission_pxaiwriter_steps);
@@ -125,16 +162,6 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             $data->enabled_ai_actions = false;
         }
 
-
-        // $data = file_prepare_standard_filemanager(
-        //     $data,
-        //     'setps_data_file',
-        //     $editoroptions,
-        //     $this->assignment->get_context(),
-        //     'assignsubmission_pxaiwriter',
-        //     ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
-        //     $submissionid
-        // );
         $steps_data_string = "";
 
         if ($pxaiwritersubmission && $pxaiwritersubmission->steps_data) {
@@ -144,6 +171,17 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         }
 
         $data->steps_data = json_decode($steps_data_string);
+
+
+        $maxAttempts = self::getPluginAdminSettings('attempt_count') ?? 0;
+        $usedApiAttempts = self::getAIAttemptRecord($this->assignment->get_instance()->id, $USER->id);
+
+        $str = new stdClass();
+        $str->remaining = ($maxAttempts - $usedApiAttempts);
+        $str->maximum = $maxAttempts;
+
+
+        $data->attempt_text =  get_string('remaining_ai_attempt_count_text', 'assignsubmission_pxaiwriter', $str);;
 
         MoodleQuickForm::registerElementType(
             'pxaiwriter_steps_section',
@@ -159,6 +197,13 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         return true;
     }
 
+    /**
+     * Calls upon save event of the assignment
+     *
+     * @param stdClass $submission
+     * @param stdClass $data
+     * @return void
+     */
     public function save(stdClass $submission, stdClass $data)
     {
         global $USER, $DB, $CFG;
@@ -180,7 +225,6 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         $diffhtmlcontent = "";
 
         foreach ($stepsdata as $key => $step) {
-
 
             $initvalue = "";
             if ($key) {
@@ -214,7 +258,6 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             false
         );
 
-
         // Prepare file record object
         $fileinfo = array(
             'contextid' => $this->assignment->get_context()->id, // ID of context
@@ -246,7 +289,6 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             'other' => array(
                 'pathnamehashes' => array_keys($files),
                 'content' => '',
-                //'format' => $data->pxaiwriter_editor['format']
             )
         );
         if (!empty($submission->userid) && ($submission->userid != $USER->id)) {
@@ -401,6 +443,13 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         return $result;
     }
 
+    /**
+     * Views summary view of a submission
+     *
+     * @param stdClass $submission
+     * @param [type] $showviewlink
+     * @return void
+     */
     public function view_summary(stdClass $submission, &$showviewlink)
     {
         $subm = $this->get_pxaiwriter_submission($submission->id);
@@ -412,6 +461,12 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         }
     }
 
+    /**
+     * Returns the last step content of a submission 
+     *
+     * @param stdClass $submission
+     * @return void
+     */
     public function view(stdClass $submission)
     {
         $result = '<br><br>';
@@ -427,92 +482,13 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         return $result;
     }
 
-    // public function can_upgrade($type, $version)
-    // {
-
-    //     $uploadsingle_type = 'uploadsingle';
-    //     $upload_type = 'upload';
-
-    //     if (($type == $uploadsingle_type || $type == $upload_type) && $version >= 2011112900) {
-    //         return true;
-    //     }
-    //     return false;
-    // }
-
-    // public function upgrade_settings(context $oldcontext, stdClass $oldassignment, &$log)
-    // {
-    //     global $DB;
-
-    //     if ($oldassignment->assignmenttype == 'uploadsingle') {
-    //         $this->set_config('maxfilesubmissions', 1);
-    //         $this->set_config('maxsubmissionsizebytes', $oldassignment->maxbytes);
-    //         return true;
-    //     } else if ($oldassignment->assignmenttype == 'upload') {
-    //         $this->set_config('maxfilesubmissions', $oldassignment->var1);
-    //         $this->set_config('maxsubmissionsizebytes', $oldassignment->maxbytes);
-
-    //         // Advanced file upload uses a different setting to do the same thing.                                                  
-    //         $DB->set_field(
-    //             'assign',
-    //             'submissiondrafts',
-    //             $oldassignment->var4,
-    //             array('id' => $this->assignment->get_instance()->id)
-    //         );
-
-    //         // Convert advanced file upload "hide description before due date" setting.                                             
-    //         $alwaysshow = 0;
-    //         if (!$oldassignment->var3) {
-    //             $alwaysshow = 1;
-    //         }
-    //         $DB->set_field(
-    //             'assign',
-    //             'alwaysshowdescription',
-    //             $alwaysshow,
-    //             array('id' => $this->assignment->get_instance()->id)
-    //         );
-    //         return true;
-    //     }
-    // }
-
-    // public function upgrade($oldcontext, $oldassignment, $oldsubmission, $submission, &$log)
-    // {
-    //     global $DB;
-
-    //     $file_submission = new stdClass();
-
-
-
-    //     $file_submission->numfiles = $oldsubmission->numfiles;
-    //     $file_submission->submission = $submission->id;
-    //     $file_submission->assignment = $this->assignment->get_instance()->id;
-
-    //     if (!$DB->insert_record('assign_submission_pxaiwriter', $file_submission) > 0) {
-    //         $log .= get_string('couldnotconvertsubmission', 'assignsubmission_pxaiwriter', $submission->userid);
-    //         return false;
-    //     }
-
-    //     // now copy the area files
-    //     $this->assignment->copy_area_files_for_upgrade(
-    //         $oldcontext->id,
-    //         'mod_assignment',
-    //         'submission',
-    //         $oldsubmission->id,
-    //         // New file area
-    //         $this->assignment->get_context()->id,
-    //         'mod_assign',
-    //         ASSIGN_FILEAREA_SUBMISSION_FILES,
-    //         $submission->id
-    //     );
-
-    //     return true;
-    // }
-
-
-    // public function get_editor_fields()
-    // {
-    //     return array('onlinetext' => get_string('pluginname', 'assignsubmission_pxaiwriter'));
-    // }
-
+    /**
+     * Helper function for backup restore to get the content of a submission
+     *
+     * @param [type] $name
+     * @param [type] $submissionid
+     * @return void
+     */
     public function get_editor_text($name, $submissionid)
     {
         if ($name == 'pxaiwriter') {
@@ -536,27 +512,16 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         return array(ASSIGNSUBMISSION_PXAIWRITER_FILEAREA => $this->get_name());
     }
 
+    /**
+     * Copy the assignsubmission_pxaiwriter record.   
+     *
+     * @param stdClass $sourcesubmission
+     * @param stdClass $destsubmission
+     * @return void
+     */
     public function copy_submission(stdClass $sourcesubmission, stdClass $destsubmission)
     {
-        global $DB;
-
-        // Copy the files across.                                                                                                   
-        $contextid = $this->assignment->get_context()->id;
-        // $fs = get_file_storage();
-        // $files = $fs->get_area_files(
-        //     $contextid,
-        //     'assignsubmission_pxaiwriter',
-        //     ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
-        //     $sourcesubmission->id,
-        //     'id',
-        //     false
-        // );
-        // foreach ($files as $file) {
-        //     $fieldupdates = array('itemid' => $destsubmission->id);
-        //     $fs->create_file_from_storedfile($fieldupdates, $file);
-        // }
-
-        // Copy the assignsubmission_pxaiwriter record.                                                                                   
+        global $DB;                                                                              
         if ($pxaisubmission = $this->get_pxaiwriter_submission($sourcesubmission->id)) {
             unset($pxaisubmission->id);
             $pxaisubmission->submission = $destsubmission->id;
@@ -565,9 +530,14 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         return true;
     }
 
+    /**
+     * format the info for each submission plugin add_to_log   
+     *
+     * @param stdClass $submission
+     * @return void
+     */
     public function format_for_log(stdClass $submission)
-    {
-        // format the info for each submission plugin add_to_log                                                                    
+    {                                                                 
 
         $fileloginfo = '';
         $fileloginfo .= 'PXAIWriter submission.<br>';
@@ -575,6 +545,11 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         return $fileloginfo;
     }
 
+    /**
+     * Delete instance
+     *
+     * @return void
+     */
     public function delete_instance()
     {
         global $DB;
@@ -705,6 +680,19 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             }
         }
         return $config;
+    }
+
+    /**
+     * Helper function to receive the attempt record for the current date
+     *
+     * @param [type] $assignmentid
+     * @param [type] $userid
+     * @return void
+     */
+    public function getAIAttemptRecord($assignmentid, $userid)
+    {
+        global $DB;
+        return $DB->get_record('pxaiwriter_api_attempts', array('assignment' => $assignmentid, 'userid' => $userid, 'api_attempt_date' => strtotime("today")));
     }
 
     public function get_config_for_external()

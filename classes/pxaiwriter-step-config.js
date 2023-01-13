@@ -51,6 +51,8 @@ stepConfig.init = function (config, stepConfig) {
                 readonly: '',
                 isreadonly: false,
                 custom_buttons: [],
+                ai_element : false,
+                ai_expand_element : false,
                 value: ""
             };
             this.steps.push(newStep);

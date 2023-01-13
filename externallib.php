@@ -9,7 +9,7 @@ class mod_assign_submission_pxaiwriter_external extends external_api
 {
 
     /**
-     * Undocumented function
+     * Calls the Open AI end point with the raw instruction that was passed by a student
      *
      * @param [type] $contextid
      * @param [type] $jsonformdata
@@ -34,7 +34,7 @@ class mod_assign_submission_pxaiwriter_external extends external_api
             $userid = intval($USER->id);
             $date = strtotime("today");
 
-            $attempt_record = $DB->get_record('pxaiwriter_api_attempts', array('assignment' => $assignmentid, 'userid' => $userid, 'api_attempt_date' => strtotime("today")));
+            $attempt_record = self::getAIAttemptRecord($assignmentid, $userid);
 
             if (self::isExceedingAttemptCount($attempt_record)) {
                 return json_encode(
@@ -51,7 +51,7 @@ class mod_assign_submission_pxaiwriter_external extends external_api
                 $attempt_record->assignment = $assignmentid;
                 $attempt_record->userid = $userid;
             }
-            
+
             $payload = $config = $url = "";
             self::getOpenAIRequestConfig($payload, $config, $url);
 
@@ -69,10 +69,13 @@ class mod_assign_submission_pxaiwriter_external extends external_api
 
             self::updateAttemptsHistory($attempt_record);
 
+            $msg = self::getAvailableAIattemtsMessage($attempt_record);
+
             return json_encode(
                 array(
                     'success' => true,
                     'data' => $genText,
+                    'attempt_text' => $msg,
                     'message' => "Successful",
                     'errors'  => []
                 )
@@ -81,11 +84,45 @@ class mod_assign_submission_pxaiwriter_external extends external_api
             return json_encode(
                 array(
                     'success' => false,
-                    'message' => "Failure : ". $ex->getMessage(),
+                    'message' => "Failure : " . $ex->getMessage(),
                     'errors'  => [$ex]
                 )
             );
         }
+    }
+
+    /**
+     * Gets how many attempts out of max api attemts left made by a student for an assignment
+     *
+     * @param [type] $attemptRecord
+     * @return void
+     */
+    public static function getAvailableAIattemtsMessage($attemptRecord)
+    {
+        $usedApiAttempts = 0;
+        $maxAttempts = self::getPluginAdminSettings('attempt_count');
+
+        if ($attemptRecord) {
+            $usedApiAttempts = ($attemptRecord->api_attempts) ? $attemptRecord->api_attempts : 0;
+        }
+
+        $str = new stdClass();
+        $str->remaining = ($maxAttempts - $usedApiAttempts);
+        $str->maximum = $maxAttempts;
+        return get_string('remaining_ai_attempt_count_text', 'assignsubmission_pxaiwriter', $str);
+    }
+
+    /**
+     * Retrieves the AI request attempt record by the current date, the assignment id and the user id
+     *
+     * @param [type] $assignmentid
+     * @param [type] $userid
+     * @return void
+     */
+    public static function getAIAttemptRecord($assignmentid, $userid)
+    {
+        global $DB;
+        return $DB->get_record('pxaiwriter_api_attempts', array('assignment' => $assignmentid, 'userid' => $userid, 'api_attempt_date' => strtotime("today")));
     }
 
     public static function do_ai_magic_parameters()
@@ -109,7 +146,7 @@ class mod_assign_submission_pxaiwriter_external extends external_api
     }
 
     /**
-     * Undocumented function
+     * Calls the Open API to expand a given text content by a student. This prepends expand instruction to the request
      *
      * @param [type] $contextid
      * @param [type] $jsonformdata
@@ -166,10 +203,13 @@ class mod_assign_submission_pxaiwriter_external extends external_api
 
             self::updateAttemptsHistory($attempt_record);
 
+            $msg = self::getAvailableAIattemtsMessage($attempt_record);
+
             return json_encode(
                 array(
                     'success' => true,
                     'data' => $genText,
+                    'attempt_text' => $msg,
                     'message' => "Successful",
                     'errors'  => []
                 )
@@ -205,6 +245,14 @@ class mod_assign_submission_pxaiwriter_external extends external_api
         return new external_value(PARAM_RAW, 'Update response');
     }
 
+    /**
+     * Helper function to get the Open AI API request  payload and header configuration formatted 
+     *
+     * @param [type] $payload
+     * @param [type] $config
+     * @param [type] $url
+     * @return void
+     */
     function getOpenAIRequestConfig(&$payload, &$config, &$url)
     {
 
@@ -229,6 +277,12 @@ class mod_assign_submission_pxaiwriter_external extends external_api
         $url = $adminConfig->url;
     }
 
+    /**
+     * Helper function to convert a json string to an object recursively 
+     *
+     * @param [type] $json
+     * @return void
+     */
     function jsonToObject($json)
     {
         while (!is_object($json)) {
@@ -237,6 +291,15 @@ class mod_assign_submission_pxaiwriter_external extends external_api
         return $json;
     }
 
+    /**
+     * Helper function to send a custom CURL
+     *
+     * @param [type] $endpoint
+     * @param array $data
+     * @param string $method
+     * @param array $headerConfig
+     * @return void
+     */
     function sendCurlRequest($endpoint, $data = [], $method = "GET", $headerConfig = array('Content-Type: application/json', 'Accept: application/json'))
     {
 
@@ -322,7 +385,14 @@ class mod_assign_submission_pxaiwriter_external extends external_api
         return $config;
     }
 
-    function updateAttemptsHistory($attempt_record) {
+    /**
+     * Updates student AI attempt history for assignments
+     *
+     * @param [type] $attempt_record
+     * @return void
+     */
+    function updateAttemptsHistory($attempt_record)
+    {
         global $DB;
 
         if ($attempt_record->id) {
@@ -335,7 +405,14 @@ class mod_assign_submission_pxaiwriter_external extends external_api
         }
     }
 
-    function isExceedingAttemptCount($attempt_record) {
+    /**
+     * Checks if an attempt record exceeds the allowed API request count
+     *
+     * @param [type] $attempt_record
+     * @return boolean
+     */
+    function isExceedingAttemptCount($attempt_record)
+    {
         $maxattempts = self::getPluginAdminSettings('attempt_count');
         return !($attempt_record->api_attempts < $maxattempts);
     }

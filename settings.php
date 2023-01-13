@@ -6,22 +6,6 @@ $settings->add(new admin_setting_configcheckbox(
     1
 ));
 
-/**
- * id 
- * URL  
- * Content-Type  
- * authorization  
- * model  
- * temperature  
- * max_tokens  
- * top_p  
- * frequency_penalty 
- * presence_penalty  
- * API-key  
- * lastmodified 
- * lastmodifiedby 
- */
-
 $settings->add(new admin_setting_heading(
     'assignsubmissionheading',
     new lang_string('open_ai_request_settings', 'assignsubmission_pxaiwriter'),
@@ -119,7 +103,6 @@ $settings->add(new admin_setting_configselect(
     [$USER->id => $USER->firstname . ' ' . $USER->lastname]
 ));
 
-
 $settings->add(new admin_setting_heading(
     'assignsubmissioncomparerheading',
     new lang_string('open_ai_comparer_settings', 'assignsubmission_pxaiwriter'),
@@ -133,7 +116,6 @@ $settings->add(new admin_setting_configselect(
     'json',
     ["word" => "Word", "sentence" => "Sentence", 'paragraph' => "Paragraph", 'character' => "Character"]
 ));
-
 
 $settings->add(new admin_setting_heading(
     'assignsubmissionassignmentheading',

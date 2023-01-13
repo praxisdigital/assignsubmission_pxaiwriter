@@ -27,15 +27,6 @@ class pxaiwriter_steps_student_form_element extends HTML_QuickForm_element
     public function __construct($elementName = null, $elementLabel = null, $attributes = null, $initvalue = null)
     {
         $this->_init = $initvalue;
-
-
-        // echo (var_dump($elementName));
-        // echo (var_dump($elementLabel));
-        // echo (var_dump($attributes));
-        // echo (var_dump($initvalue));
-
-
-
         parent::__construct($elementName, $elementLabel, $attributes);
     }
 
@@ -49,12 +40,6 @@ class pxaiwriter_steps_student_form_element extends HTML_QuickForm_element
         debugging('Use of class name as constructor is deprecated', DEBUG_DEVELOPER);
         self::__construct($elementName, $elementLabel, $attributes, $initvalue);
     }
-
-    // function onQuickFormEvent($event, $arg, &$caller) {
-    //     global $OUTPUT;
-
-    //     return parent::onQuickFormEvent($event, $arg, $caller);
-    // }
 
     function setName($name)
     {
@@ -76,35 +61,18 @@ class pxaiwriter_steps_student_form_element extends HTML_QuickForm_element
         return $this->_value;
     }
 
-    // function getFrozenHtml() {
-    //     $html = "<div>Test</div>";
-    //     return $html;
-    // }
-
+    /**
+     * Loads the template for student in the assignment view. 
+     * Student is able to navigate, modity content in the steps available. 
+     * The included js file is responsible for the events of the template
+     *
+     * @return void
+     */
     function toHtml()
     {
         global $CFG, $OUTPUT, $PAGE;
 
         $stepConfigForm = new stdClass();
-
-        //$stepConfigForm->steps = $this->_init_val;
-        // $stepLabel = get_string('guide_to_step_label', 'assignsubmission_pxaiwriter');
-        // $removeButtonLabel = get_string('remove_step_label', 'assignsubmission_pxaiwriter');
-        // $stepConfigForm->template = '<div class="row mb-2" id="step_{{step}}">
-        //                             <div class="col-md-11">
-        //                                 <div class=" form-group row">
-        //                                     <label for="staticEmail" class="col-md-3 col-form-label">'.$stepLabel.'&nbsp;{{step}}</label>
-        //                                     <div class="col-md-9">
-        //                                         <textarea class="form-control step-des" name="step_{{step}}_value" id="step_{{step}}_value" data-id="{{step}}">{{ description }}</textarea>
-        //                                     </div>
-        //                                 </div>
-        //                             </div>
-        //                             <div class="col-md-1 align-self-baseline">
-        //                                 {{#removable}} <button class="btn btn-remove remove-btn" id="remove_{{step}}" data-id="{{step}}"><i class="fa fa-trash" aria-hidden="true"></i></button> {{/removable}}
-        //                                 {{^removable}} <button class="btn btn-remove remove-btn d-none" id="remove_{{step}}" data-id="{{step}}"><i class="fa fa-trash" aria-hidden="true"></i></button> {{/removable}}
-        //                             </div>
-        //                         </div>';
-        // $stepConfigForm->hasUsed = $this->_has_used;
         $stepConfigForm->steps = $this->_init->steps_data;
 
         $html = "";
@@ -112,7 +80,7 @@ class pxaiwriter_steps_student_form_element extends HTML_QuickForm_element
         $module = array('name' => 'assignsubmission_pxaiwriter_stepconfig_form', 'fullpath' => '/mod/assign/submission/pxaiwriter/classes/pxaiwriter-step-form-config.js');
         $PAGE->requires->js_init_call('stepConfigForm.init', array($stepConfigForm), true, $module);
 
-        $PAGE->requires->js_call_amd('assignsubmission_pxaiwriter/pxaiendpoint', 'init', ['id' => 1, 'cmid' => 100, 'contextid' => 1, 'steps_data' => $this->_init->steps_data, 'assignmentid' => $this->_init->assignmentid]);
+        $PAGE->requires->js_call_amd('assignsubmission_pxaiwriter/pxaiendpoint', 'init', ['id' => 1, 'cmid' => 100, 'contextid' => 1, 'steps_data' => $this->_init->steps_data, 'assignmentid' => $this->_init->assignmentid, 'attempt_text' => $this->_init->attempt_text]);
 
         return $html;
     }

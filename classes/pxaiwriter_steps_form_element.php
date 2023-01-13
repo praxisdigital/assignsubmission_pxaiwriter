@@ -43,12 +43,6 @@ class pxaiwriter_steps_form_element extends HTML_QuickForm_element
         self::__construct($elementName, $elementLabel, $attributes, $initvalue);
     }
 
-    // function onQuickFormEvent($event, $arg, &$caller) {
-    //     global $OUTPUT;
-
-    //     return parent::onQuickFormEvent($event, $arg, $caller);
-    // }
-
     function setName($name) {
         $this->updateAttributes(array('name' => $name));
     }
@@ -65,20 +59,18 @@ class pxaiwriter_steps_form_element extends HTML_QuickForm_element
         return $this->_value;
     }
 
-    // function getFrozenHtml() {
-    //     $html = "<div>Test</div>";
-    //     return $html;
-    // }
-
+    /**
+     * This template loads at the assignment configuration area. The user is able to add, remove and modify steps instructions via this tempalte
+     *
+     * @return void
+     */
     function toHtml()
     {
         global $CFG, $OUTPUT, $PAGE;
 
         $stepConfig = new stdClass();
-
         $stepConfig->steps = $this->_init_val;
         $stepLabel = get_string('guide_to_step_label', 'assignsubmission_pxaiwriter');
-        $removeButtonLabel = get_string('remove_step_label', 'assignsubmission_pxaiwriter');
         $stepConfig->template = '<div class="row mb-2" id="step_{{step}}">
                                     <div class="col-md-11">
                                         <div class=" form-group row">
@@ -97,6 +89,7 @@ class pxaiwriter_steps_form_element extends HTML_QuickForm_element
         $html = "";
         $html .= $OUTPUT->render_from_template('assignsubmission_pxaiwriter/assignsubmission_pxaiwriter_steps_form',null);
 
+        // Includes the config javascript for tempalte actions
         $module = array('name' => 'assignsubmission_pxaiwriter_stepConfig', 'fullpath' => '/mod/assign/submission/pxaiwriter/classes/pxaiwriter-step-config.js');
         $PAGE->requires->js_init_call('stepConfig.init', array($stepConfig), true, $module);
         return $html;

@@ -1,5 +1,5 @@
 define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory', "core/modal_events"], function ($, Ajax, Str, Templates, ModalFactory, ModalEvents) {
-    var EventCreator = function (id, cmid, contextid, steps_data, assignmentid) {
+    var EventCreator = function (id, cmid, contextid, steps_data, assignmentid, attempt_text) {
 
         this.instanceid = id;
         this.cmid = cmid;
@@ -9,11 +9,15 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
         this.selStart = 0;
         this.selEnd = 0;
         this.assignmentid = assignmentid
+        this.attempt_text = attempt_text
 
         this.init();
+
     }
 
     EventCreator.prototype.init = function () {
+
+        this.setAttemtCountText(this.attempt_text);
 
         var getSelectedTextareaText = function (name) {
 
@@ -37,7 +41,6 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
 
             const currentStep = $(e.target).data("step");
             this.currStep = currentStep;
-            // let stepData = this.steps.find(({ step }) => step == currentStep);
             const textElement = $('textarea[name="pxaiwriter-data-step-' + currentStep + '"]');
             const selectedText = getSelectedTextareaText("pxaiwriter-data-step-" + currentStep);
 
@@ -64,9 +67,6 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
 
             const currentStep = $(e.target).data("step");
             this.currStep = currentStep;
-
-            // let stepData = this.steps.find(({ step }) => step == currentStep);
-
             const titleText = $("#pxaiwriter-title").val();
 
             if (!titleText) {
@@ -77,6 +77,7 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
             let formData = { 'text': titleText, 'assignmentid': this.assignmentid };
 
             $(':button').prop('disabled', true);
+
             var promises = Ajax.call([
                 {
                     methodname: "mod_mod_assign_submission_pxaiwriter_doaimagic",
@@ -94,7 +95,12 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
         $(':button').prop('disabled', false);
         let responseObj = JSON.parse(response);
         if (responseObj.success == true) {
-            var element = $('textarea[name="pxaiwriter-data-step-' + this.currStep + '"]').val(responseObj.data);
+
+            var elementValue = $('textarea[name="pxaiwriter-data-step-' + this.currStep + '"]').val();
+            var element = $('textarea[name="pxaiwriter-data-step-' + this.currStep + '"]').val(elementValue + responseObj.data);
+
+            this.setAttemtCountText(responseObj.attempt_text);
+
             $('textarea[name="pxaiwriter-data-step-' + this.currStep + '"]').trigger("change");
         } else {
             if (responseObj.errors && responseObj.errors.includes("max_attempt_exceed_error")) {
@@ -107,13 +113,7 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
         $(':button').prop('disabled', false);
         let responseObj = JSON.parse(response);
         alert(responseObj.message);
-        // $('#error-text').css('display', 'block');
-        // $('#error-text').text("An error occurred during creating event");
-        // $('[data-action="save"]').prop('disabled', false);
     }
-
-
-
 
     EventCreator.prototype.handleExpandResponse = function (response) {
         $(':button').prop('disabled', false);
@@ -125,14 +125,11 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
 
             let finalText = elementText.substring(0, this.selStart) + expandedText + elementText.substring(this.selEnd);
             var element = $('textarea[name="pxaiwriter-data-step-' + this.currStep + '"]').val(finalText);
+
+            this.setAttemtCountText(responseObj.attempt_text);
+
             $('textarea[name="pxaiwriter-data-step-' + this.currStep + '"]').trigger("change");
-            // let error = responseObj.message;
-            // if (responseObj.errors && responseObj.errors.overlapping_events_error) {
-            //     error = responseObj.errors.overlapping_events_error;
-            // }
-            // $('#error-text').css('display', 'block');
-            // $('#error-text').text(error);
-            // $('[data-action="save"]').prop('disabled', false);
+
         } else {
             if (responseObj.errors && responseObj.errors.includes("max_attempt_exceed_error")) {
                 $('#max-attempt-exceeds-error-msg-modal').modal('show');
@@ -144,14 +141,17 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
         $(':button').prop('disabled', false);
         let responseObj = JSON.parse(response);
         alert(responseObj.message);
-        // $('#error-text').css('display', 'block');
-        // $('#error-text').text("An error occurred during creating event");
-        // $('[data-action="save"]').prop('disabled', false);
+    }
+
+    EventCreator.prototype.setAttemtCountText = function (text) {
+        if (text) {
+            $(".remaining-ai-attempts").text(text);
+        }
     }
 
     return {
-        init: function (id, cmid, contextid, steps_data, assignmentid) {
-            return new EventCreator(id, cmid, contextid, steps_data, assignmentid);
+        init: function (id, cmid, contextid, steps_data, assignmentid, attempt_text) {
+            return new EventCreator(id, cmid, contextid, steps_data, assignmentid, attempt_text);
         }
     };
 });

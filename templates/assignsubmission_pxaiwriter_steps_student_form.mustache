@@ -1,61 +1,83 @@
-    <div class="container-fluid">
+    <div class="container-fluid p-0">
 
         <div id="pxaiwriter-input-steps-component" class="row">
 
-            <div class="steps-container col-12">
+            <div class="steps-container col-12 ">
+
                 <div class="steps row ">
                     {{#steps_data}}
-                    <div class="step-container col-md-12 mb-3 d-none" data-step="{{step}}">
-                        <h4>{{#str}} steps_title, assignsubmission_pxaiwriter{{/str}} {{step}} </h4>
-                        <div class="mb-2">
-                           <span> {{description}} </span>
+                    <div class="step-container col-md-12 mb-2 d-none" data-step="{{step}}">
+                        <div class="row">
+                        <div class="col-md-12">
+                            <h4>{{#str}} steps_title, assignsubmission_pxaiwriter{{/str}} {{step}} </h4>
+                            <div class="mb-2">
+                                <span> {{description}} </span>
+                            </div>
                         </div>
-                        {{#isreadonly}}
-                            <input id="pxaiwriter-title" type="text" class="form-control pxaiwriter-student-data-title mb-1" data-input-step="{{step}}" data-step="1" placeholder="{{#str}} title_place_holder, assignsubmission_pxaiwriter{{/str}}">
-                        {{/isreadonly}}
-                        <textarea {{readonly}} class="form-control pxaiwriter-student-data" data-input-step="{{step}}" name="pxaiwriter-data-step-{{step}}" placeholder="" style="width:100%" name="" id="" cols="40" rows="10">{{value}}</textarea>
+                        
+                        <div class="col-md-12 mb-1 ">
+                            <div class="row">
+                                <div class="col-md-8 d-flex align-items-end"><b><small class="remaining-ai-attempts">Remaining AI attempt count</small></b></div>
+                                {{#ai_expand_element}}
+                                    <div class="col-md-4 text-right actions-container">
+                                        <button id="pxaiwriter-expand-selection" type="button" class="btn btn-secondary d-none" data-step="1">{{#str}} expand_selection, assignsubmission_pxaiwriter{{/str}}</button>
+                                    </div>
+                                {{/ai_expand_element}}
+                            </div>
+                          </div>
+
+                        <div class="col-md-12 mb-1">
+                            <textarea {{readonly}} class="form-control pxaiwriter-student-data" data-input-step="{{step}}" name="pxaiwriter-data-step-{{step}}" placeholder="" style="width:100%" name="" id="" cols="40" rows="10">{{value}}</textarea>
+                        </div>
+
+                        {{#ai_element}}
+                         <div class="col-md-12 mb-1 actions-container">
+                            <div class="row">
+
+                                <div class="input-group col-md-12 text">
+                                    <input id="pxaiwriter-title" type="text" class="form-control pxaiwriter-student-data-title mr-1" data-input-step="{{step}}" data-step="1" placeholder="{{#str}} title_place_holder, assignsubmission_pxaiwriter{{/str}}">
+                                    <div class="input-group-append">
+                                        <button id="pxaiwriter-do-ai-magic" type="button" class="btn btn-primary d-none" data-step="1">{{#str}} do_ai_magic, assignsubmission_pxaiwriter{{/str}}</button>
+                                    </div>
+                                </div>
+
+                            </div>
+                         </div>
+                        {{/ai_element}}
+
+                        </div>
                     </div>
                     {{/steps_data}}
                 </div>
-                <div class="row mb-3">
-                    <div class="col-auto" style="color: red;">
-                        {{#is_due_submission}}
-                            <i>{{#str}} submission_due_msg, assignsubmission_pxaiwriter{{/str}}</i>
-                        {{/is_due_submission}}
-                        {{#exceeds_max_attempts}}
-                            <i>{{#str}} ai_attempt_exceed_msg, assignsubmission_pxaiwriter{{/str}}</i>
-                        {{/exceeds_max_attempts}}
-                    </div>
-                </div>
-                <div class="actions-container mb-3 row">
-                    <div class="col-md-6 ">
-                        <div class="row">
-                            <div class="col-4">
-                                <button id="go-back" name="go-back" type="button" class="btn btn-secondary">{{#str}} previous, assignsubmission_pxaiwriter{{/str}}</button>
-                            </div>
-                            <div class="col-4">
-                                <button id="advance" name="advance" type="button"
-                                    class="btn btn-secondary">{{#str}} next, assignsubmission_pxaiwriter{{/str}}</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="row">
-                            {{#enabled_ai_actions}}
-                            <div class="col-auto">
-                                <button id="pxaiwriter-expand-selection" type="button" class="btn btn-secondary d-none" data-step="1">{{#str}} expand_selection, assignsubmission_pxaiwriter{{/str}}</button>
-                            </div>
-                            <div class="col-auto">
-                                <button id="pxaiwriter-do-ai-magic" type="button" class="btn btn-primary d-none" data-step="1">{{#str}} do_ai_magic, assignsubmission_pxaiwriter{{/str}}</button>
-                            </div>
-                            {{/enabled_ai_actions}}
-                        </div>
-                    </div>
 
+                {{#is_due_submission}}
+                    <div class="row mb-1">
+                        <div class="col-auto" style="color: red;">
+                            <i>{{#str}} submission_due_msg, assignsubmission_pxaiwriter{{/str}}</i>
+                        </div>
+                    </div>
+                {{/is_due_submission}}
+                {{#exceeds_max_attempts}}
+                    <div class="row mb-1">
+                        <div class="col-auto" style="color: red;">
+                            <i>{{#str}} ai_attempt_exceed_msg, assignsubmission_pxaiwriter{{/str}}</i>
+                        </div>
+                    </div>
+                {{/exceeds_max_attempts}}
+
+                <div class="actions-container mb-3 row d-flex justify-content-end">
+
+                    <div class="col-4 text-right">
+                        <button id="go-back" name="go-back" type="button" class="btn btn-secondary">{{#str}} previous, assignsubmission_pxaiwriter{{/str}}</button>
+                    </div>
+                    <div class="col-4 text-right">
+                        <button id="advance" name="advance" type="button"
+                            class="btn btn-secondary">{{#str}} next, assignsubmission_pxaiwriter{{/str}}</button>
+                    </div>
+       
                 </div>
 
             </div>
-
 
         </div>
 
