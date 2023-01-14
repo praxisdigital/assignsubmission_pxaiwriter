@@ -41,10 +41,10 @@ $string['url_description'] = "Open API URL";
 $string['content_type'] = 'Content Type';
 $string['content_type_description'] = "";
 $string['authorization'] = "Authorization";
-$string['authorization_description'] = "";
+$string['authorization_description'] = "Example :- Bearer sk-{token}";
 
 $string['model'] = 'Model';
-$string['model_type_description'] = "";
+$string['model_description'] = "";
 $string['temperature'] = "Temperature";
 $string['temperature_description'] = "";
 
@@ -67,7 +67,7 @@ $string['last_modified'] = "Last modified";
 $string['last_modified_description'] = "";
 
 $string['last_modified_by'] = "Last modified by";
-$string['last_modified_description'] = "";
+$string['last_modified_by_description'] = "";
 
 $string['steps_title'] = "Step";
 $string['previous'] = "Previous";
@@ -81,13 +81,14 @@ $string['title-required-warning'] = "Title is a mandatory field for this action.
 $string['selection-required-warning'] = "Please select a valid phrase or text with in the text container to proceed with this action.";
 
 $string['granularity'] = "Granularity";
-
+$string['granularity_description'] = "";
 
 $string['open_ai_assignment_settings'] = "Assignment Settings";
 $string['open_ai_assignment_settings_description'] = "";
 
 
 $string["attempt_count"] = "Attempt count";
+$string["attempt_count_description"] = "";
 
 $string["submission_due_msg"] = "Your assignment submission is due. You are restricted from using the AI feature for this submission.";
 $string["ai_attempt_exceed_msg"] = "Your daily limit for using the AI feature is exceeded.";
