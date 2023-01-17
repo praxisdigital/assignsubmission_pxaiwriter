@@ -318,7 +318,6 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             'submissionid' => $submission->id,
             'submissionattempt' => $submission->attemptnumber,
             'submissionstatus' => $submission->status,
-            // 'steps_data' => $count,
             'groupid' => $groupid,
             'groupname' => $groupname
         );

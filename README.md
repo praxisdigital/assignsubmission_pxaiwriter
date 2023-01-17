@@ -1,4 +1,4 @@
-# Name: Praxis Cohort News
+# Name: Praxis AI Writer
 
 ## Type
 

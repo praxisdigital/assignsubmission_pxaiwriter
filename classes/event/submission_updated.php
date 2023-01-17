@@ -56,8 +56,8 @@ class submission_updated extends \mod_assign\event\submission_updated {
      * @return string
      */
     public function get_description() {
-        $descriptionstring = "The user with id '$this->userid' updated an online text submission with " .
-            "'{$this->other['pxaiwriterwordcount']}' words in the assignment with course module id " .
+        $descriptionstring = "The user with id '$this->userid' updated a PX AI text submission with " .
+            "course module id " .
             "'$this->contextinstanceid'";
         if (!empty($this->other['groupid'])) {
             $descriptionstring .= " for the group with id '{$this->other['groupid']}'.";
@@ -76,9 +76,6 @@ class submission_updated extends \mod_assign\event\submission_updated {
      */
     protected function validate_data() {
         parent::validate_data();
-        // if (!isset($this->other['pxaiwriterwordcount'])) {
-        //     throw new \coding_exception('The \'pxaiwriterwordcount\' value must be set in other.');
-        // }
     }
 
     public static function get_objectid_mapping() {
