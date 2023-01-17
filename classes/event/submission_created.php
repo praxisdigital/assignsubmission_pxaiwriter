@@ -56,8 +56,8 @@ class submission_created extends \mod_assign\event\submission_created {
      * @return string
      */
     public function get_description() {
-        $descriptionstring = "The user with id '$this->userid' created an online text submission with " .
-            "'{$this->other['pxaiwriterwordcount']}' words in the assignment with course module id " .
+        $descriptionstring = "The user with id '$this->userid' updated a PX AI text submission with " .
+            "course module id " .
             "'$this->contextinstanceid'";
         if (!empty($this->other['groupid'])) {
             $descriptionstring .= " for the group with id '{$this->other['groupid']}'.";
@@ -75,14 +75,11 @@ class submission_created extends \mod_assign\event\submission_created {
      * @return void
      */
     protected function validate_data() {
-        //parent::validate_data();
-        // if (!isset($this->other['pxaiwriterwordcount'])) {
-        //     throw new \coding_exception('The \'pxaiwriterwordcount\' value must be set in other.');
-        // }
+        parent::validate_data();
     }
 
     public static function get_objectid_mapping() {
         // No mapping available for 'assignsubmission_pxaiwriter'.
-        //return array('db' => 'assignsubmission_pxaiwriter', 'restore' => \core\event\base::NOT_MAPPED);
+        return array('db' => 'assignsubmission_pxaiwriter', 'restore' => \core\event\base::NOT_MAPPED);
     }
 }
