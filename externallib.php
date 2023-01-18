@@ -285,8 +285,13 @@ class mod_assign_submission_pxaiwriter_external extends external_api
      */
     function jsonToObject($json)
     {
+        $i = 0;
         while (!is_object($json)) {
             $json = json_decode($json);
+            if ($i > 5) {
+                break;
+            }
+            $i++;
         }
         return $json;
     }

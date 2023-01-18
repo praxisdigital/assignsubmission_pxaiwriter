@@ -3,7 +3,7 @@
     {
       "name": "assignsubmission_pxaiwriter",
       "version": {
-        "min": 2023011001,
+        "min": 2023011002,
         "max": null,
         "absolute": null,
         "branch": "master"
