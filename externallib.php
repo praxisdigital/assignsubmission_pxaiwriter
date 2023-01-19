@@ -27,9 +27,6 @@ class mod_assign_submission_pxaiwriter_external extends external_api
 
             $serialiseddata = json_decode($params['jsondata']);
 
-            $data = array();
-            parse_str($serialiseddata, $data);
-
             $assignmentid = intval($serialiseddata->assignmentid);
             $userid = intval($USER->id);
             $date = strtotime("today");
@@ -59,7 +56,15 @@ class mod_assign_submission_pxaiwriter_external extends external_api
 
             $result = self::sendCurlRequest($url, $payload, "POST", $config);
 
+            if ($result === false) {
+                throw new Exception("An error occured while calling the API.");
+            }
+
             $result = self::jsonToObject($result);
+
+            if ($result === false) {
+                throw new Exception("An error occured while parsing the API request.");
+            }
 
             $genText = "";
 
@@ -77,6 +82,7 @@ class mod_assign_submission_pxaiwriter_external extends external_api
                     'data' => $genText,
                     'attempt_text' => $msg,
                     'message' => "Successful",
+                    // "data" => $result,
                     'errors'  => []
                 )
             );
@@ -163,9 +169,6 @@ class mod_assign_submission_pxaiwriter_external extends external_api
 
             $serialiseddata = json_decode($params['jsondata']);
 
-            $data = array();
-            parse_str($serialiseddata, $data);
-
             $assignmentid = intval($serialiseddata->assignmentid);
             $userid = intval($USER->id);
 
@@ -193,7 +196,15 @@ class mod_assign_submission_pxaiwriter_external extends external_api
 
             $result = self::sendCurlRequest($url, $payload, "POST", $config);
 
+            if ($result === false) {
+                throw new Exception("An error occured while calling the API.");
+            }
+
             $result = self::jsonToObject($result);
+
+            if ($result === false) {
+                throw new Exception("An error occured while parsing the API request.");
+            }
 
             $genText = "";
 
@@ -211,6 +222,7 @@ class mod_assign_submission_pxaiwriter_external extends external_api
                     'data' => $genText,
                     'attempt_text' => $msg,
                     'message' => "Successful",
+                    //   "data" => $result,
                     'errors'  => []
                 )
             );
@@ -253,15 +265,15 @@ class mod_assign_submission_pxaiwriter_external extends external_api
      * @param [type] $url
      * @return void
      */
-    function getOpenAIRequestConfig(&$payload, &$config, &$url)
+    static function getOpenAIRequestConfig(&$payload, &$config, &$url)
     {
 
         $adminConfig = self::getPluginAdminSettings();
 
         $config = [
-            'Content-Type: ' . $adminConfig->content_type,
+            'Content-Type: application/json',
             'Authorization:' . $adminConfig->authorization,
-            'Accept: ' . $adminConfig->content_type,
+            'Accept: application/json',
         ];
 
         $payload = array(
@@ -281,16 +293,17 @@ class mod_assign_submission_pxaiwriter_external extends external_api
      * Helper function to convert a json string to an object recursively 
      *
      * @param [type] $json
-     * @return void
+     * @return object
      */
-    function jsonToObject($json)
+    static function jsonToObject($json)
     {
         $i = 0;
         while (!is_object($json)) {
-            $json = json_decode($json);
-            if ($i > 5) {
+            if ($i > 3) {
+                $json = false;
                 break;
             }
+            $json = json_decode($json);
             $i++;
         }
         return $json;
@@ -305,7 +318,7 @@ class mod_assign_submission_pxaiwriter_external extends external_api
      * @param array $headerConfig
      * @return void
      */
-    function sendCurlRequest($endpoint, $data = [], $method = "GET", $headerConfig = array('Content-Type: application/json', 'Accept: application/json'))
+    static function sendCurlRequest($endpoint, $data = [], $method = "GET", $headerConfig = array('Content-Type: application/json', 'Accept: application/json'))
     {
 
         try {
@@ -341,7 +354,7 @@ class mod_assign_submission_pxaiwriter_external extends external_api
      * @param [type] $setting
      * @return object
      */
-    function getPluginAdminSettings($setting = "", $pluginName = 'assignsubmission_pxaiwriter')
+    static function getPluginAdminSettings($setting = "", $pluginName = 'assignsubmission_pxaiwriter')
     {
 
         // last_modified_by
@@ -396,7 +409,7 @@ class mod_assign_submission_pxaiwriter_external extends external_api
      * @param [type] $attempt_record
      * @return void
      */
-    function updateAttemptsHistory($attempt_record)
+    static function updateAttemptsHistory($attempt_record)
     {
         global $DB;
 
@@ -416,7 +429,7 @@ class mod_assign_submission_pxaiwriter_external extends external_api
      * @param [type] $attempt_record
      * @return boolean
      */
-    function isExceedingAttemptCount($attempt_record)
+    static function isExceedingAttemptCount($attempt_record)
     {
         $maxattempts = self::getPluginAdminSettings('attempt_count');
         return !($attempt_record->api_attempts < $maxattempts);

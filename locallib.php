@@ -173,13 +173,18 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         $data->steps_data = json_decode($steps_data_string);
 
 
-        $maxAttempts = self::getPluginAdminSettings('attempt_count') ?? 0;
+        $maxAttempts = self::getPluginAdminSettings('attempt_count') ? self::getPluginAdminSettings('attempt_count') : 0;
         $usedApiAttempts = self::getAIAttemptRecord($this->assignment->get_instance()->id, $USER->id);
+
+        if ($usedApiAttempts) {
+            $usedApiAttempts = $usedApiAttempts->api_attempts;
+        } else {
+            $usedApiAttempts = 0;
+        }
 
         $str = new stdClass();
         $str->remaining = ($maxAttempts - $usedApiAttempts);
         $str->maximum = $maxAttempts;
-
 
         $data->attempt_text =  get_string('remaining_ai_attempt_count_text', 'assignsubmission_pxaiwriter', $str);;
 
@@ -520,7 +525,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
      */
     public function copy_submission(stdClass $sourcesubmission, stdClass $destsubmission)
     {
-        global $DB;                                                                              
+        global $DB;
         if ($pxaisubmission = $this->get_pxaiwriter_submission($sourcesubmission->id)) {
             unset($pxaisubmission->id);
             $pxaisubmission->submission = $destsubmission->id;
@@ -536,7 +541,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
      * @return void
      */
     public function format_for_log(stdClass $submission)
-    {                                                                 
+    {
 
         $fileloginfo = '';
         $fileloginfo .= 'PXAIWriter submission.<br>';
