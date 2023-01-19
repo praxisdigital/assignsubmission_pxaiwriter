@@ -18,7 +18,6 @@ PXAIWriter requires some setup to be complated before used, forgetting this step
 You can access these set of settings here : https://<site>/admin/settings.php?section=assignsubmission_pxaiwriter.
 
 - URL **(url)**
-- Dashboard view mode **(view_news_mode)**
 - Authorization **(authorization)**
 - Model **(model)**
 - Temperature **(temperature)**
@@ -49,7 +48,7 @@ You can access these set of settings here : https://<site>/admin/settings.php?se
 - pxaiwriter_api_attempts - This records the API endpoint attempts by users by the assignment.
 
 ## Release notes
-- **v1.0.0.19** (2023011702)
+- **v1.0.0.20** (2023011900)
   - Admin settings content type removed
   - Added API attempt count visible for students
 - **v1.0.0.17** (2023011001)
