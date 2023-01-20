@@ -33,6 +33,11 @@ stepConfigForm.init = function (config, stepConfig) {
 
     $("#pxaiwriter-input-steps-component").on("click", '#advance', function () {
         let currentVal = $('[name="pxaiwriter-data-step-' + this.currentStep + '"]').val();
+
+        if (this.currentStep == 1) {
+            currentVal = currentVal.replace(/((?:\r\n?|\n)+)$|(?:\r\n?|\n){2,}/g, '\n\n');
+        }
+
         changeCurrentStep(1, currentVal);
         setElementsVisibility();
     }.bind(this));

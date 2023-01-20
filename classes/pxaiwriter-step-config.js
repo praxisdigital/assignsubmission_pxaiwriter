@@ -51,8 +51,8 @@ stepConfig.init = function (config, stepConfig) {
                 readonly: '',
                 isreadonly: false,
                 custom_buttons: [],
-                ai_element : false,
-                ai_expand_element : false,
+                ai_element: false,
+                ai_expand_element: false,
                 value: ""
             };
             this.steps.push(newStep);
@@ -94,9 +94,9 @@ stepConfig.init = function (config, stepConfig) {
     });
 
     $('#ai_writer_submisson_steps').on('focus change keyup paste', '.step-des', function (e) {
-        e.preventDefault();
         const modal = new Promise((resolve, reject) => {
             if (this.hasRaised == false && this.hasUsed == true) {
+                e.preventDefault();
                 $('#steps-change-warning-modal').modal('show');
                 $('#confirm-ai-writer-change-action').click(function () {
                     resolve("user clicked");
@@ -115,6 +115,7 @@ stepConfig.init = function (config, stepConfig) {
             this.hasRaised = true;
         }).catch((err) => {
             // Ignore !
+            console.log("error");
         });
     }.bind(this));
 

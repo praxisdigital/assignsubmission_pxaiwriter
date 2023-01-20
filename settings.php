@@ -97,8 +97,8 @@ $settings->add(new admin_setting_configselect(
     'assignsubmission_pxaiwriter/granularity',
     new lang_string('granularity', 'assignsubmission_pxaiwriter'),
     new lang_string('granularity_description', 'assignsubmission_pxaiwriter'),
-    'word',
-    ["word" => "Word", "sentence" => "Sentence", 'paragraph' => "Paragraph", 'character' => "Character"]
+    'character',
+    ["word" => new lang_string('word', 'assignsubmission_pxaiwriter'), "sentence" => new lang_string('sentence', 'assignsubmission_pxaiwriter'), 'paragraph' => new lang_string('paragraph', 'assignsubmission_pxaiwriter'), 'character' => new lang_string('character', 'assignsubmission_pxaiwriter')]
 ));
 
 $settings->add(new admin_setting_heading(

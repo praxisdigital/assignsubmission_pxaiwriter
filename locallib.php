@@ -459,9 +459,9 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         $subm = $this->get_pxaiwriter_submission($submission->id);
         if ($subm) {
             $showviewlink = true;
-            return "View Submission";
+            return  get_string('view_submission', 'assignsubmission_pxaiwriter');
         } else {
-            return "N/A";
+            return  get_string('not_available', 'assignsubmission_pxaiwriter');
         }
     }
 
@@ -473,14 +473,18 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
      */
     public function view(stdClass $submission)
     {
-        $result = '<br><br>';
+        $result = '';
 
         $subm = $this->get_pxaiwriter_submission($submission->id);
         if ($subm) {
             $stepsdata = json_decode($subm->steps_data);
             $stepsdatacount = count($stepsdata);
             $finalvalue = $stepsdata[$stepsdatacount - 1]->value;
-            $result = str_replace("\n", "<br>", $finalvalue);
+            $result .= str_replace("\n", "<br>", $finalvalue);
+
+            if (!(strpos($result, '<br>') === 0)) {
+                $result = ('<br>' . $result);
+            }
         }
 
         return $result;

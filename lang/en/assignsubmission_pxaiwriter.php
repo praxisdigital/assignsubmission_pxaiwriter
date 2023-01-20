@@ -1,21 +1,12 @@
 <?php
 
 $string['pluginname'] = 'AI writer submissions';
-$string['maxfilessubmission'] = 'Max file submission';
-$string['maximumsubmissionsize'] = 'Maz Submisson Size';
-$string['countfiles'] = "Count of files";
-
-
-$string['couldnotconvertsubmission'] = "Could not convert submission";
 $string['enabled'] = "Enabled";
-$string['maxfilessubmission_help'] = "Max file submission help";
-$string['maximumsubmissionsize_help'] = "Max submission size help";
 $string['enabled_help'] = "Enabled help";
 $string['default_help'] = "Default Help";
-$string['configmaxbytes'] = 'Config max bytes';
 $string['default'] = "Default";
 
-$string['guide_to_step_label'] = "Guid to step";
+$string['guide_to_step_label'] = "Guide to step";
 $string['add_step_label'] = "Add another step";
 $string['remove_step_label'] = "Delete step";
 $string['submission_step_label'] = "AI writer submission steps";
@@ -23,7 +14,7 @@ $string['ai_writer_helper_msg'] = "Help with AI writer submission steps";
 $string['ai_writer_helper_msg_description'] = "If AI writer submissions are enabled, each student will be able to follow these steps in their submission.";
 
 $string['first_step_description'] = "In this step you have to write some keywords to generate a text to work with. In the next step, you must validate the grammar and examine whether the claims in the text are correct.";
-$string['second_step_description'] = "In this step you can format the text and add .....";
+$string['second_step_description'] = "In this step you can edit and improve the text by validating the grammar and examining whether the claims in the text are correct.";
 
 $string['steps_change_warning'] = "These steps are already used in assignment submission. Your changes will be applied to the future submissions of same assignment. Do you want to continue?";
 $string['ok_button_label'] = "OK";
@@ -41,7 +32,7 @@ $string['url_description'] = "Open API URL";
 $string['content_type'] = 'Content Type';
 $string['content_type_description'] = "";
 $string['authorization'] = "Authorization";
-$string['authorization_description'] = "Example :- Bearer sk-{token}";
+$string['authorization_description'] = "Example:- Bearer sk-{token}";
 
 $string['model'] = 'Model';
 $string['model_description'] = "";
@@ -57,7 +48,7 @@ $string['top_p_description'] = "";
 $string['frequency_penalty'] = "Frequency Penalty";
 $string['frequency_penalty_description'] = "";
 
-$string['presence_penalty'] = "Precence penalty";
+$string['presence_penalty'] = "Presence penalty";
 $string['presence_penalty_description'] = "";
 
 $string['api_key'] = "API key";
@@ -75,7 +66,7 @@ $string['next'] = "Next";
 $string['expand_selection'] = "Expand selection";
 $string['do_ai_magic'] = "Do AI magic";
 
-$string['title_place_holder'] = "Write an instruction to the AI : ex. 'Write an essay on computers'";
+$string['title_place_holder'] = "Write an instruction to the AI: ex. 'Write an essay on computers'";
 $string['title-required-warning'] = "Title is a mandatory field for this action. Please insert an appropriate title to proceed.";
 
 $string['selection-required-warning'] = "Please select a valid phrase or text with in the text container to proceed with this action.";
@@ -94,3 +85,11 @@ $string["submission_due_msg"] = "Your assignment submission is due. You are rest
 $string["ai_attempt_exceed_msg"] = "Your daily limit for using the AI feature is exceeded.";
 
 $string['remaining_ai_attempt_count_text'] = '{$a->remaining} attempt(s) out of {$a->maximum} remaining.';
+
+$string['view_submission'] = 'View Submission';
+$string['not_available'] = 'N/A';
+
+$string['word'] = 'Word';
+$string['sentence'] = 'Sentence';
+$string['paragraph'] = 'Paragraph';
+$string['character'] = 'Character';

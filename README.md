@@ -14,7 +14,7 @@ AI text submission plugin that allows admins to define submission scope of steps
 
 ## Global settings
 
-PXAIWriter requires some setup to be complated before used, forgetting this step will cause the plugin not to work as supposed to be. Here, its mandatory that you complete all the sections Open API request settings, Open API text comparer settings and Assignment Settings.
+PXAIWriter requires some setup to be completed before used, forgetting this step will cause the plugin not to work as supposed to be. Here, its mandatory that you complete all the sections Open API request settings, Open API text comparer settings and Assignment Settings.
 You can access these set of settings here : https://<site>/admin/settings.php?section=assignsubmission_pxaiwriter.
 
 - URL **(url)**
@@ -24,7 +24,7 @@ You can access these set of settings here : https://<site>/admin/settings.php?se
 - Max tokens **(max_tokens)**
 - Top p **(top_p)**
 - Frequency Penalty **(frequency_penalty)**
-- Precence penalty **(presence_penalty)**
+- Presence penalty **(presence_penalty)**
 - API key **(api_key)**
 - Last modified by **(last_modified_by)**
 
@@ -37,7 +37,7 @@ You can access these set of settings here : https://<site>/admin/settings.php?se
 - Install plugin
 - Go to https://<site>/admin/settings.php?section=assignsubmission_pxaiwriter and complete the settings and save. 
 - Go to the Course view and add a new assignment. On the edit view, you can choose 'AI writer submission' as submission type. 
-- Change/add steps. You cannot delete the mandatory (frist two) steps.  
+- Change/add steps. You cannot delete the mandatory (first two) steps.  
 - You may select 'Annotate PDF' feedback type, in case you may want to see the AI generated text vs final submission text by the student.
 - Either click on 'Save and return to course' or 'Save and display' button to save the submission configuration.
 
@@ -48,6 +48,9 @@ You can access these set of settings here : https://<site>/admin/settings.php?se
 - pxaiwriter_api_attempts - This records the API endpoint attempts by users by the assignment.
 
 ## Release notes
+- **v1.0.0.22** (2023012001)
+  - Cleaning up typos and unutilized text 
+  - Bug fix: Steps config doesn't allow to paste text
 - **v1.0.0.20** (2023011900)
   - Admin settings content type removed
   - Added API attempt count visible for students
@@ -64,5 +67,5 @@ You can access these set of settings here : https://<site>/admin/settings.php?se
 
 ## GDPR
 
-- All AJAX files is protected by login.
+- All AJAX files protected by login.
 - Privacy API implemented
