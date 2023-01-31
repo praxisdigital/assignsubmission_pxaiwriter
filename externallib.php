@@ -82,7 +82,7 @@ class mod_assign_submission_pxaiwriter_external extends external_api
                     'data' => $genText,
                     'attempt_text' => $msg,
                     'message' => "Successful",
-                    // "data" => $result,
+                    // "o_data" => $result,
                     'errors'  => []
                 )
             );
@@ -192,7 +192,7 @@ class mod_assign_submission_pxaiwriter_external extends external_api
 
             self::getOpenAIRequestConfig($payload, $config, $url);
 
-            $payload['prompt'] = "Expand on the following: " . $serialiseddata->text;
+            $payload['prompt'] = get_string('expand_command', 'assignsubmission_pxaiwriter') . " : " . $serialiseddata->text;
 
             $result = self::sendCurlRequest($url, $payload, "POST", $config);
 
@@ -222,7 +222,7 @@ class mod_assign_submission_pxaiwriter_external extends external_api
                     'data' => $genText,
                     'attempt_text' => $msg,
                     'message' => "Successful",
-                    //   "data" => $result,
+                    // "o_data" => $result,
                     'errors'  => []
                 )
             );

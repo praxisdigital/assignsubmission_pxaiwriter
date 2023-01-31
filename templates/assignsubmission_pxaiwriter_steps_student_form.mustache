@@ -3,7 +3,13 @@
         <div id="pxaiwriter-input-steps-component" class="row">
 
             <div class="steps-container col-12 ">
-
+                <div class="spinner d-none" id="loader">
+                    <div class="d-flex justify-content-center">
+                        <div class="spinner-border" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </div>
+                </div>
                 <div class="steps row ">
                     {{#steps_data}}
                     <div class="step-container col-md-12 mb-2 d-none" data-step="{{step}}">
@@ -34,11 +40,11 @@
                          <div class="col-md-12 mb-1 actions-container">
                             <div class="row">
 
-                                <div class="input-group col-md-12 text">
-                                    <input id="pxaiwriter-title" type="text" class="form-control pxaiwriter-student-data-title mr-1" data-input-step="{{step}}" data-step="1" placeholder="{{#str}} title_place_holder, assignsubmission_pxaiwriter{{/str}}">
-                                    <div class="input-group-append">
+                                <div class="input-group col-md-12 text  text-right  d-flex justify-content-end">
+                                    {{! <input id="pxaiwriter-title" type="text" class="form-control pxaiwriter-student-data-title mr-1" data-input-step="{{step}" data-step="1" placeholder="{{#str} title_place_holder, assignsubmission_pxaiwriter{{/str}"> }}
+                                    {{! <div class="input-group-append"> }}
                                         <button id="pxaiwriter-do-ai-magic" type="button" class="btn btn-primary d-none" data-step="1">{{#str}} do_ai_magic, assignsubmission_pxaiwriter{{/str}}</button>
-                                    </div>
+                                    {{! </div> }}
                                 </div>
 
                             </div>
@@ -67,10 +73,10 @@
 
                 <div class="actions-container mb-3 row d-flex justify-content-end">
 
-                    <div class="col-4 text-right">
+                    <div class="col-6 text-left">
                         <button id="go-back" name="go-back" type="button" class="btn btn-secondary">{{#str}} previous, assignsubmission_pxaiwriter{{/str}}</button>
                     </div>
-                    <div class="col-4 text-right">
+                    <div class="col-6 text-right">
                         <button id="advance" name="advance" type="button"
                             class="btn btn-secondary">{{#str}} next, assignsubmission_pxaiwriter{{/str}}</button>
                     </div>
@@ -127,3 +133,12 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/2.3.0/mustache.min.js"></script>
+
+<style>
+    .spinner {
+        position: absolute; 
+        top: 50%; 
+        left: 50%; 
+        z-index: 9999;
+    }
+</style>

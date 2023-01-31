@@ -52,6 +52,8 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
             let formData = { 'text': selectedText, 'assignmentid': this.assignmentid };
 
             $(':button').prop('disabled', true);
+            $('#loader').removeClass('d-none');
+
             var promises = Ajax.call([
                 {
                     methodname: "mod_mod_assign_submission_pxaiwriter_expand",
@@ -67,7 +69,7 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
 
             const currentStep = $(e.target).data("step");
             this.currStep = currentStep;
-            const titleText = $("#pxaiwriter-title").val();
+            const titleText = $('[name="pxaiwriter-data-step-' + currentStep + '"]').val(); // $("#pxaiwriter-title").val();
 
             if (!titleText) {
                 $('#title-required-warning-modal').modal('show');
@@ -77,6 +79,7 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
             let formData = { 'text': titleText, 'assignmentid': this.assignmentid };
 
             $(':button').prop('disabled', true);
+            $('#loader').removeClass('d-none');
 
             var promises = Ajax.call([
                 {
@@ -97,7 +100,11 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
         if (responseObj.success == true) {
 
             var elementValue = $('textarea[name="pxaiwriter-data-step-' + this.currStep + '"]').val();
-            var element = $('textarea[name="pxaiwriter-data-step-' + this.currStep + '"]').val(elementValue + responseObj.data);
+
+            let finalText = elementValue + responseObj.data;
+            finalText = finalText.replace(/((?:\r\n?|\n)+)$|(?:\r\n?|\n){2,}/g, '\n\n');
+
+            var element = $('textarea[name="pxaiwriter-data-step-' + this.currStep + '"]').val(finalText);
 
             this.setAttemtCountText(responseObj.attempt_text);
 
@@ -107,12 +114,14 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
                 $('#max-attempt-exceeds-error-msg-modal').modal('show');
             }
         }
+        $('#loader').addClass('d-none');
     }
 
     EventCreator.prototype.handleAiMagicFailure = function (response) {
         $(':button').prop('disabled', false);
         let responseObj = JSON.parse(response);
         alert(responseObj.message);
+        $('#loader').addClass('d-none');
     }
 
     EventCreator.prototype.handleExpandResponse = function (response) {
@@ -124,6 +133,9 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
             let elementText = $('textarea[name="pxaiwriter-data-step-' + this.currStep + '"]').val();
 
             let finalText = elementText.substring(0, this.selStart) + expandedText + elementText.substring(this.selEnd);
+
+            finalText = finalText.replace(/((?:\r\n?|\n)+)$|(?:\r\n?|\n){2,}/g, '\n\n');
+
             var element = $('textarea[name="pxaiwriter-data-step-' + this.currStep + '"]').val(finalText);
 
             this.setAttemtCountText(responseObj.attempt_text);
@@ -135,12 +147,14 @@ define(['jquery', "core/ajax", "core/str", 'core/templates', 'core/modal_factory
                 $('#max-attempt-exceeds-error-msg-modal').modal('show');
             }
         }
+        $('#loader').addClass('d-none');
     }
 
     EventCreator.prototype.handleExpandFailure = function (data) {
         $(':button').prop('disabled', false);
         let responseObj = JSON.parse(response);
         alert(responseObj.message);
+        $('#loader').addClass('d-none');
     }
 
     EventCreator.prototype.setAttemtCountText = function (text) {

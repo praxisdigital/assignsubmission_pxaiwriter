@@ -93,3 +93,4 @@ $string['word'] = 'Word';
 $string['sentence'] = 'Sentence';
 $string['paragraph'] = 'Paragraph';
 $string['character'] = 'Character';
+$string['expand_command'] = "Expand on the following";

@@ -48,6 +48,12 @@ You can access these set of settings here : https://<site>/admin/settings.php?se
 - pxaiwriter_api_attempts - This records the API endpoint attempts by users by the assignment.
 
 ## Release notes
+- **v1.0.0.23** (2023013100)
+  - Bug fix: When "Do AI magic" is pressed the entire content of the text area needs to be sent together with the prompt
+  - Bug fix: Missing language string for "Expand Selection"
+  - Removed input field for Do AI Magic
+  - Removed multiple linebreaks in the input whenever AI magic is done
+  - Added a loading icon to display while fetching AI data
 - **v1.0.0.22** (2023012001)
   - Cleaning up typos and unutilized text 
   - Bug fix: Steps config doesn't allow to paste text
