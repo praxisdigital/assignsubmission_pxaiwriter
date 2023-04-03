@@ -48,6 +48,9 @@ You can access these set of settings here : https://<site>/admin/settings.php?se
 - pxaiwriter_api_attempts - This records the API endpoint attempts by users by the assignment.
 
 ## Release notes
+- **v1.1.0** (2023040300)
+  - New feature:
+    - Add step number overview that can indicate which step user is current on and tell the user how many step there is.    
 - **v1.0.0.23** (2023013100)
   - Bug fix: When "Do AI magic" is pressed the entire content of the text area needs to be sent together with the prompt
   - Bug fix: Missing language string for "Expand Selection"

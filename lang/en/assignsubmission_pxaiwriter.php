@@ -94,3 +94,7 @@ $string['sentence'] = 'Sentence';
 $string['paragraph'] = 'Paragraph';
 $string['character'] = 'Character';
 $string['expand_command'] = "Expand on the following";
+
+// Events
+$string['eventassessableuploaded'] = 'Uploaded assessable';
+$string['event_ai_text_generated'] = 'AI writer text generated';
