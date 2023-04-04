@@ -21,7 +21,7 @@
     <TABLE NAME="pxaiwriter_api_attempts" COMMENT="Info about AI writer attempts">                                      
       <FIELDS>                                                                                                                      
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>                                                    
-        <FIELD NAME="assignment" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>                               
+        <FIELD NAME="assignment" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="api_attempts" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Count of API calls made"/>
         <FIELD NAME="api_attempt_date" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Count of API calls made"/>
@@ -31,6 +31,63 @@
         <KEY NAME="assignment" TYPE="foreign" FIELDS="assignment" REFTABLE="assign" REFFIELDS="id" COMMENT="The assignment instance this submission relates to"/>
         <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" COMMENT="The user to map to an id"/>
       </KEYS>                                                                                                                       
-    </TABLE>                                                                                                                        
+    </TABLE>
+
+    <TABLE NAME="pxaiwriter_step_attempts" COMMENT="AI writer user attempts">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="ID of the user that had attempt"/>
+        <FIELD NAME="assignment" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="ID of the assignment"/>
+        <FIELD NAME="step" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" DEFAULT="0" COMMENT="Step number"/>
+        <FIELD NAME="status" TYPE="char" LENGTH="16" NOTNULL="true" DEFAULT="ok" SEQUENCE="false" COMMENT="The status of the attempt (ok, failed, deleted)"/>
+        <FIELD NAME="hashcode" TYPE="char" LENGTH="64" NOTNULL="false" SEQUENCE="false" COMMENT="User input text that hashed in SHA256 (hexadecimal). Use for checksum"/>
+        <FIELD NAME="data" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="User's input text (This could also be mixed with AI text)"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The created time of the API call"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="The unique id for AI writer submission attempt"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" COMMENT="The user instance this attempt relates to"/>
+        <KEY NAME="assignment" TYPE="foreign" FIELDS="assignment" REFTABLE="assign" REFFIELDS="id" COMMENT="The assignment instance this attempt relates to"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
+        <INDEX NAME="assignment" UNIQUE="false" FIELDS="assignment"/>
+        <INDEX NAME="step" UNIQUE="false" FIELDS="step"/>
+        <INDEX NAME="status" UNIQUE="false" FIELDS="status"/>
+        <INDEX NAME="hashcode" UNIQUE="false" FIELDS="hashcode"/>
+        <INDEX NAME="userattempt" UNIQUE="false" FIELDS="userid, assignment, step, status, timecreated"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="pxaiwriter_step_history" COMMENT="AI writer user history">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="ID of the user that had generated the AI text"/>
+        <FIELD NAME="assignment" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="ID of the assignment"/>
+        <FIELD NAME="step" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Step number"/>
+        <FIELD NAME="status" TYPE="char" LENGTH="16" NOTNULL="true" DEFAULT="ok" SEQUENCE="false" COMMENT="The status of the attempt (ok, deleted)"/>
+        <FIELD NAME="hashcode" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false" COMMENT="Text data that hashed in SHA256 (hexadecimal). Use for checksum"/>
+        <FIELD NAME="data" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Text data"/>
+        <FIELD NAME="ai_text" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="AI generated text"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The created time of generated text in unix timestamp"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The modified time of generated text in unix timestamp"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="The primary key of AI writer generated history"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" COMMENT="Related to user"/>
+        <KEY NAME="assignment" TYPE="foreign" FIELDS="assignment" REFTABLE="assign" REFFIELDS="id" COMMENT="Related to assignment"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
+        <INDEX NAME="assignment" UNIQUE="false" FIELDS="assignment"/>
+        <INDEX NAME="userassignment" UNIQUE="false" FIELDS="userid, assignment"/>
+        <INDEX NAME="userhistory" UNIQUE="false" FIELDS="userid, assignment, hashcode"/>
+        <INDEX NAME="step" UNIQUE="false" FIELDS="step"/>
+        <INDEX NAME="hashcode" UNIQUE="false" FIELDS="hashcode"/>
+        <INDEX NAME="status" UNIQUE="false" FIELDS="status"/>
+        <INDEX NAME="timecreated" UNIQUE="false" FIELDS="timecreated"/>
+        <INDEX NAME="timemodified" UNIQUE="false" FIELDS="timemodified"/>
+      </INDEXES>
+    </TABLE>
   </TABLES>                                                                                                                         
 </XMLDB>

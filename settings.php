@@ -77,16 +77,6 @@ $settings->add(new admin_setting_configtext(
 
 ));
 
-// lastmodifiedby
-global $USER;
-$settings->add(new admin_setting_configselect(
-    'assignsubmission_pxaiwriter/last_modified_by',
-    new lang_string('last_modified_by', 'assignsubmission_pxaiwriter'),
-    new lang_string('last_modified_by_description', 'assignsubmission_pxaiwriter'),
-    $USER->id,
-    [$USER->id => $USER->firstname . ' ' . $USER->lastname]
-));
-
 $settings->add(new admin_setting_heading(
     'assignsubmissioncomparerheading',
     new lang_string('open_ai_comparer_settings', 'assignsubmission_pxaiwriter'),

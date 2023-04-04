@@ -1,5 +1,7 @@
 <?php
 
+use assignsubmission_pxaiwriter\app\factory;
+
 define('ASSIGNSUBMISSION_FILE_MAXFILES', 10);
 define('ASSIGNSUBMISSION_PXAIWRITER_FILEAREA', 'submissions_pxaiwriter');
 
@@ -9,7 +11,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     /**
      * Gets the current assignment id by the loaded object
      *
-     * @return void
+     * @return int
      */
     private function get_assignment_id()
     {
@@ -202,6 +204,33 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         return true;
     }
 
+    private function get_pdf_html(
+        string $step_title,
+        string $description,
+        string $text
+    ): string {
+        $html = '<h4 style="margin: 10px 0px 10px 0px;"><b>Step ' . $step_title .  "</b></h4>";
+        $html .= '<div style="color:#808080;margin: 0px 0px 10px 0px;"><span><i>' . $description .  "</i></span></div>";
+        $html .= '<hr><div style="margin: 0px 0px 10px 0px;"></div>';
+        $html .= $text;
+        return $html;
+    }
+
+    private function get_diff(
+        string $step_title,
+        string $description,
+        string $granularity,
+        string $previous_text,
+        string $current_text
+    ): string
+    {
+        return $this->get_pdf_html(
+            $step_title,
+            $description,
+            $this->getDiffRenderedHtml($previous_text, $current_text, $granularity)
+        );
+    }
+
     /**
      * Calls upon save event of the assignment
      *
@@ -229,23 +258,69 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
         $diffhtmlcontent = "";
 
+        $step_history = factory::make()->ai()->history()->repository()->get_all_by_user_assignment(
+            $USER->id,
+            $assignmentid
+        );
+
+        $history_list = $step_history->to_step_array();
+
+        $total_steps = count($stepsdata);
+        $page_break = '<br pagebreak="true" />';
+
         foreach ($stepsdata as $key => $step) {
 
-            $initvalue = "";
-            if ($key) {
-                $initvalue = $stepsdata[($key - 1)]->value;
+            $step_number = (int)$step->step;
+            $prev_step_number = $key - 1;
+
+            $initvalue = $stepsdata[$prev_step_number]->value ?? "";
+
+            $diffhtmlcontent .= $this->get_diff($step_number, $step->description, $granularity, $initvalue, $step->value);
+            $diffhtmlcontent .= $page_break;
+
+            if (!isset($history_list[$step_number])) {
+                continue;
             }
 
-            $diffhtmlcontent .= '<h4 style="margin: 10px 0px 10px 0px;"><b>Step ' . $step->step .  "</b></h4>";
-            $diffhtmlcontent .= '<div style="color:#808080;margin: 0px 0px 10px 0px;"><span><i>' . $step->description .  "</i></span></div>";
-            $diffhtmlcontent .= '<hr><div style="margin: 0px 0px 10px 0px;"></div>';
-            $diffhtmlcontent .= $this->getDiffRenderedHtml($initvalue, $step->value, $granularity);
-            $diffhtmlcontent .=  ($step->step == count($stepsdata)) ? "" : '<br pagebreak="true" />';
+            $inner_step = 0;
+
+            // Inject inner steps
+            foreach ($history_list[$step_number] as $index => $history)
+            {
+//                $prev_step_data = '';
+//                if (isset($history_list[$prev_step_number][$index]))
+//                {
+//                    $prev_step_data = $history_list[$prev_step_number][$index]->get_data();
+//                }
+
+                ++$inner_step;
+                $inner_step_number = "{$step_number}.{$inner_step}";
+                $diffhtmlcontent .= $this->get_pdf_html(
+                    $inner_step_number,
+                    $step->description,
+                    $history->get_data()
+                );
+//                $diffhtmlcontent .= $this->get_diff(
+//                    $inner_step_number,
+//                    $step->description,
+//                    $granularity,
+//                    $prev_step_data,
+//                    $history->get_data()
+//                );
+
+                $diffhtmlcontent .= $page_break;
+            }
         }
 
-        require_once($CFG->libdir . '/tcpdf/tcpdf.php');
+        if (!empty($diffhtmlcontent))
+        {
+            $break_index = mb_strrpos($diffhtmlcontent, $page_break);
+            $diffhtmlcontent = mb_substr($diffhtmlcontent, 0, $break_index);
+        }
 
-        $pdf = new TCPDF();
+        require_once($CFG->libdir . '/pdflib.php');
+
+        $pdf = new pdf();
         $pdf->AddPage();
         $pdf->writeHTML($diffhtmlcontent, false, false, true, false, '');
         $pdf->lastPage();
@@ -588,7 +663,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
      * @param [type] $textTwo
      * @param [type] $granularity
      * @param string $delReplaceTag
-     * @return void
+     * @return string
      */
     public function getDiffRenderedHtml($textOne, $textTwo, $granularity = "word", $delReplaceTag = '<span style="color:red;background-color:#ffdddd;text-decoration:line-through;">', $insReplaceTag = '<span style="color:green;background-color:#ddffdd;text-decoration:none;">')
     {

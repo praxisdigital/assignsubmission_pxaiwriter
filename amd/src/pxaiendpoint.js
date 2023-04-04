@@ -1,39 +1,120 @@
 import $ from "jquery";
 import Ajax from "core/ajax";
-import AISubmissionEvent from "./app/ai/event";
-import AISubmissionPageChangeEvent from "./app/ai/page_change_event";
+import Notification from "core/notification";
 
 /**
- * @param {number} id
- * @param {number} cmid
- * @param {number} contextid
- * @param {string} steps_data
- * @param {number} assignmentid
- * @param {string} attempt_text
+ * @param {number} assignmentId
  */
 export const init = (
-    id,
-    cmid,
-    contextid,
-    steps_data,
-    assignmentid,
-    attempt_text
+    assignmentId
 ) => {
 
-    let EventCreator = function (stepsData, assignmentId, attemptText) {
-        this.currStep = 0;
-        this.selStart = 0;
-        this.selEnd = 0;
-        this.assignmentid = assignmentId;
-        this.attempt_text = attemptText;
+    let EventCreator = function (assignmentId) {
+        this.currentStep = 0;
+        this.selectedStart = 0;
+        this.selectedEnd = 0;
+        this.assignmentId = assignmentId;
         this.init();
     };
 
+    const eventList = {
+        pageChange: 'page-change'
+    };
+
+    /**
+     * @param {string} text
+     */
+    const setRemainingAttemptText = (text) => {
+        if (!text) {
+            return;
+        }
+        const label = document.querySelector('.remaining-ai-attempts');
+        if (label instanceof HTMLElement) {
+            label.innerHTML = text;
+        }
+    };
+
+    /**
+     * @param {number} step
+     * @return {HTMLTextAreaElement|null}
+     */
+    const getStepTextArea = (step) => {
+        return document.querySelector(`textarea[name="pxaiwriter-data-step-${step}"]`);
+    };
+
+    /**
+     * @param {HTMLElement} element
+     * @return {number}
+     */
+    const getCurrentStep = (element) => {
+        const currentStep = Number.parseInt(element?.dataset?.step);
+        if (Number.isNaN(currentStep)) {
+            return 0;
+        }
+        return currentStep;
+    };
+
+    /**
+     * @param {number} step
+     * @return {string}
+     */
+    const getStepInputText = (step) => {
+        return getStepTextArea(step)?.value ?? '';
+    };
+
+    /**
+     * @param {string} text
+     * @return {boolean}
+     */
+    const validateInputText = (text) => {
+        if (!text || text.length === 0) {
+            $('#title-required-warning-modal').modal('show');
+            return false;
+        }
+        return true;
+    };
+
+    const loadingData = () => {
+        $(':button').prop('disabled', true);
+        $('#loader').removeClass('d-none');
+    };
+
+    /**
+     * @param {CustomEvent|Event} event
+     * @return {number}
+     */
+    const getCurrentStepFromPageChangeEvent = (event) => {
+        return event?.detail?.currentStep;
+    };
+
+    /**
+     * @template T
+     * @param {string} methodName
+     * @param {number} assignmentId
+     * @param {string} text
+     * @param {number} step
+     * @return {Promise<T>}
+     */
+    const requestAIApi = (
+        methodName,
+        assignmentId,
+        text,
+        step = 1
+    ) => {
+        return Ajax.call([
+            {
+                methodname: methodName,
+                args: {
+                    assignment_id: assignmentId,
+                    step: step,
+                    text: text
+                }
+            },
+        ])[0];
+    };
+
     EventCreator.prototype.init = function () {
-
-        this.setAttemtCountText(this.attempt_text);
-        const container = $(".actions-container");
-
+        const actionsContainer = $(".actions-container");
         /**
          * @param {HTMLElement} button
          */
@@ -56,140 +137,95 @@ export const init = (
             button.classList.add('btn-outline-secondary');
         };
 
-        let getSelectedTextareaText = function (name) {
-
-            let selText = '';
-            let textArea = document.getElementsByName(name);
-            textArea = (textArea && textArea.length > 0) ? textArea[0] : null;
-            if (textArea) {
-                let start = textArea.selectionStart;
-                this.selStart = start;
-                let finish = textArea.selectionEnd;
-                this.selEnd = finish;
-                selText = textArea.value.substring(start, finish);
-            } else {
-                window.console.log("pxaiwriter : no known text selecable source");
+        const getSelectedTextAreaText = (step) => {
+            const textArea = getStepTextArea(step);
+            if (textArea instanceof HTMLTextAreaElement) {
+                this.selectedStart = textArea.selectionStart;
+                this.selectedEnd = textArea.selectionEnd;
+                return textArea.value.substring(this.selectedStart, this.selectedEnd);
             }
-            return selText;
+            else {
+                window.console.warn("Error: No text was selected");
+            }
+            return '';
+        };
 
-        }.bind(this);
-
-        document.querySelector('.assignsubmission_pxaiwriter').addEventListener(AISubmissionEvent.EventList.pageChange, (e) => {
-
-            const event = new AISubmissionPageChangeEvent(e);
-            const currentStepSelector = `.step-page-button[data-step-number="${event.currentStep}"]`;
-            const allStepSelector = `.step-page-button[data-step-number]`;
-            const currentStepButton = document.querySelector(currentStepSelector);
+        document.querySelector('.assignsubmission_pxaiwriter').addEventListener(eventList.pageChange, (e) => {
+            let step = getCurrentStepFromPageChangeEvent(e);
+            const currentStepButton = document.querySelector(`.step-page-button[data-step-number="${step}"]`);
             if (!currentStepButton) {
                 return;
             }
 
-            const allStepButtons = document.querySelectorAll(allStepSelector);
+            const allStepButtons = document.querySelectorAll(`.step-page-button[data-step-number]`);
             for (const button of allStepButtons) {
                 blurStepButton(button);
             }
             highlightStepButton(currentStepButton);
         });
 
-        container.on("click", '#pxaiwriter-expand-selection', function (e) {
+        actionsContainer.on("click", '#pxaiwriter-expand-selection', async (e) => {
 
-            const currentStep = $(e.target).data("step");
-            this.currStep = currentStep;
-            const selectedText = getSelectedTextareaText("pxaiwriter-data-step-" + currentStep);
-
+            const selectedText = getSelectedTextAreaText(getCurrentStep(e.target));
             if (!selectedText) {
                 $('#text-selection-required-warning-modal').modal('show');
                 return;
             }
 
-            $(':button').prop('disabled', true);
-            $('#loader').removeClass('d-none');
+            loadingData();
 
-            Ajax.call([
-                {
-                    methodname: "assignsubmission_pxaiwriter_expand_ai_text",
-                    args: {
-                        assignment_id: this.assignmentid,
-                        step: this.currStep,
-                        text: selectedText
-                    },
-                    done: this.handleExpandResponse.bind(this),
-                    fail: this.handleExpandFailure.bind(this),
-                },
-            ]);
+            try {
+                const response = await requestAIApi(
+                    'assignsubmission_pxaiwriter_expand_ai_text',
+                    this.assignmentId,
+                    selectedText,
+                    this.currentStep
+                );
+                setApiResponseToInput(this.currentStep, response);
+            }
+            catch (exception) {
+                await Notification.exception(exception);
+            }
+        });
 
-        }.bind(this));
+        actionsContainer.on("click", '#pxaiwriter-do-ai-magic', async (e) => {
 
-        container.on("click", '#pxaiwriter-do-ai-magic', function (e) {
-
-            const currentStep = $(e.target).data("step");
-            this.currStep = currentStep;
-            const titleText = $('[name="pxaiwriter-data-step-' + currentStep + '"]').val();
-
-            if (!titleText) {
-                $('#title-required-warning-modal').modal('show');
+            const titleText = getStepInputText(getCurrentStep(e.target));
+            if (!validateInputText(titleText)) {
                 return;
             }
 
-            $(':button').prop('disabled', true);
-            $('#loader').removeClass('d-none');
+            loadingData();
 
-            Ajax.call([
-                {
-                    methodname: "assignsubmission_pxaiwriter_generate_ai_text",
-                    args: {
-                        assignment_id: this.assignmentid ?? 2,
-                        step: this.currStep,
-                        text: titleText
-                    },
-                    done: this.handleAiMagicResponse.bind(this),
-                    fail: this.handleAiMagicFailure.bind(this),
-                },
-            ]);
-
-        }.bind(this));
+            try {
+                const response = await requestAIApi(
+                    'assignsubmission_pxaiwriter_generate_ai_text',
+                    this.assignmentId,
+                    titleText,
+                    this.currentStep
+                );
+                setApiResponseToInput(this.currentStep, response);
+            }
+            catch (exception) {
+                await Notification.exception(exception);
+            }
+        });
     };
 
-    EventCreator.prototype.handleAiMagicResponse = function (response) {
+    const setApiResponseToInput = (step, response) => {
         $(':button').prop('disabled', false);
+        if (response.hasOwnProperty('attempt_text')) {
+            setRemainingAttemptText(response.attempt_text);
+        }
         if (response.hasOwnProperty('data')) {
-            this.setAttemtCountText(response.attempt_text);
-            const textArea = $('textarea[name="pxaiwriter-data-step-' + this.currStep + '"]');
-            textArea.val(response.data);
-            textArea.trigger("change");
+            const textArea = getStepTextArea(step);
+            if (textArea instanceof HTMLTextAreaElement) {
+                textArea.value = response.data;
+                textArea.dispatchEvent(new Event("change"));
+            }
         }
         $('#loader').addClass('d-none');
     };
 
-    EventCreator.prototype.handleAiMagicFailure = function (response) {
-        $(':button').prop('disabled', false);
-        window.console.error(response);
-        $('#loader').addClass('d-none');
-    };
-
-    EventCreator.prototype.handleExpandResponse = function (response) {
-        $(':button').prop('disabled', false);
-        if (response.hasOwnProperty('data')) {
-            this.setAttemtCountText(response.attempt_text);
-            const textArea = $('textarea[name="pxaiwriter-data-step-' + this.currStep + '"]');
-            textArea.val(response.data);
-            textArea.trigger("change");
-        }
-        $('#loader').addClass('d-none');
-    };
-
-    EventCreator.prototype.handleExpandFailure = function (error) {
-        $(':button').prop('disabled', false);
-        let responseObj = JSON.parse(error);
-        alert(responseObj.message ?? '');
-        $('#loader').addClass('d-none');
-    };
-
-    EventCreator.prototype.setAttemtCountText = function (text) {
-        if (text) {
-            $(".remaining-ai-attempts").text(text);
-        }
-    };
-
-    return new EventCreator(steps_data, assignmentid, attempt_text);
+    return new EventCreator(assignmentId);
 };

@@ -63,10 +63,8 @@ stepConfigForm.init = function (config, stepConfig) {
     }.bind(this);
 
     const triggerPageChangeEvent = (newStep, oldStep = 0) => {
-        window.console.log("Page changed");
         var wrapper = document.querySelector('.assignsubmission_pxaiwriter');
         if (wrapper instanceof HTMLElement) {
-            window.console.log(wrapper);
             var stepPageChange = new CustomEvent('page-change', {
                 detail: {
                     prevStep: oldStep,

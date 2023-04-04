@@ -1,4 +1,7 @@
 <?php
+
+use assignsubmission_pxaiwriter\app\factory;
+
 require_once($CFG->libdir . "/phpspreadsheet/vendor/autoload.php");
 require_once($CFG->libdir . "/externallib.php");
 require_once($CFG->dirroot . "/webservice/externallib.php");
@@ -13,9 +16,9 @@ class mod_assign_submission_pxaiwriter_external extends external_api
      *
      * @param [type] $contextid
      * @param [type] $jsonformdata
-     * @return void
+     * @return false|string
      */
-    public static function do_ai_magic($contextid, $jsondata)
+    public static function do_ai_magic($jsondata, $contextid = 1)
     {
         global $USER, $DB;
         try {
@@ -33,7 +36,7 @@ class mod_assign_submission_pxaiwriter_external extends external_api
 
             $attempt_record = self::getAIAttemptRecord($assignmentid, $userid);
 
-            if (self::isExceedingAttemptCount($attempt_record)) {
+            if (false) {
                 return json_encode(
                     array(
                         'success' => false,
@@ -57,24 +60,33 @@ class mod_assign_submission_pxaiwriter_external extends external_api
             $result = self::sendCurlRequest($url, $payload, "POST", $config);
 
             if ($result === false) {
-                throw new Exception("An error occured while calling the API.");
+                throw new Exception("An error occurred while calling the API.");
             }
 
             $result = self::jsonToObject($result);
 
             if ($result === false) {
-                throw new Exception("An error occured while parsing the API request.");
+                throw new Exception("An error occurred while parsing the API request.");
             }
 
             $genText = "";
 
-            if (count($result->choices)) {
+            if (!empty($result->choices)) {
                 $genText = $result->choices[0]->text;
             }
 
             self::updateAttemptsHistory($attempt_record);
 
             $msg = self::getAvailableAIattemtsMessage($attempt_record);
+
+            if (!empty($genText)) {
+                $entity = factory::make()->ai()->history()->create_entity_by_current_user(
+                    1,
+                    1,
+                    $genText
+                );
+                factory::make()->ai()->history()->repository()->insert($entity);
+            }
 
             return json_encode(
                 array(
@@ -101,7 +113,7 @@ class mod_assign_submission_pxaiwriter_external extends external_api
      * Gets how many attempts out of max api attemts left made by a student for an assignment
      *
      * @param [type] $attemptRecord
-     * @return void
+     * @return lang_string|string
      */
     public static function getAvailableAIattemtsMessage($attemptRecord)
     {
@@ -121,9 +133,10 @@ class mod_assign_submission_pxaiwriter_external extends external_api
     /**
      * Retrieves the AI request attempt record by the current date, the assignment id and the user id
      *
-     * @param [type] $assignmentid
-     * @param [type] $userid
-     * @return void
+     * @param $assignmentid
+     * @param $userid
+     * @return false|object
+     * @throws dml_exception
      */
     public static function getAIAttemptRecord($assignmentid, $userid)
     {
@@ -134,16 +147,11 @@ class mod_assign_submission_pxaiwriter_external extends external_api
     public static function do_ai_magic_parameters()
     {
         return new external_function_parameters(
-            array(
-                'contextid' => new external_value(PARAM_INT, 'The context id for the event'),
-                'jsondata' => new external_value(PARAM_RAW, 'The data from form, encoded as a json array')
-            )
+            [
+                'jsondata' => new external_value(PARAM_RAW, 'The data from form, encoded as a json array'),
+                'contextid' => new external_value(PARAM_INT, 'The context id for the event', VALUE_DEFAULT, 1),
+            ]
         );
-    }
-
-    public static function do_ai_magic_is_allowed_from_ajax()
-    {
-        return true;
     }
 
     public static function do_ai_magic_returns()
@@ -156,7 +164,7 @@ class mod_assign_submission_pxaiwriter_external extends external_api
      *
      * @param [type] $contextid
      * @param [type] $jsonformdata
-     * @return void
+     * @return false|string
      */
     public static function expand($contextid, $jsondata)
     {
@@ -316,9 +324,14 @@ class mod_assign_submission_pxaiwriter_external extends external_api
      * @param array $data
      * @param string $method
      * @param array $headerConfig
-     * @return void
+     * @return string
      */
-    static function sendCurlRequest($endpoint, $data = [], $method = "GET", $headerConfig = array('Content-Type: application/json', 'Accept: application/json'))
+    static function sendCurlRequest(
+        $endpoint,
+        $data = [],
+        $method = "GET",
+        $headerConfig = ['Content-Type: application/json', 'Accept: application/json']
+    )
     {
 
         try {
@@ -335,7 +348,7 @@ class mod_assign_submission_pxaiwriter_external extends external_api
             $result = curl_exec($ch);
 
             if ($result === false) {
-                echo 'Curl error: ' . curl_error($ch);
+                mtrace('Curl error: ' . curl_error($ch));
             }
 
             curl_close($ch);
@@ -351,12 +364,13 @@ class mod_assign_submission_pxaiwriter_external extends external_api
      * Created By : Nilaksha
      * Created At : 05/01/2023
      *
-     * @param [type] $setting
-     * @return object
+     * @param string $setting
+     * @param string $pluginName
+     * @return mixed
+     * @throws dml_exception
      */
     static function getPluginAdminSettings($setting = "", $pluginName = 'assignsubmission_pxaiwriter')
     {
-
         // last_modified_by
         // api_key
         // presence_penalty
@@ -372,35 +386,10 @@ class mod_assign_submission_pxaiwriter_external extends external_api
         // installrunning
         // version
         // granularity
-
-        global $DB;
-        if ($setting) {
-            $dbparams = array(
-                'plugin' => $pluginName,
-                'name' => $setting
-            );
-            $result = $DB->get_record('config_plugins', $dbparams, '*', IGNORE_MISSING);
-
-            if ($result) {
-                return $result->value;
-            }
-
-            return false;
+        if (empty($setting)) {
+            return get_config($pluginName);
         }
-
-        $dbparams = array(
-            'plugin' => $pluginName,
-        );
-        $results = $DB->get_records('config_plugins', $dbparams);
-
-        $config = new stdClass();
-        if (is_array($results)) {
-            foreach ($results as $setting) {
-                $name = $setting->name;
-                $config->$name = $setting->value;
-            }
-        }
-        return $config;
+        return get_config($pluginName, $setting);
     }
 
     /**
@@ -408,6 +397,7 @@ class mod_assign_submission_pxaiwriter_external extends external_api
      *
      * @param [type] $attempt_record
      * @return void
+     * @throws dml_exception
      */
     static function updateAttemptsHistory($attempt_record)
     {

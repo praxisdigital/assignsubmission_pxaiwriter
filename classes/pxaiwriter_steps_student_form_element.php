@@ -66,11 +66,11 @@ class pxaiwriter_steps_student_form_element extends HTML_QuickForm_element
      * Student is able to navigate, modity content in the steps available. 
      * The included js file is responsible for the events of the template
      *
-     * @return void
+     * @return string
      */
     function toHtml()
     {
-        global $CFG, $OUTPUT, $PAGE;
+        global $OUTPUT, $PAGE;
 
         $stepConfigForm = new stdClass();
         $stepConfigForm->steps = $this->_init->steps_data;
@@ -79,8 +79,9 @@ class pxaiwriter_steps_student_form_element extends HTML_QuickForm_element
         $html .= $OUTPUT->render_from_template('assignsubmission_pxaiwriter/assignsubmission_pxaiwriter_steps_student_form', $this->_init);
         $module = array('name' => 'assignsubmission_pxaiwriter_stepconfig_form', 'fullpath' => '/mod/assign/submission/pxaiwriter/classes/pxaiwriter-step-form-config.js');
         $PAGE->requires->js_init_call('stepConfigForm.init', array($stepConfigForm), true, $module);
-
-        $PAGE->requires->js_call_amd('assignsubmission_pxaiwriter/pxaiendpoint', 'init', ['id' => 1, 'cmid' => 100, 'contextid' => 1, 'steps_data' => $this->_init->steps_data, 'assignmentid' => $this->_init->assignmentid, 'attempt_text' => $this->_init->attempt_text]);
+        $PAGE->requires->js_call_amd('assignsubmission_pxaiwriter/pxaiendpoint', 'init', [
+            'assignmentId' => $this->_init->assignmentid,
+        ]);
 
         return $html;
     }
