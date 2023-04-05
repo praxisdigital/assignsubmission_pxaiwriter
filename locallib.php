@@ -152,7 +152,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         $pxaiwritersubmission = $this->get_pxaiwriter_submission($submission->id);
         $data->assignmentid = $this->get_assignment_id();
 
-        $current_time = factory::make()->helper()->times()->current_timestamp();
+        $current_time = factory::make()->helper()->times()->current_time();
         $duedate = $this->get_assignment_duedate();
         $data->is_due_submission = $duedate < $current_time;
         $data->enabled_ai_actions = false;
@@ -174,20 +174,11 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         $data->steps_data = json_decode($steps_data_string);
 
 
-        $maxAttempts = self::getPluginAdminSettings('attempt_count') ? self::getPluginAdminSettings('attempt_count') : 0;
-        $usedApiAttempts = self::getAIAttemptRecord($this->assignment->get_instance()->id, $USER->id);
-
-        if ($usedApiAttempts) {
-            $usedApiAttempts = $usedApiAttempts->api_attempts;
-        } else {
-            $usedApiAttempts = 0;
-        }
-
-        $str = new stdClass();
-        $str->remaining = ($maxAttempts - $usedApiAttempts);
-        $str->maximum = $maxAttempts;
-
-        $data->attempt_text =  get_string('remaining_ai_attempt_count_text', 'assignsubmission_pxaiwriter', $str);;
+        $attempt_data = factory::make()->ai()->attempt()->repository()->get_today_remaining_attempt(
+            $USER->id,
+            $data->assignmentid
+        );
+        $data->attempt_text =  $attempt_data->get_attempt_text();
 
         MoodleQuickForm::registerElementType(
             'pxaiwriter_steps_section',

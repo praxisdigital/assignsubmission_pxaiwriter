@@ -3,6 +3,14 @@ import Ajax from "core/ajax";
 import Notification from "core/notification";
 
 /**
+ * @typedef TextAreaData
+ * @property {string} text
+ * @property {string} selectedText
+ * @property {number} selectionStart
+ * @property {number} selectionEnd
+ */
+
+/**
  * @param {number} assignmentId
  */
 export const init = (
@@ -74,6 +82,23 @@ export const init = (
 
     /**
      * @param {number} step
+     * @return {TextAreaData|null}
+     */
+    const getStepTextAreaData = (step) => {
+        const textArea = getStepTextArea(step);
+        if (!(textArea instanceof HTMLTextAreaElement)) {
+            return null;
+        }
+        return {
+            text: textArea.value,
+            selectedText: textArea.value.substring(textArea.selectionStart, textArea.selectionEnd),
+            selectionStart: textArea.selectionStart,
+            selectionEnd: textArea.selectionEnd
+        };
+    };
+
+    /**
+     * @param {number} step
      * @return {string}
      */
     const getStepInputText = (step) => {
@@ -108,25 +133,14 @@ export const init = (
     /**
      * @template T
      * @param {string} methodName
-     * @param {number} assignmentId
-     * @param {string} text
-     * @param {number} step
+     * @param {*} parameters
      * @return {Promise<T>}
      */
-    const requestAIApi = (
-        methodName,
-        assignmentId,
-        text,
-        step = defaultStep
-    ) => {
+    const requestAIApi = (methodName, parameters = {}) => {
         return Ajax.call([
             {
                 methodname: methodName,
-                args: {
-                    assignment_id: assignmentId,
-                    step: step,
-                    text: text
-                }
+                args: parameters
             },
         ])[0];
     };
@@ -136,15 +150,19 @@ export const init = (
          * @template T
          * @param {number} assignmentId
          * @param {string} text
+         * @param {string} selectedText
+         * @param {number} selectStart
          * @return {Promise<T>}
          */
-        expandText: (assignmentId, text) => {
+        expandText: (assignmentId, text, selectedText, selectStart) => {
             return requestAIApi(
-                'assignsubmission_pxaiwriter_expand_ai_text',
-                assignmentId,
-                text,
-                defaultStep
-            );
+                'assignsubmission_pxaiwriter_expand_ai_text', {
+                assignment_id: assignmentId,
+                text: text,
+                selected_text: selectedText,
+                select_start: selectStart,
+                step: defaultStep
+            });
         },
         /**
          * @template T
@@ -153,12 +171,11 @@ export const init = (
          * @return {Promise<T>}
          */
         generateText: (assignmentId, text) => {
-            return requestAIApi(
-                'assignsubmission_pxaiwriter_generate_ai_text',
-                assignmentId,
-                text,
-                defaultStep
-            );
+            return requestAIApi('assignsubmission_pxaiwriter_generate_ai_text', {
+                assignment_id: assignmentId,
+                text: text,
+                step: defaultStep
+            });
         },
         /**
          * @template T
@@ -167,12 +184,11 @@ export const init = (
          * @return {Promise<T>}
          */
         recordHistory: (assignmentId, text) => {
-            return requestAIApi(
-                'assignsubmission_pxaiwriter_record_history',
-                assignmentId,
-                text,
-                defaultStep
-            );
+            return requestAIApi('assignsubmission_pxaiwriter_record_history', {
+                assignment_id: assignmentId,
+                text: text,
+                step: defaultStep
+            });
         }
     };
 
@@ -203,25 +219,9 @@ export const init = (
             button.classList.add('btn-outline-secondary');
         };
 
-        const getSelectedTextAreaText = (step) => {
-
-            const textArea = getStepTextArea(step);
-
-            if (textArea instanceof HTMLTextAreaElement) {
-                this.selectedStart = textArea.selectionStart;
-                this.selectedEnd = textArea.selectionEnd;
-                return textArea.value.substring(this.selectedStart, this.selectedEnd);
-            }
-            else {
-                window.console.warn(`${component}: No text was selected`);
-            }
-
-            return '';
-        };
-
         const wrapper = document.querySelector(selectors.wrapper);
 
-        wrapper.addEventListener(eventList.pageChange, (e) => {
+        wrapper?.addEventListener(eventList.pageChange, (e) => {
 
             if (isDebugMode()) {
                 window.console.log(`${component}: Step switched...`);
@@ -241,7 +241,7 @@ export const init = (
             highlightStepButton(currentStepButton);
         });
 
-        wrapper.addEventListener(eventList.stepTextSave, async (e) => {
+        wrapper?.addEventListener(eventList.stepTextSave, async (e) => {
 
             if (isDebugMode()) {
                 window.console.log(`${component}: Saving history...`);
@@ -256,15 +256,18 @@ export const init = (
             }
         });
 
-        document.querySelector(selectors.expandSelection).addEventListener("click", async (e) => {
+        document.querySelector(selectors.expandSelection)?.addEventListener("click", async (e) => {
 
             if (isDebugMode()) {
                 window.console.log(`${component}: Expand selected text...`);
             }
+            const step = getCurrentStep(e.target);
+            const textData = getStepTextAreaData(step);
 
-            const text = getSelectedTextAreaText(getCurrentStep(e.target));
+            const text = textData.text;
+            const selectedText = textData?.selectedText;
 
-            if (!validateInputText(text)) {
+            if (!validateInputText(selectedText)) {
                 if (isDebugMode()) {
                     window.console.warn(`${component}: No selection detected`);
                 }
@@ -277,7 +280,8 @@ export const init = (
                 const response = await api.expandText(
                     this.assignmentId,
                     text,
-                    this.currentStep
+                    selectedText,
+                    textData.selectionStart
                 );
                 setApiResponseToInput(this.currentStep, response);
             }
@@ -286,7 +290,7 @@ export const init = (
             }
         });
 
-        document.querySelector(selectors.doAIMagic).addEventListener("click", async (e) => {
+        document.querySelector(selectors.doAIMagic)?.addEventListener("click", async (e) => {
 
             if (isDebugMode()) {
                 window.console.log(`${component}: Do AI magic...`);

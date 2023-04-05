@@ -20,7 +20,7 @@ class factory implements interfaces\factory
         $this->factory = $factory;
     }
 
-    public function current_timestamp(): int
+    public function current_time(): int
     {
         return time();
     }

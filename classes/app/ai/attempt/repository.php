@@ -5,11 +5,9 @@ namespace assignsubmission_pxaiwriter\app\ai\attempt;
 
 use assignsubmission_pxaiwriter\app\ai\attempt\interfaces\entity;
 use assignsubmission_pxaiwriter\app\exceptions\database_error_exception;
-use assignsubmission_pxaiwriter\app\interfaces\collection;
 use assignsubmission_pxaiwriter\app\interfaces\factory as base_factory;
 use dml_exception;
 use moodle_database;
-use stdClass;
 
 /* @codeCoverageIgnoreStart */
 defined('MOODLE_INTERNAL') || die();
@@ -42,7 +40,7 @@ class repository implements interfaces\repository
         ?int $max_attempts = null
     ): interfaces\data
     {
-        $daily_attempts = $this->count_success_attempt_in_timespan(
+        $attempts_of_span = $this->count_success_attempt_in_timespan(
             $user_id,
             $assignment_id,
             $from_time,
@@ -51,8 +49,20 @@ class repository implements interfaces\repository
 
         return new data(
             $this->factory,
-            $daily_attempts,
+            $attempts_of_span,
             $max_attempts ?? $this->factory->setting()->admin()->get_attempt_count()
+        );
+    }
+
+    public function get_today_remaining_attempt(int $user_id, int $assignment_id, ?int $max_attempts = null): interfaces\data
+    {
+        $today = $this->factory->helper()->times()->day();
+        return $this->get_remaining_attempt(
+            $user_id,
+            $assignment_id,
+            $today->get_start_of_day()->getTimestamp(),
+            $today->get_end_of_day()->getTimestamp(),
+            $max_attempts
         );
     }
 
@@ -147,25 +157,5 @@ class repository implements interfaces\repository
         {
             throw database_error_exception::by_delete_records($exception->getMessage(), $exception);
         }
-    }
-
-    private function get_remaining_attempt_arguments(
-        int $user_id,
-        int $assignment_id,
-        int $from_time,
-        int $to_time,
-        int $max_attempts
-    ): object
-    {
-        $daily_attempts = $this->count_success_attempt_in_timespan(
-            $user_id,
-            $assignment_id,
-            $from_time,
-            $to_time
-        );
-        return (object)[
-            'remaining' => $max_attempts - $daily_attempts,
-            'maximum' => $max_attempts
-        ];
     }
 }

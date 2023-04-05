@@ -57,12 +57,8 @@ class archive implements interfaces\archive
             $this->assignment_id,
             $history->get_hashcode()
         );
-        if ($old_history !== null)
-        {
-            return $old_history;
-        }
 
-        return $this->push_history($history, $ai_text);
+        return $old_history ?? $this->push_history($history, $ai_text);
     }
 
     public function force_commit(string $text, ?string $ai_text = null): history_entity

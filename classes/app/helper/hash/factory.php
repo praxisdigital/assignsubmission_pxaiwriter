@@ -3,8 +3,6 @@
 namespace assignsubmission_pxaiwriter\app\helper\hash;
 
 
-//use assignsubmission_pxaiwriter\app\helper\hash\interfaces\hash_function;
-
 /* @codeCoverageIgnoreStart */
 defined('MOODLE_INTERNAL') || die();
 /* @codeCoverageIgnoreEnd */

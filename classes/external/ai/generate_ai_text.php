@@ -3,6 +3,7 @@
 namespace assignsubmission_pxaiwriter\external\ai;
 
 
+use assignsubmission_pxaiwriter\app\exceptions\overdue_assignment_exception;
 use assignsubmission_pxaiwriter\app\exceptions\user_exceed_attempts_exception;
 use assignsubmission_pxaiwriter\external\base;
 use external_description;
@@ -61,7 +62,10 @@ class generate_ai_text extends base
         $factory = self::factory();
         $ai_factory = $factory->ai();
 
-        $day = $factory->helper()->times()->day();
+        if ($factory->assign()->repository()->is_overdue($assignment_id))
+        {
+            throw overdue_assignment_exception::by_web_service();
+        }
 
         $transaction = $factory->moodle()->db()->start_delegated_transaction();
         $current_user = $factory->moodle()->user();
@@ -75,11 +79,9 @@ class generate_ai_text extends base
 
         try
         {
-            $attempt_data = $ai_factory->attempt()->repository()->get_remaining_attempt(
+            $attempt_data = $ai_factory->attempt()->repository()->get_today_remaining_attempt(
                 $current_user->id,
-                $assignment_id,
-                $day->get_start_of_day()->getTimestamp(),
-                $day->get_end_of_day()->getTimestamp()
+                $assignment_id
             );
 
             if ($attempt_data->is_exceeded())

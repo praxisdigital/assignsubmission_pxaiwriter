@@ -32,7 +32,7 @@ class repository implements interfaces\repository
     public function is_overdue(int $assignment_id): bool
     {
         $entity = $this->get_assign_by_id($assignment_id);
-        $current_time = $this->factory->helper()->times()->current_timestamp();
+        $current_time = $this->factory->helper()->times()->current_time();
         return $entity->get_duedate() < $current_time;
     }
 

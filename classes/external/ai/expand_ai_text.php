@@ -3,6 +3,7 @@
 namespace assignsubmission_pxaiwriter\external\ai;
 
 
+use assignsubmission_pxaiwriter\app\exceptions\overdue_assignment_exception;
 use assignsubmission_pxaiwriter\app\exceptions\user_exceed_attempts_exception;
 use assignsubmission_pxaiwriter\external\base;
 use Exception;
@@ -27,8 +28,19 @@ class expand_ai_text extends base
             ),
             'text' => new external_value(
                 PARAM_RAW,
-                'Input text',
+                'Input text (Original text)',
                 VALUE_REQUIRED
+            ),
+            'selected_text' => new external_value(
+                PARAM_RAW,
+                'Selected text',
+                VALUE_REQUIRED
+            ),
+            'select_start' => new external_value(
+                PARAM_INT,
+                'Select start point',
+                VALUE_DEFAULT,
+                0
             ),
             'step' => new external_value(
                 PARAM_INT,
@@ -49,11 +61,19 @@ class expand_ai_text extends base
         ]);
     }
 
-    public static function execute(int $assignment_id, string $text, int $step = 1): array
+    public static function execute(
+        int $assignment_id,
+        string $text,
+        string $selected_text,
+        int $select_start = 0,
+        int $step = 1
+    ): array
     {
         self::validate_input([
             'assignment_id' => $assignment_id,
             'text' => $text,
+            'selected_text' => $selected_text,
+            'select_start' => $select_start,
             'step' => $step
         ]);
         self::validate_step_number($step);
@@ -62,7 +82,10 @@ class expand_ai_text extends base
         $factory = self::factory();
         $ai_factory = $factory->ai();
 
-        $day = $factory->helper()->times()->day();
+        if ($factory->assign()->repository()->is_overdue($assignment_id))
+        {
+            throw overdue_assignment_exception::by_web_service();
+        }
 
         $transaction = $factory->moodle()->db()->start_delegated_transaction();
         $current_user = $factory->moodle()->user();
@@ -76,11 +99,9 @@ class expand_ai_text extends base
 
         try
         {
-            $attempt_data = $ai_factory->attempt()->repository()->get_remaining_attempt(
+            $attempt_data = $ai_factory->attempt()->repository()->get_today_remaining_attempt(
                 $current_user->id,
-                $assignment_id,
-                $day->get_start_of_day()->getTimestamp(),
-                $day->get_end_of_day()->getTimestamp()
+                $assignment_id
             );
 
             if ($attempt_data->is_exceeded())
@@ -88,18 +109,25 @@ class expand_ai_text extends base
                 throw user_exceed_attempts_exception::by_external_api();
             }
 
-            $archive->start_attempt($text);
+            $archive->start_attempt($selected_text);
 
-            $generated_text = $ai_factory->api()->expand_ai_text($text);
-            $combined_text = $ai_factory->formatter()->text($text, $generated_text);
+            $generated_text = $ai_factory->api()->expand_ai_text($selected_text);
+
+            $new_text = $ai_factory->formatter()->replace(
+                $text,
+                $selected_text,
+                $generated_text,
+                $select_start
+            );
 
             $archive->force_commit(
-                $combined_text,
+                $new_text,
                 $generated_text
             );
 
             return [
-                'data' => $combined_text,
+                'data' => $new_text,
+                'ai_text' => $generated_text,
                 'attempt_text' => $attempt_data->get_attempt_text(),
                 'attempted_count' => $attempt_data->get_attempted_count(),
                 'max_attempts' => $attempt_data->get_max_attempts()

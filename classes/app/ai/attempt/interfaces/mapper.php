@@ -10,10 +10,4 @@ defined('MOODLE_INTERNAL') || die();
 interface mapper
 {
     public function map(object $record): entity;
-
-//    /**
-//     * @param iterable<entity>|entity[] $records
-//     * @return collection<entity>|entity[]
-//     */
-//    public function map_to_collection(iterable $records): collection;
 }

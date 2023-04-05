@@ -32,8 +32,8 @@ class day implements interfaces\day
 
     public function get_end_of_day(): DateTime
     {
-        $start_of_day = clone $this->date;
-        $start_of_day->setTime(23, 59, 59);
-        return $start_of_day;
+        $end_of_day = clone $this->date;
+        $end_of_day->setTime(23, 59, 59);
+        return $end_of_day;
     }
 }

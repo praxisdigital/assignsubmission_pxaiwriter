@@ -24,6 +24,12 @@ interface repository
         ?int $max_attempts = null
     ): data;
 
+    public function get_today_remaining_attempt(
+        int $user_id,
+        int $assignment_id,
+        ?int $max_attempts = null
+    ): data;
+
     public function insert(entity $entity): void;
 
     public function delete(entity $entity): void;
