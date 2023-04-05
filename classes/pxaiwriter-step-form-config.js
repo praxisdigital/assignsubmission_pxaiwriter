@@ -62,9 +62,26 @@ stepConfigForm.init = function (config, stepConfig) {
 
     }.bind(this);
 
+    const triggerPageChangeEvent = (newStep, oldStep = 0) => {
+        window.console.log("Page changed");
+        var wrapper = document.querySelector('.assignsubmission_pxaiwriter');
+        if (wrapper instanceof HTMLElement) {
+            window.console.log(wrapper);
+            var stepPageChange = new CustomEvent('page-change', {
+                detail: {
+                    prevStep: oldStep,
+                    currentStep: newStep
+                }
+            });
+            wrapper.dispatchEvent(stepPageChange);
+        }
+    }
+
     var changeCurrentStep = function (incoming, value = null) {
-        if (!(this.steps.length > (this.currentStep + incoming)) || !((this.currentStep + incoming) < 1)) {
-            this.currentStep = (this.currentStep + incoming);
+        var oldStep = this.currentStep;
+        var newStep = oldStep + incoming;
+        if (!(this.steps.length > (newStep)) || !((newStep) < 1)) {
+            this.currentStep = newStep;
         }
         if (value) {
             if (!this.steps[this.currentStep - 1]['value']) {
@@ -72,7 +89,6 @@ stepConfigForm.init = function (config, stepConfig) {
                 this.steps[this.currentStep - 1]['value'] = value;
                 $('[name="assignsubmission_pxaiwriter_student_data"]').val(JSON.stringify(this.steps));
             }
-
         }
     }.bind(this);
 
@@ -123,8 +139,9 @@ stepConfigForm.init = function (config, stepConfig) {
             });
         }
 
+        triggerPageChangeEvent(this.currentStep);
+
     }.bind(this);
 
     setElementsVisibility();
-
 }
