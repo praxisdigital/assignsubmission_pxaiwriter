@@ -100,7 +100,7 @@ $string['eventassessableuploaded'] = 'Uploaded assessable';
 $string['event_ai_text_generated'] = 'AI writer text generated';
 
 // Errors
-$string['error_course_module_not_found_by_assign_id'] = 'Could not found course module by assignment id {$a}';
+$string['error_course_module_not_found_by_assign_id'] = 'Could not find course module by assignment id {$a}';
 $string['error_user_exceed_attempts'] = 'You have already exceeded the attempt limit';
 $string['error_invalid_step_number'] = 'Invalid step number';
 $string['error_overdue_assignment'] = 'The assignment is overdue';
