@@ -42,7 +42,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
      * Returns the availale submission for a particular submission ID
      *
      * @param [type] $submissionid
-     * @return void
+     * @return object
      */
     private function get_pxaiwriter_submission($submissionid)
     {
@@ -54,7 +54,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     /**
      * Gets the plugin name fom the locale
      *
-     * @return void
+     * @return string
      */
     public function get_name()
     {
@@ -129,7 +129,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
      * Helper for saving the settings
      *
      * @param stdClass $data
-     * @return void
+     * @return bool
      */
     public function save_settings(stdClass $data)
     {
@@ -152,25 +152,24 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         $pxaiwritersubmission = $this->get_pxaiwriter_submission($submission->id);
         $data->assignmentid = $this->get_assignment_id();
 
+        $current_time = factory::make()->helper()->times()->current_timestamp();
         $duedate = $this->get_assignment_duedate();
-        $data->is_due_submission = $duedate < time();
+        $data->is_due_submission = $duedate < $current_time;
+        $data->enabled_ai_actions = false;
 
         if (!$data->is_due_submission) {
-            $maxaiattempts = self::getPluginAdminSettings('attempt_count') ?? 0;
-            $aiattempthistoryfortoday = $DB->get_record('pxaiwriter_api_attempts', array('assignment' => $data->assignmentid, 'userid' => $USER->id, 'api_attempt_date' => strtotime("today")));
-            $data->exceeds_max_attempts = $aiattempthistoryfortoday ? $aiattempthistoryfortoday->api_attempts >= $maxaiattempts : false;
-            $data->enabled_ai_actions = !$data->exceeds_max_attempts && !$data->is_due_submission;
-        } else {
-            $data->enabled_ai_actions = false;
+            $day = factory::make()->helper()->times()->day();
+            $attempt = factory::make()->ai()->attempt()->repository()->get_remaining_attempt(
+                $USER->id,
+                $data->assignmentid,
+                $day->get_start_of_day()->getTimestamp(),
+                $day->get_end_of_day()->getTimestamp()
+            );
+            $data->exceeds_max_attempts = $attempt->is_exceeded();
+            $data->enabled_ai_actions = !$data->exceeds_max_attempts;
         }
 
-        $steps_data_string = "";
-
-        if ($pxaiwritersubmission && $pxaiwritersubmission->steps_data) {
-            $steps_data_string = $pxaiwritersubmission->steps_data;
-        } else {
-            $steps_data_string = $this->get_config('pxaiwritersteps');
-        }
+        $steps_data_string = $pxaiwritersubmission->steps_data ?? $this->get_config('pxaiwritersteps');
 
         $data->steps_data = json_decode($steps_data_string);
 
@@ -236,7 +235,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
      *
      * @param stdClass $submission
      * @param stdClass $data
-     * @return void
+     * @return bool
      */
     public function save(stdClass $submission, stdClass $data)
     {
@@ -287,26 +286,21 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             // Inject inner steps
             foreach ($history_list[$step_number] as $index => $history)
             {
-//                $prev_step_data = '';
-//                if (isset($history_list[$prev_step_number][$index]))
-//                {
-//                    $prev_step_data = $history_list[$prev_step_number][$index]->get_data();
-//                }
+                $prev_step_data = '';
+                if (isset($history_list[$prev_step_number][$index]))
+                {
+                    $prev_step_data = $history_list[$prev_step_number][$index]->get_data();
+                }
 
                 ++$inner_step;
                 $inner_step_number = "{$step_number}.{$inner_step}";
-                $diffhtmlcontent .= $this->get_pdf_html(
+                $diffhtmlcontent .= $this->get_diff(
                     $inner_step_number,
                     $step->description,
+                    $granularity,
+                    $prev_step_data,
                     $history->get_data()
                 );
-//                $diffhtmlcontent .= $this->get_diff(
-//                    $inner_step_number,
-//                    $step->description,
-//                    $granularity,
-//                    $prev_step_data,
-//                    $history->get_data()
-//                );
 
                 $diffhtmlcontent .= $page_break;
             }
@@ -485,14 +479,15 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     public function remove(stdClass $submission)
     {
         global $DB;
-
-        $submissionid = $submission ? $submission->id : 0;
-        if ($submissionid) {
-            $reponse = $DB->delete_records('assignsubmission_pxaiwriter', array('submission' => $submissionid));
-            if ($reponse) {
-                $this->delete_pdf_file($submissionid);
-            }
+        if (!isset($submission->id)) {
+            return false;
         }
+
+        $is_deleted = $DB->delete_records('assignsubmission_pxaiwriter', array('submission' => $submission->id));
+        if ($is_deleted) {
+            $this->delete_pdf_file($submission->id);
+        }
+
         return true;
     }
 
@@ -544,25 +539,24 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
      * Returns the last step content of a submission 
      *
      * @param stdClass $submission
-     * @return void
+     * @return string
      */
     public function view(stdClass $submission)
     {
-        $result = '';
+        $record = $this->get_pxaiwriter_submission($submission->id);
+        if (isset($record->steps_data)) {
+            $data = json_decode($record->steps_data);
+            $last_step = array_key_last($data);
+            $final_value = $data[$last_step]->value ?? '';
+            $final_value = trim($final_value);
 
-        $subm = $this->get_pxaiwriter_submission($submission->id);
-        if ($subm) {
-            $stepsdata = json_decode($subm->steps_data);
-            $stepsdatacount = count($stepsdata);
-            $finalvalue = $stepsdata[$stepsdatacount - 1]->value;
-            $result .= str_replace("\n", "<br>", $finalvalue);
-
-            if (!(strpos($result, '<br>') === 0)) {
-                $result = ('<br>' . $result);
+            if (!empty($final_value)) {
+                $final_value = nl2br($final_value, false);
+                return "<br>$final_value";
             }
         }
 
-        return $result;
+        return '';
     }
 
     /**
@@ -770,7 +764,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
      *
      * @param [type] $assignmentid
      * @param [type] $userid
-     * @return void
+     * @return object
      */
     public function getAIAttemptRecord($assignmentid, $userid)
     {

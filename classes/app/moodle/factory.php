@@ -5,10 +5,12 @@ namespace assignsubmission_pxaiwriter\app\moodle;
 
 use assignsubmission_pxaiwriter\app\moodle\context\interfaces\factory as context_factory;
 use core_date;
+use course_modinfo;
 use curl;
 use DateTimeZone;
 use dml_exception;
 use moodle_database;
+use moodle_exception;
 
 global $CFG;
 require_once $CFG->libdir . '/filelib.php';
@@ -70,6 +72,16 @@ class factory implements interfaces\factory
     public function get_user_timezone(): DateTimeZone
     {
         return core_date::get_user_timezone_object();
+    }
+
+    public function mod_info(int $course_id, int $user_id = 0): course_modinfo
+    {
+        $info = get_fast_modinfo($course_id, $user_id);
+        if (empty($info))
+        {
+            throw new moodle_exception('courseidnotfound');
+        }
+        return $info;
     }
 
     public function user(): object

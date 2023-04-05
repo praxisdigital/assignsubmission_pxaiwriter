@@ -7,9 +7,7 @@ namespace assignsubmission_pxaiwriter\app\assign\interfaces;
 defined('MOODLE_INTERNAL') || die();
 /* @codeCoverageIgnoreEnd */
 
-interface factory
+interface mapper
 {
-    public function entity(array $record = []): entity;
-    public function mapper(): mapper;
-    public function repository(): repository;
+    public function map(?object $record = null): entity;
 }

@@ -26,7 +26,7 @@ class repository implements interfaces\repository
 
     private function get_table(): string
     {
-        return 'pxaiwriter_step_attempts';
+        return 'pxaiwriter_user_attempts';
     }
 
     private function db(): moodle_database

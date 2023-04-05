@@ -42,16 +42,26 @@ class record_history extends base
                 PARAM_RAW,
                 'Checksum of the text'
             ),
+            'timecreated' => new external_value(
+                PARAM_INT,
+                'Created time in UNIX timestamp'
+            ),
+            'timemodified' => new external_value(
+                PARAM_INT,
+                'Modified time in UNIX timestamp'
+            ),
         ]);
     }
 
     public static function execute(int $assignment_id, string $text, int $step = 1): array
     {
-        self::validate_parameters(self::execute_parameters(), [
+        self::validate_input([
             'assignment_id' => $assignment_id,
             'text' => $text,
             'step' => $step
         ]);
+        self::validate_step_number($step);
+        self::validate_assignment($assignment_id);
 
         $factory = self::factory();
         $archive = $factory->ai()->history()->archive(
@@ -63,7 +73,9 @@ class record_history extends base
         $history = $archive->commit($text);
 
         return [
-            'checksum' => $history->get_hashcode()
+            'checksum' => $history->get_hashcode(),
+            'timecreated' => $history->get_timecreated(),
+            'timemodified' => $history->get_timemodified(),
         ];
     }
 }

@@ -24,7 +24,7 @@ class repository implements interfaces\repository
 
     protected function get_table(): string
     {
-        return 'pxaiwriter_step_history';
+        return 'pxaiwriter_user_history';
     }
 
     private function db(): moodle_database
@@ -103,24 +103,6 @@ class repository implements interfaces\repository
             $this->db()->delete_records(
                 $this->get_table(),
                 ['id' => $id]
-            );
-        }
-        catch (dml_exception $exception)
-        {
-            throw database_error_exception::by_delete_records(
-                $exception->getMessage(),
-                $exception
-            );
-        }
-    }
-
-    public function delete_by_submission_id(int $submission_id): void
-    {
-        try
-        {
-            $this->db()->delete_records(
-                $this->get_table(),
-                ['submission' => $submission_id]
             );
         }
         catch (dml_exception $exception)

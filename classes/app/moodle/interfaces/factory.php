@@ -4,6 +4,7 @@ namespace assignsubmission_pxaiwriter\app\moodle\interfaces;
 
 
 use assignsubmission_pxaiwriter\app\moodle\context\interfaces\factory as context_factory;
+use course_modinfo;
 use curl;
 use DateTimeZone;
 use moodle_database;
@@ -34,6 +35,8 @@ interface factory
     ): string;
 
     public function get_user_timezone(): DateTimeZone;
+
+    public function mod_info(int $course_id, int $user_id = 0): course_modinfo;
 
     public function user(): object;
 }

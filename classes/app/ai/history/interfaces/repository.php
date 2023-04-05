@@ -33,6 +33,5 @@ interface repository
 
     public function insert(entity $entity): void;
     public function delete_by_id(int $id): void;
-    public function delete_by_submission_id(int $submission_id): void;
     public function delete_by_user_id(int $user_id): void;
 }

@@ -20,6 +20,11 @@ class factory implements interfaces\factory
         $this->factory = $factory;
     }
 
+    public function current_timestamp(): int
+    {
+        return time();
+    }
+
     public function day(?DateTime $date = null, ?DateTimeZone $timezone = null): interfaces\day
     {
         $date ??= new DateTime('now', $timezone ?? $this->factory->moodle()->get_user_timezone());

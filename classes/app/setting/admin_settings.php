@@ -73,6 +73,6 @@ class admin_settings implements interfaces\admin_settings
 
     public function get_attempt_count(): int
     {
-        return $this->config->attempt_count ?? 2;
+        return $this->config->attempt_count ?? 0;
     }
 }

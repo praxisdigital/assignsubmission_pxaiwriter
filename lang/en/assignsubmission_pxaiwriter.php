@@ -102,3 +102,4 @@ $string['event_ai_text_generated'] = 'AI writer text generated';
 // Errors
 $string['error_course_module_not_found_by_assign_id'] = 'Cannot found course module by assignment id {$a}';
 $string['error_user_exceed_attempts'] = 'You have already exceed the attempt limit';
+$string['error_invalid_step_number'] = 'Invalid step number';

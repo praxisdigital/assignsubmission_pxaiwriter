@@ -12,5 +12,6 @@ defined('MOODLE_INTERNAL') || die();
 
 interface factory
 {
+    public function current_timestamp(): int;
     public function day(?DateTime $date = null, ?DateTimeZone $timezone = null): day;
 }

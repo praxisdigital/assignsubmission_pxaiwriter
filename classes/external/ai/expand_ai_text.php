@@ -5,6 +5,7 @@ namespace assignsubmission_pxaiwriter\external\ai;
 
 use assignsubmission_pxaiwriter\app\exceptions\user_exceed_attempts_exception;
 use assignsubmission_pxaiwriter\external\base;
+use Exception;
 use external_description;
 use external_function_parameters;
 use external_single_structure;
@@ -50,24 +51,23 @@ class expand_ai_text extends base
 
     public static function execute(int $assignment_id, string $text, int $step = 1): array
     {
-        self::validate_parameters(
-            self::execute_parameters(),
-            get_defined_vars()
-        );
+        self::validate_input([
+            'assignment_id' => $assignment_id,
+            'text' => $text,
+            'step' => $step
+        ]);
+        self::validate_step_number($step);
+        self::validate_assignment($assignment_id);
 
         $factory = self::factory();
         $ai_factory = $factory->ai();
-
-        $course_module_id = $factory->assign()->repository()->get_course_module_id_by_assign_id($assignment_id);
-        $context = $factory->moodle()->context()->course_module($course_module_id);
-        self::validate_context($context);
 
         $day = $factory->helper()->times()->day();
 
         $transaction = $factory->moodle()->db()->start_delegated_transaction();
         $current_user = $factory->moodle()->user();
 
-        $history = $ai_factory->history()->archive(
+        $archive = $ai_factory->history()->archive(
             $assignment_id,
             $step,
             $current_user->id,
@@ -79,7 +79,6 @@ class expand_ai_text extends base
             $attempt_data = $ai_factory->attempt()->repository()->get_remaining_attempt(
                 $current_user->id,
                 $assignment_id,
-                $step,
                 $day->get_start_of_day()->getTimestamp(),
                 $day->get_end_of_day()->getTimestamp()
             );
@@ -89,12 +88,12 @@ class expand_ai_text extends base
                 throw user_exceed_attempts_exception::by_external_api();
             }
 
-            $history->start_attempt($text);
+            $archive->start_attempt($text);
 
             $generated_text = $ai_factory->api()->expand_ai_text($text);
             $combined_text = $ai_factory->formatter()->text($text, $generated_text);
 
-            $history->force_commit(
+            $archive->force_commit(
                 $combined_text,
                 $generated_text
             );
@@ -106,9 +105,9 @@ class expand_ai_text extends base
                 'max_attempts' => $attempt_data->get_max_attempts()
             ];
         }
-        catch (\Exception $exception)
+        catch (Exception $exception)
         {
-            $history->rollback(
+            $archive->rollback(
                 $text,
                 $exception
             );

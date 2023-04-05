@@ -33,7 +33,7 @@
       </KEYS>                                                                                                                       
     </TABLE>
 
-    <TABLE NAME="pxaiwriter_step_attempts" COMMENT="AI writer user attempts">
+    <TABLE NAME="pxaiwriter_user_attempts" COMMENT="AI writer user attempts">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="ID of the user that had attempt"/>
@@ -59,7 +59,7 @@
       </INDEXES>
     </TABLE>
 
-    <TABLE NAME="pxaiwriter_step_history" COMMENT="AI writer user history">
+    <TABLE NAME="pxaiwriter_user_history" COMMENT="AI writer user history">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="ID of the user that had generated the AI text"/>

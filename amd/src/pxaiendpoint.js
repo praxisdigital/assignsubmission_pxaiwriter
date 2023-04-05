@@ -9,16 +9,34 @@ export const init = (
     assignmentId
 ) => {
 
+    const defaultStep = 1;
+
     let EventCreator = function (assignmentId) {
-        this.currentStep = 0;
+        this.currentStep = defaultStep;
         this.selectedStart = 0;
         this.selectedEnd = 0;
         this.assignmentId = assignmentId;
         this.init();
     };
 
+    const component = 'assignsubmission_pxaiwriter';
+
     const eventList = {
-        pageChange: 'page-change'
+        pageChange: 'page-change',
+        stepTextSave: 'step-save'
+    };
+
+    const selectors = {
+        wrapper: '.assignsubmission_pxaiwriter',
+        doAIMagic: '#pxaiwriter-do-ai-magic',
+        expandSelection: '#pxaiwriter-expand-selection'
+    };
+
+    /**
+     * @return {boolean}
+     */
+    const isDebugMode = () => {
+        return !!M?.cfg?.developerdebug;
     };
 
     /**
@@ -99,7 +117,7 @@ export const init = (
         methodName,
         assignmentId,
         text,
-        step = 1
+        step = defaultStep
     ) => {
         return Ajax.call([
             {
@@ -113,15 +131,61 @@ export const init = (
         ])[0];
     };
 
+    const api = {
+        /**
+         * @template T
+         * @param {number} assignmentId
+         * @param {string} text
+         * @return {Promise<T>}
+         */
+        expandText: (assignmentId, text) => {
+            return requestAIApi(
+                'assignsubmission_pxaiwriter_expand_ai_text',
+                assignmentId,
+                text,
+                defaultStep
+            );
+        },
+        /**
+         * @template T
+         * @param {number} assignmentId
+         * @param {string} text
+         * @return {Promise<T>}
+         */
+        generateText: (assignmentId, text) => {
+            return requestAIApi(
+                'assignsubmission_pxaiwriter_generate_ai_text',
+                assignmentId,
+                text,
+                defaultStep
+            );
+        },
+        /**
+         * @template T
+         * @param {number} assignmentId
+         * @param {string} text
+         * @return {Promise<T>}
+         */
+        recordHistory: (assignmentId, text) => {
+            return requestAIApi(
+                'assignsubmission_pxaiwriter_record_history',
+                assignmentId,
+                text,
+                defaultStep
+            );
+        }
+    };
+
     EventCreator.prototype.init = function () {
-        const actionsContainer = $(".actions-container");
         /**
          * @param {HTMLElement} button
          */
         const highlightStepButton = (button) => {
+
             if (!(button instanceof HTMLElement)) {
                 return;
             }
+
             button.classList.add('btn-outline-primary');
             button.classList.remove('btn-outline-secondary');
         };
@@ -130,29 +194,42 @@ export const init = (
          * @param {HTMLElement} button
          */
         const blurStepButton = (button) => {
+
             if (!(button instanceof HTMLElement)) {
                 return;
             }
+
             button.classList.remove('btn-outline-primary');
             button.classList.add('btn-outline-secondary');
         };
 
         const getSelectedTextAreaText = (step) => {
+
             const textArea = getStepTextArea(step);
+
             if (textArea instanceof HTMLTextAreaElement) {
                 this.selectedStart = textArea.selectionStart;
                 this.selectedEnd = textArea.selectionEnd;
                 return textArea.value.substring(this.selectedStart, this.selectedEnd);
             }
             else {
-                window.console.warn("Error: No text was selected");
+                window.console.warn(`${component}: No text was selected`);
             }
+
             return '';
         };
 
-        document.querySelector('.assignsubmission_pxaiwriter').addEventListener(eventList.pageChange, (e) => {
+        const wrapper = document.querySelector(selectors.wrapper);
+
+        wrapper.addEventListener(eventList.pageChange, (e) => {
+
+            if (isDebugMode()) {
+                window.console.log(`${component}: Step switched...`);
+            }
+
             let step = getCurrentStepFromPageChangeEvent(e);
             const currentStepButton = document.querySelector(`.step-page-button[data-step-number="${step}"]`);
+
             if (!currentStepButton) {
                 return;
             }
@@ -164,21 +241,42 @@ export const init = (
             highlightStepButton(currentStepButton);
         });
 
-        actionsContainer.on("click", '#pxaiwriter-expand-selection', async (e) => {
+        wrapper.addEventListener(eventList.stepTextSave, async (e) => {
 
-            const selectedText = getSelectedTextAreaText(getCurrentStep(e.target));
-            if (!selectedText) {
-                $('#text-selection-required-warning-modal').modal('show');
+            if (isDebugMode()) {
+                window.console.log(`${component}: Saving history...`);
+            }
+
+            const step = getCurrentStepFromPageChangeEvent(e);
+            const text = getStepInputText(step);
+            await api.recordHistory(this.assignmentId, text, 1);
+
+            if (isDebugMode()) {
+                window.console.log(`${component}: Input text got recorded`);
+            }
+        });
+
+        document.querySelector(selectors.expandSelection).addEventListener("click", async (e) => {
+
+            if (isDebugMode()) {
+                window.console.log(`${component}: Expand selected text...`);
+            }
+
+            const text = getSelectedTextAreaText(getCurrentStep(e.target));
+
+            if (!validateInputText(text)) {
+                if (isDebugMode()) {
+                    window.console.warn(`${component}: No selection detected`);
+                }
                 return;
             }
 
             loadingData();
 
             try {
-                const response = await requestAIApi(
-                    'assignsubmission_pxaiwriter_expand_ai_text',
+                const response = await api.expandText(
                     this.assignmentId,
-                    selectedText,
+                    text,
                     this.currentStep
                 );
                 setApiResponseToInput(this.currentStep, response);
@@ -188,20 +286,27 @@ export const init = (
             }
         });
 
-        actionsContainer.on("click", '#pxaiwriter-do-ai-magic', async (e) => {
+        document.querySelector(selectors.doAIMagic).addEventListener("click", async (e) => {
 
-            const titleText = getStepInputText(getCurrentStep(e.target));
-            if (!validateInputText(titleText)) {
+            if (isDebugMode()) {
+                window.console.log(`${component}: Do AI magic...`);
+            }
+
+            const text = getStepInputText(getCurrentStep(e.target));
+
+            if (!validateInputText(text)) {
+                if (isDebugMode()) {
+                    window.console.warn(`${component}: Input text is empty`);
+                }
                 return;
             }
 
             loadingData();
 
             try {
-                const response = await requestAIApi(
-                    'assignsubmission_pxaiwriter_generate_ai_text',
+                const response = await api.generateText(
                     this.assignmentId,
-                    titleText,
+                    text,
                     this.currentStep
                 );
                 setApiResponseToInput(this.currentStep, response);

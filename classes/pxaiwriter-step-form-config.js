@@ -36,6 +36,7 @@ stepConfigForm.init = function (config, stepConfig) {
 
         if (this.currentStep == 1) {
             currentVal = currentVal.replace(/((?:\r\n?|\n)+)$|(?:\r\n?|\n){2,}/g, '\n\n');
+            triggerSaveStepTextEvent(this.currentStep);
         }
 
         changeCurrentStep(1, currentVal);
@@ -73,7 +74,19 @@ stepConfigForm.init = function (config, stepConfig) {
             });
             wrapper.dispatchEvent(stepPageChange);
         }
-    }
+    };
+
+    const triggerSaveStepTextEvent = (step) => {
+        const wrapper = document.querySelector('.assignsubmission_pxaiwriter');
+        if (wrapper instanceof HTMLElement) {
+            const event = new CustomEvent('step-save', {
+                detail: {
+                    currentStep: step
+                }
+            });
+            wrapper.dispatchEvent(event);
+        }
+    };
 
     var changeCurrentStep = function (incoming, value = null) {
         var oldStep = this.currentStep;

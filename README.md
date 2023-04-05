@@ -50,6 +50,8 @@ You can access these set of settings here : https://<site>/admin/settings.php?se
 ## Release notes
 - **v1.1.0** (2023040300)
   - New feature:
+    - Record the history when user press AI text generator "Do AI magic" and the next button.
+      - The history will show in the grading overview as step 1.1, 1.2 etc. 
     - Add step number overview that can indicate which step user is current on and tell the user how many step there is.    
 - **v1.0.0.23** (2023013100)
   - Bug fix: When "Do AI magic" is pressed the entire content of the text area needs to be sent together with the prompt

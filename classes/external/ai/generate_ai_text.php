@@ -50,17 +50,16 @@ class generate_ai_text extends base
 
     public  static function execute(int $assignment_id, string $text, int $step = 1): array
     {
-        self::validate_parameters(
-            self::execute_parameters(),
-            get_defined_vars()
-        );
+        self::validate_input([
+            'assignment_id' => $assignment_id,
+            'text' => $text,
+            'step' => $step
+        ]);
+        self::validate_step_number($step);
+        self::validate_assignment($assignment_id);
 
         $factory = self::factory();
         $ai_factory = $factory->ai();
-
-        $course_module_id = $factory->assign()->repository()->get_course_module_id_by_assign_id($assignment_id);
-        $context = $factory->moodle()->context()->course_module($course_module_id);
-        self::validate_context($context);
 
         $day = $factory->helper()->times()->day();
 
