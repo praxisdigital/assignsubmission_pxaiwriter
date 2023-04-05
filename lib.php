@@ -8,7 +8,7 @@ function assignsubmission_pxaiwriter_pluginfile($course,
                                         $args,                                                                                      
                                         $forcedownload,
                                         array $options=array()) {                                                                           
-    global $DB, $CFG;                                                                                                             
+    global $DB, $CFG;
                                                                                                                                     
     if ($context->contextlevel != CONTEXT_MODULE) {                                                                                 
         return false;                                                                                                               

@@ -1,5 +1,7 @@
 <?php
 
+use assignsubmission_pxaiwriter\app\factory;
+
 define('ASSIGNSUBMISSION_FILE_MAXFILES', 10);
 define('ASSIGNSUBMISSION_PXAIWRITER_FILEAREA', 'submissions_pxaiwriter');
 
@@ -9,7 +11,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     /**
      * Gets the current assignment id by the loaded object
      *
-     * @return void
+     * @return int
      */
     private function get_assignment_id()
     {
@@ -40,7 +42,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
      * Returns the availale submission for a particular submission ID
      *
      * @param [type] $submissionid
-     * @return void
+     * @return object
      */
     private function get_pxaiwriter_submission($submissionid)
     {
@@ -52,7 +54,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     /**
      * Gets the plugin name fom the locale
      *
-     * @return void
+     * @return string
      */
     public function get_name()
     {
@@ -127,7 +129,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
      * Helper for saving the settings
      *
      * @param stdClass $data
-     * @return void
+     * @return bool
      */
     public function save_settings(stdClass $data)
     {
@@ -150,43 +152,33 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         $pxaiwritersubmission = $this->get_pxaiwriter_submission($submission->id);
         $data->assignmentid = $this->get_assignment_id();
 
+        $current_time = factory::make()->helper()->times()->current_time();
         $duedate = $this->get_assignment_duedate();
-        $data->is_due_submission = $duedate < time();
+        $data->is_due_submission = $duedate < $current_time;
+        $data->enabled_ai_actions = false;
 
         if (!$data->is_due_submission) {
-            $maxaiattempts = self::getPluginAdminSettings('attempt_count') ?? 0;
-            $aiattempthistoryfortoday = $DB->get_record('pxaiwriter_api_attempts', array('assignment' => $data->assignmentid, 'userid' => $USER->id, 'api_attempt_date' => strtotime("today")));
-            $data->exceeds_max_attempts = $aiattempthistoryfortoday ? $aiattempthistoryfortoday->api_attempts >= $maxaiattempts : false;
-            $data->enabled_ai_actions = !$data->exceeds_max_attempts && !$data->is_due_submission;
-        } else {
-            $data->enabled_ai_actions = false;
+            $day = factory::make()->helper()->times()->day();
+            $attempt = factory::make()->ai()->attempt()->repository()->get_remaining_attempt(
+                $USER->id,
+                $data->assignmentid,
+                $day->get_start_of_day()->getTimestamp(),
+                $day->get_end_of_day()->getTimestamp()
+            );
+            $data->exceeds_max_attempts = $attempt->is_exceeded();
+            $data->enabled_ai_actions = !$data->exceeds_max_attempts;
         }
 
-        $steps_data_string = "";
-
-        if ($pxaiwritersubmission && $pxaiwritersubmission->steps_data) {
-            $steps_data_string = $pxaiwritersubmission->steps_data;
-        } else {
-            $steps_data_string = $this->get_config('pxaiwritersteps');
-        }
+        $steps_data_string = $pxaiwritersubmission->steps_data ?? $this->get_config('pxaiwritersteps');
 
         $data->steps_data = json_decode($steps_data_string);
 
 
-        $maxAttempts = self::getPluginAdminSettings('attempt_count') ? self::getPluginAdminSettings('attempt_count') : 0;
-        $usedApiAttempts = self::getAIAttemptRecord($this->assignment->get_instance()->id, $USER->id);
-
-        if ($usedApiAttempts) {
-            $usedApiAttempts = $usedApiAttempts->api_attempts;
-        } else {
-            $usedApiAttempts = 0;
-        }
-
-        $str = new stdClass();
-        $str->remaining = ($maxAttempts - $usedApiAttempts);
-        $str->maximum = $maxAttempts;
-
-        $data->attempt_text =  get_string('remaining_ai_attempt_count_text', 'assignsubmission_pxaiwriter', $str);;
+        $attempt_data = factory::make()->ai()->attempt()->repository()->get_today_remaining_attempt(
+            $USER->id,
+            $data->assignmentid
+        );
+        $data->attempt_text =  $attempt_data->get_attempt_text();
 
         MoodleQuickForm::registerElementType(
             'pxaiwriter_steps_section',
@@ -202,12 +194,39 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         return true;
     }
 
+    private function get_pdf_html(
+        string $step_title,
+        string $description,
+        string $text
+    ): string {
+        $html = '<h4 style="margin: 10px 0px 10px 0px;"><b>Step ' . $step_title .  "</b></h4>";
+        $html .= '<div style="color:#808080;margin: 0px 0px 10px 0px;"><span><i>' . $description .  "</i></span></div>";
+        $html .= '<hr><div style="margin: 0px 0px 10px 0px;"></div>';
+        $html .= $text;
+        return $html;
+    }
+
+    private function get_diff(
+        string $step_title,
+        string $description,
+        string $granularity,
+        string $previous_text,
+        string $current_text
+    ): string
+    {
+        return $this->get_pdf_html(
+            $step_title,
+            $description,
+            $this->getDiffRenderedHtml($previous_text, $current_text, $granularity)
+        );
+    }
+
     /**
      * Calls upon save event of the assignment
      *
      * @param stdClass $submission
      * @param stdClass $data
-     * @return void
+     * @return bool
      */
     public function save(stdClass $submission, stdClass $data)
     {
@@ -229,23 +248,64 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
         $diffhtmlcontent = "";
 
+        $step_history = factory::make()->ai()->history()->repository()->get_all_by_user_assignment(
+            $USER->id,
+            $assignmentid
+        );
+
+        $history_list = $step_history->to_step_array();
+
+        $total_steps = count($stepsdata);
+        $page_break = '<br pagebreak="true" />';
+
         foreach ($stepsdata as $key => $step) {
 
-            $initvalue = "";
-            if ($key) {
-                $initvalue = $stepsdata[($key - 1)]->value;
+            $step_number = (int)$step->step;
+            $prev_step_number = $key - 1;
+
+            $initvalue = $stepsdata[$prev_step_number]->value ?? "";
+
+            $diffhtmlcontent .= $this->get_diff($step_number, $step->description, $granularity, $initvalue, $step->value);
+            $diffhtmlcontent .= $page_break;
+
+            if (!isset($history_list[$step_number])) {
+                continue;
             }
 
-            $diffhtmlcontent .= '<h4 style="margin: 10px 0px 10px 0px;"><b>Step ' . $step->step .  "</b></h4>";
-            $diffhtmlcontent .= '<div style="color:#808080;margin: 0px 0px 10px 0px;"><span><i>' . $step->description .  "</i></span></div>";
-            $diffhtmlcontent .= '<hr><div style="margin: 0px 0px 10px 0px;"></div>';
-            $diffhtmlcontent .= $this->getDiffRenderedHtml($initvalue, $step->value, $granularity);
-            $diffhtmlcontent .=  ($step->step == count($stepsdata)) ? "" : '<br pagebreak="true" />';
+            $inner_step = 0;
+
+            // Inject inner steps
+            foreach ($history_list[$step_number] as $index => $history)
+            {
+                $prev_step_data = '';
+                if (isset($history_list[$prev_step_number][$index]))
+                {
+                    $prev_step_data = $history_list[$prev_step_number][$index]->get_data();
+                }
+
+                ++$inner_step;
+                $inner_step_number = "{$step_number}.{$inner_step}";
+                $diffhtmlcontent .= $this->get_diff(
+                    $inner_step_number,
+                    $step->description,
+                    $granularity,
+                    $prev_step_data,
+                    $history->get_data()
+                );
+
+                $diffhtmlcontent .= $page_break;
+            }
         }
 
-        require_once($CFG->libdir . '/tcpdf/tcpdf.php');
+        if (!empty($diffhtmlcontent))
+        {
+            $break_index = mb_strrpos($diffhtmlcontent, $page_break);
+            $diffhtmlcontent = mb_substr($diffhtmlcontent, 0, $break_index);
+        }
 
-        $pdf = new TCPDF();
+        require_once($CFG->libdir . '/pdflib.php');
+
+        $pdf = new pdf();
         $pdf->AddPage();
         $pdf->writeHTML($diffhtmlcontent, false, false, true, false, '');
         $pdf->lastPage();
@@ -410,14 +470,15 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     public function remove(stdClass $submission)
     {
         global $DB;
-
-        $submissionid = $submission ? $submission->id : 0;
-        if ($submissionid) {
-            $reponse = $DB->delete_records('assignsubmission_pxaiwriter', array('submission' => $submissionid));
-            if ($reponse) {
-                $this->delete_pdf_file($submissionid);
-            }
+        if (!isset($submission->id)) {
+            return false;
         }
+
+        $is_deleted = $DB->delete_records('assignsubmission_pxaiwriter', array('submission' => $submission->id));
+        if ($is_deleted) {
+            $this->delete_pdf_file($submission->id);
+        }
+
         return true;
     }
 
@@ -469,25 +530,24 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
      * Returns the last step content of a submission 
      *
      * @param stdClass $submission
-     * @return void
+     * @return string
      */
     public function view(stdClass $submission)
     {
-        $result = '';
+        $record = $this->get_pxaiwriter_submission($submission->id);
+        if (isset($record->steps_data)) {
+            $data = json_decode($record->steps_data);
+            $last_step = array_key_last($data);
+            $final_value = $data[$last_step]->value ?? '';
+            $final_value = trim($final_value);
 
-        $subm = $this->get_pxaiwriter_submission($submission->id);
-        if ($subm) {
-            $stepsdata = json_decode($subm->steps_data);
-            $stepsdatacount = count($stepsdata);
-            $finalvalue = $stepsdata[$stepsdatacount - 1]->value;
-            $result .= str_replace("\n", "<br>", $finalvalue);
-
-            if (!(strpos($result, '<br>') === 0)) {
-                $result = ('<br>' . $result);
+            if (!empty($final_value)) {
+                $final_value = nl2br($final_value, false);
+                return "<br>$final_value";
             }
         }
 
-        return $result;
+        return '';
     }
 
     /**
@@ -588,7 +648,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
      * @param [type] $textTwo
      * @param [type] $granularity
      * @param string $delReplaceTag
-     * @return void
+     * @return string
      */
     public function getDiffRenderedHtml($textOne, $textTwo, $granularity = "word", $delReplaceTag = '<span style="color:red;background-color:#ffdddd;text-decoration:line-through;">', $insReplaceTag = '<span style="color:green;background-color:#ddffdd;text-decoration:none;">')
     {
@@ -695,7 +755,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
      *
      * @param [type] $assignmentid
      * @param [type] $userid
-     * @return void
+     * @return object
      */
     public function getAIAttemptRecord($assignmentid, $userid)
     {

@@ -62,11 +62,11 @@ class pxaiwriter_steps_form_element extends HTML_QuickForm_element
     /**
      * This template loads at the assignment configuration area. The user is able to add, remove and modify steps instructions via this tempalte
      *
-     * @return void
+     * @return string
      */
     function toHtml()
     {
-        global $CFG, $OUTPUT, $PAGE;
+        global $OUTPUT, $PAGE;
 
         $stepConfig = new stdClass();
         $stepConfig->steps = $this->_init_val;
@@ -95,5 +95,3 @@ class pxaiwriter_steps_form_element extends HTML_QuickForm_element
         return $html;
     }
 }
-
-?>

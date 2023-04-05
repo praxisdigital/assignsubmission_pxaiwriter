@@ -21,24 +21,13 @@ require_once($CFG->dirroot . '/lib/filelib.php');
 class pxaiwriter_steps_student_form_element extends HTML_QuickForm_element
 {
 
-    private $_value = array();
-    private $_init = null;
+    private array $value = array();
+    private $data;
 
     public function __construct($elementName = null, $elementLabel = null, $attributes = null, $initvalue = null)
     {
-        $this->_init = $initvalue;
+        $this->data = $initvalue;
         parent::__construct($elementName, $elementLabel, $attributes);
-    }
-
-    /**
-     * Old syntax of class constructor. Deprecated in PHP7.
-     *
-     * @deprecated since Moodle 3.1
-     */
-    public function pxaiwriter_steps_student_form_element($elementName = null, $elementLabel = null, $attributes = null, $initvalue = null)
-    {
-        debugging('Use of class name as constructor is deprecated', DEBUG_DEVELOPER);
-        self::__construct($elementName, $elementLabel, $attributes, $initvalue);
     }
 
     function setName($name)
@@ -53,12 +42,12 @@ class pxaiwriter_steps_student_form_element extends HTML_QuickForm_element
 
     function setValue($value)
     {
-        $this->_value = $value;
+        $this->value = $value;
     }
 
     function getValue()
     {
-        return $this->_value;
+        return $this->value;
     }
 
     /**
@@ -66,21 +55,22 @@ class pxaiwriter_steps_student_form_element extends HTML_QuickForm_element
      * Student is able to navigate, modity content in the steps available. 
      * The included js file is responsible for the events of the template
      *
-     * @return void
+     * @return string
      */
     function toHtml()
     {
-        global $CFG, $OUTPUT, $PAGE;
+        global $OUTPUT, $PAGE;
 
         $stepConfigForm = new stdClass();
-        $stepConfigForm->steps = $this->_init->steps_data;
+        $stepConfigForm->steps = $this->data->steps_data;
 
         $html = "";
-        $html .= $OUTPUT->render_from_template('assignsubmission_pxaiwriter/assignsubmission_pxaiwriter_steps_student_form', $this->_init);
+        $html .= $OUTPUT->render_from_template('assignsubmission_pxaiwriter/assignsubmission_pxaiwriter_steps_student_form', $this->data);
         $module = array('name' => 'assignsubmission_pxaiwriter_stepconfig_form', 'fullpath' => '/mod/assign/submission/pxaiwriter/classes/pxaiwriter-step-form-config.js');
         $PAGE->requires->js_init_call('stepConfigForm.init', array($stepConfigForm), true, $module);
-
-        $PAGE->requires->js_call_amd('assignsubmission_pxaiwriter/pxaiendpoint', 'init', ['id' => 1, 'cmid' => 100, 'contextid' => 1, 'steps_data' => $this->_init->steps_data, 'assignmentid' => $this->_init->assignmentid, 'attempt_text' => $this->_init->attempt_text]);
+        $PAGE->requires->js_call_amd('assignsubmission_pxaiwriter/pxaiendpoint', 'init', [
+            'assignmentId' => $this->data->assignmentid,
+        ]);
 
         return $html;
     }
