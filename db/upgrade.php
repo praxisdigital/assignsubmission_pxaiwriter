@@ -79,8 +79,8 @@ function xmldb_assignsubmission_pxaiwriter_upgrade($oldversion)
         );
 
         $attempt_table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
-        $attempt_table->add_key('userid', XMLDB_KEY_FOREIGN, ['userid'], 'user', ['id']);
-        $attempt_table->add_key('assignment', XMLDB_KEY_FOREIGN, ['assignment'], 'assign', ['id']);
+        $attempt_table->add_key('fk_userid', XMLDB_KEY_FOREIGN, ['userid'], 'user', ['id']);
+        $attempt_table->add_key('fk_assignment', XMLDB_KEY_FOREIGN, ['assignment'], 'assign', ['id']);
 
         $attempt_table->add_index(
             'userid',
@@ -205,8 +205,8 @@ function xmldb_assignsubmission_pxaiwriter_upgrade($oldversion)
         );
 
         $history_table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
-        $history_table->add_key('userid', XMLDB_KEY_FOREIGN, ['userid'], 'user', ['id']);
-        $history_table->add_key('assignment', XMLDB_KEY_FOREIGN, ['assignment'], 'assign', ['id']);
+        $history_table->add_key('fk_userid', XMLDB_KEY_FOREIGN, ['userid'], 'user', ['id']);
+        $history_table->add_key('fk_assignment', XMLDB_KEY_FOREIGN, ['assignment'], 'assign', ['id']);
 
         $history_table->add_index(
             'userid',
@@ -251,6 +251,36 @@ function xmldb_assignsubmission_pxaiwriter_upgrade($oldversion)
 
         if (!$dbman->table_exists($history_table)) {
             $dbman->create_table($history_table);
+        }
+
+        // Migrate attempt numbers from "pxaiwriter_api_attempts" to "pxaiwriter_user_attempts"
+        $api_attempt_table = new xmldb_table('pxaiwriter_api_attempts');
+        if ($dbman->table_exists($api_attempt_table)) {
+
+            $hashcode = hash('sha256', '');
+            $records = $DB->get_recordset('pxaiwriter_api_attempts');
+            $transaction = $DB->start_delegated_transaction();
+
+            foreach ($records as $record) {
+                $entity = (object)[
+                    'userid' => $record->userid,
+                    'assignment' => $record->assignment,
+                    'step' => 1,
+                    'status' => 'ok',
+                    'hashcode' => $hashcode,
+                    'data' => '',
+                    'timecreated' => $record->api_attempt_date,
+                ];
+                $attempts = (int)$record->api_attempts;
+                for ($i = 0; $i < $attempts; $i++) {
+                    $DB->insert_record('pxaiwriter_user_attempts', $entity);
+                }
+            }
+
+            $records->close();
+            $dbman->drop_table($api_attempt_table);
+
+            $transaction->allow_commit();
         }
 
         upgrade_plugin_savepoint(true, 2023032400, 'assignsubmission', 'pxaiwriter');

@@ -750,19 +750,6 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         return $config;
     }
 
-    /**
-     * Helper function to receive the attempt record for the current date
-     *
-     * @param [type] $assignmentid
-     * @param [type] $userid
-     * @return object
-     */
-    public function getAIAttemptRecord($assignmentid, $userid)
-    {
-        global $DB;
-        return $DB->get_record('pxaiwriter_api_attempts', array('assignment' => $assignmentid, 'userid' => $userid, 'api_attempt_date' => strtotime("today")));
-    }
-
     public function get_config_for_external()
     {
         return (array) $this->get_config();
