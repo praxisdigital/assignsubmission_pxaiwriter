@@ -79,19 +79,9 @@ function xmldb_assignsubmission_pxaiwriter_upgrade($oldversion)
         );
 
         $attempt_table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
-        $attempt_table->add_key('fk_userid', XMLDB_KEY_FOREIGN, ['userid'], 'user', ['id']);
-        $attempt_table->add_key('fk_assignment', XMLDB_KEY_FOREIGN, ['assignment'], 'assign', ['id']);
+        $attempt_table->add_key('userid', XMLDB_KEY_FOREIGN, ['userid'], 'user', ['id']);
+        $attempt_table->add_key('assignment', XMLDB_KEY_FOREIGN, ['assignment'], 'assign', ['id']);
 
-        $attempt_table->add_index(
-            'userid',
-            XMLDB_INDEX_NOTUNIQUE,
-            ['userid']
-        );
-        $attempt_table->add_index(
-            'assignment',
-            XMLDB_INDEX_NOTUNIQUE,
-            ['assignment']
-        );
         $attempt_table->add_index(
             'step',
             XMLDB_INDEX_NOTUNIQUE,
@@ -205,19 +195,9 @@ function xmldb_assignsubmission_pxaiwriter_upgrade($oldversion)
         );
 
         $history_table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
-        $history_table->add_key('fk_userid', XMLDB_KEY_FOREIGN, ['userid'], 'user', ['id']);
-        $history_table->add_key('fk_assignment', XMLDB_KEY_FOREIGN, ['assignment'], 'assign', ['id']);
+        $history_table->add_key('userid', XMLDB_KEY_FOREIGN, ['userid'], 'user', ['id']);
+        $history_table->add_key('assignment', XMLDB_KEY_FOREIGN, ['assignment'], 'assign', ['id']);
 
-        $history_table->add_index(
-            'userid',
-            XMLDB_INDEX_NOTUNIQUE,
-            ['userid']
-        );
-        $history_table->add_index(
-            'assignment',
-            XMLDB_INDEX_NOTUNIQUE,
-            ['assignment']
-        );
         $history_table->add_index(
             'userassignment',
             XMLDB_INDEX_NOTUNIQUE,

@@ -31,12 +31,10 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="The unique id for AI writer submission attempt"/>
-        <KEY NAME="fk_userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" COMMENT="The user instance this attempt relates to"/>
-        <KEY NAME="fk_assignment" TYPE="foreign" FIELDS="assignment" REFTABLE="assign" REFFIELDS="id" COMMENT="The assignment instance this attempt relates to"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" COMMENT="The user instance this attempt relates to"/>
+        <KEY NAME="assignment" TYPE="foreign" FIELDS="assignment" REFTABLE="assign" REFFIELDS="id" COMMENT="The assignment instance this attempt relates to"/>
       </KEYS>
       <INDEXES>
-        <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
-        <INDEX NAME="assignment" UNIQUE="false" FIELDS="assignment"/>
         <INDEX NAME="step" UNIQUE="false" FIELDS="step"/>
         <INDEX NAME="status" UNIQUE="false" FIELDS="status"/>
         <INDEX NAME="hashcode" UNIQUE="false" FIELDS="hashcode"/>
@@ -59,12 +57,10 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="The primary key of AI writer generated history"/>
-        <KEY NAME="fk_userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" COMMENT="Related to user"/>
-        <KEY NAME="fk_assignment" TYPE="foreign" FIELDS="assignment" REFTABLE="assign" REFFIELDS="id" COMMENT="Related to assignment"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" COMMENT="Related to user"/>
+        <KEY NAME="assignment" TYPE="foreign" FIELDS="assignment" REFTABLE="assign" REFFIELDS="id" COMMENT="Related to assignment"/>
       </KEYS>
       <INDEXES>
-        <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
-        <INDEX NAME="assignment" UNIQUE="false" FIELDS="assignment"/>
         <INDEX NAME="userassignment" UNIQUE="false" FIELDS="userid, assignment"/>
         <INDEX NAME="userhistory" UNIQUE="false" FIELDS="userid, assignment, hashcode"/>
         <INDEX NAME="step" UNIQUE="false" FIELDS="step"/>
