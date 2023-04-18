@@ -1,4 +1,8 @@
 <?php
+
+use assignsubmission_pxaiwriter\app\factory as factory;
+use assignsubmission_pxaiwriter\app\ai\openai\interfaces\models as openai_models;
+
 $settings->add(new admin_setting_configcheckbox(
     'assignsubmission_pxaiwriter/default',
     new lang_string('default', 'assignsubmission_pxaiwriter'),
@@ -10,14 +14,6 @@ $settings->add(new admin_setting_heading(
     'assignsubmissionheading',
     new lang_string('open_ai_request_settings', 'assignsubmission_pxaiwriter'),
     new lang_string('open_ai_request_settings_description', 'assignsubmission_pxaiwriter'),
-));
-
-//URL
-$settings->add(new admin_setting_configtext(
-    'assignsubmission_pxaiwriter/url',
-    new lang_string('url', 'assignsubmission_pxaiwriter'),
-    new lang_string('url_description', 'assignsubmission_pxaiwriter'),
-    "https://api.openai.com/v1/completions"
 ));
 
 // authorization
@@ -34,6 +30,14 @@ $settings->add(new admin_setting_configtext(
     new lang_string('model', 'assignsubmission_pxaiwriter'),
     new lang_string('model_description', 'assignsubmission_pxaiwriter'),
     "text-davinci-002"
+));
+
+$settings->add(new admin_setting_configselect(
+    'assignsubmission_pxaiwriter/model',
+    new lang_string('model', 'assignsubmission_pxaiwriter'),
+    new lang_string('model_description', 'assignsubmission_pxaiwriter'),
+    openai_models::GPT_3_5_TURBO,
+    factory::make()->ai()->openai()->models()->get_models_list()
 ));
 
 // temperature

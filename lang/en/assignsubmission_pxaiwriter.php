@@ -95,6 +95,9 @@ $string['paragraph'] = 'Paragraph';
 $string['character'] = 'Character';
 $string['expand_command'] = "Expand on the following";
 
+// OpenAI API
+$string['system_role_message'] = 'You are a helpful assistant.';
+
 // Events
 $string['eventassessableuploaded'] = 'Uploaded assessable';
 $string['event_ai_text_generated'] = 'AI writer text generated';
@@ -104,3 +107,6 @@ $string['error_course_module_not_found_by_assign_id'] = 'Could not find course m
 $string['error_user_exceed_attempts'] = 'You have already exceeded the attempt limit';
 $string['error_invalid_step_number'] = 'Invalid step number';
 $string['error_overdue_assignment'] = 'The assignment is overdue';
+$string['error_generate_ai_text_api'] = 'Could not generate AI text this time';
+$string['error_expand_ai_text_api'] = 'Could not expand AI text this time';
+$string['error_record_history_api'] = 'Could not record history this time';

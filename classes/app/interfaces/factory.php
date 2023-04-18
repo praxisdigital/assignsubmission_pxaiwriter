@@ -16,17 +16,11 @@ defined('MOODLE_INTERNAL') || die();
 
 interface factory
 {
+    public const COMPONENT = 'assignsubmission_pxaiwriter';
+
     public function assign(): assign_factory;
 
     public function ai(): ai_factory;
-
-    /**
-     * @template T
-     * @psalm-template T
-     * @param T[] $items
-     * @return collection<T>
-     */
-    public function collection(array $items = []): collection;
 
     public function helper(): helper_factory;
 

@@ -28,32 +28,32 @@ class entity extends base_entity implements interfaces\entity
 
     public function get_assignment(): int
     {
-        return $this->record['userid'] ?? 0;
+        return $this->record['assignment'] ?? 0;
     }
 
     public function get_step(): int
     {
-        return $this->record['userid'] ?? 0;
+        return $this->record['step'] ?? 0;
     }
 
     public function get_status(): string
     {
-        return $this->record['userid'] ?? 0;
+        return $this->record['status'] ?? 0;
     }
 
     public function get_hashcode(): string
     {
-        return $this->record['userid'] ?? 0;
+        return $this->record['hashcode'] ?? 0;
     }
 
     public function get_data(): ?string
     {
-        return $this->record['userid'] ?? 0;
+        return $this->record['data'] ?? 0;
     }
 
     public function get_timecreated(): int
     {
-        return $this->record['userid'] ?? 0;
+        return $this->record['timecreated'] ?? 0;
     }
 
     public function set_userid(int $id): void

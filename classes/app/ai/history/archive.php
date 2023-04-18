@@ -6,6 +6,7 @@ namespace assignsubmission_pxaiwriter\app\ai\history;
 use assignsubmission_pxaiwriter\app\ai\attempt\interfaces\entity as attempt_entity;
 use assignsubmission_pxaiwriter\app\ai\history\interfaces\entity as history_entity;
 use assignsubmission_pxaiwriter\app\interfaces\factory as base_factory;
+use dml_transaction_exception;
 use Exception;
 use moodle_transaction;
 
@@ -70,7 +71,13 @@ class archive implements interfaces\archive
 
     public function rollback(string $input_text, Exception $exception): void
     {
-        $this->transaction->rollback($exception);
+        try
+        {
+            $this->transaction->rollback($exception);
+        }
+        catch (Exception $error)
+        { }
+
         $this->get_attempt()->set_status_failed();
         $this->save_attempt($this->get_attempt());
     }
@@ -92,7 +99,7 @@ class archive implements interfaces\archive
      * @param history_entity $history
      * @param string|null $ai_text
      * @return history_entity
-     * @throws \dml_transaction_exception
+     * @throws dml_transaction_exception
      */
     private function push_history(history_entity $history, ?string $ai_text): history_entity
     {

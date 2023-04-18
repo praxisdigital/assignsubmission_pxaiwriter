@@ -10,7 +10,7 @@ use stdClass;
 defined('MOODLE_INTERNAL') || die();
 /* @codeCoverageIgnoreEnd */
 
-class admin_settings implements interfaces\admin_settings
+class admin_settings implements interfaces\settings
 {
     private base_factory $factory;
     private ?object $config;
@@ -59,11 +59,6 @@ class admin_settings implements interfaces\admin_settings
     public function get_authorization(): string
     {
         return $this->config->authorization ?? '';
-    }
-
-    public function get_url(): string
-    {
-        return $this->config->url ?? 'https://api.openai.com/v1/completions';
     }
 
     public function get_granularity(): string

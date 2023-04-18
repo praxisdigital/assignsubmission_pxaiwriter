@@ -3,7 +3,9 @@
 namespace assignsubmission_pxaiwriter\external\ai;
 
 
+use assignsubmission_pxaiwriter\app\exceptions\moodle_traceable_exception;
 use assignsubmission_pxaiwriter\external\base;
+use Exception;
 use external_description;
 use external_function_parameters;
 use external_single_structure;
@@ -70,12 +72,19 @@ class record_history extends base
             $factory->moodle()->user()->id
         );
 
-        $history = $archive->commit($text);
-
-        return [
-            'checksum' => $history->get_hashcode(),
-            'timecreated' => $history->get_timecreated(),
-            'timemodified' => $history->get_timemodified(),
-        ];
+        try
+        {
+            $history = $archive->commit($text);
+            return [
+                'checksum' => $history->get_hashcode(),
+                'timecreated' => $history->get_timecreated(),
+                'timemodified' => $history->get_timemodified(),
+            ];
+        }
+        catch (Exception $exception)
+        {
+            $archive->rollback($text, $exception);
+            throw new moodle_traceable_exception('error_record_history_api', $exception);
+        }
     }
 }

@@ -5,6 +5,7 @@ namespace assignsubmission_pxaiwriter\app\ai\openai;
 
 use assignsubmission_pxaiwriter\app\http\interfaces\rest;
 use assignsubmission_pxaiwriter\app\interfaces\factory as base_factory;
+use assignsubmission_pxaiwriter\app\setting\interfaces\settings;
 
 /* @codeCoverageIgnoreStart */
 defined('MOODLE_INTERNAL') || die();
@@ -27,8 +28,7 @@ class api implements interfaces\api
         $params = $this->get_default_params($user_text);
         $json = $this->rest->post(
             $this->get_api_url(),
-            $params,
-            ''
+            $params
         )->get_text();
 
         return trim(
@@ -44,13 +44,27 @@ class api implements interfaces\api
 
         $json = $this->rest->post(
             $this->get_api_url(),
-            $params,
-            ''
+            $params
         )->get_text();
 
         return trim(
             $this->get_text_from_json_response($json)
         );
+    }
+
+    private function get_mapper(): interfaces\mapper
+    {
+        return $this->factory->ai()->openai()->mapper();
+    }
+
+    private function get_settings(): settings
+    {
+        return $this->factory->setting()->admin();
+    }
+
+    private function get_model(): string
+    {
+        return $this->get_settings()->get_model();
     }
 
     private function get_expand_text_sentence(string $user_text): string
@@ -63,54 +77,28 @@ class api implements interfaces\api
     {
         $this->rest->header()->set(
             'Authorization',
-            $this->factory->setting()->admin()->get_authorization()
+            $this->get_settings()->get_authorization()
         );
     }
 
     private function get_api_url(): string
     {
-        return $this->factory->setting()->admin()->get_url();
+        return $this->factory->ai()->openai()->models()->get_api_url_by_setting(
+            $this->get_settings()
+        );
     }
 
     private function get_default_params(string $text): array
     {
-        $settings = $this->factory->setting()->admin();
-        return [
-            'model' => $settings->get_model(),
-            'prompt' => $text,
-            'temperature' => $settings->get_temperature(),
-            'max_tokens' => $settings->get_max_tokens(),
-            'top_p' => $settings->get_top_p(),
-            'frequency_penalty' => $settings->get_frequency_penalty(),
-            'presence_penalty' => $settings->get_presence_penalty()
-        ];
-    }
-
-    private function get_openai_data(string $json): array
-    {
-        return $this->factory->helper()->encoding()->json()->decode_as_array($json);
-    }
-
-    private function get_data_choices(array $data): array
-    {
-        return $data['choices'] ?? [];
-    }
-
-    private function get_first_choice(array $choices): array
-    {
-        return $choices[0];
-    }
-
-    private function get_choice_text(array $choice): string
-    {
-        return $choice['text'] ?? '';
+        $settings = $this->get_settings();
+        return $this->get_mapper()->map_request($text, $settings);
     }
 
     private function get_text_from_json_response(string $json): string
     {
-        $data = $this->get_openai_data($json);
-        $choices = $this->get_data_choices($data);
-        $first_choice = $this->get_first_choice($choices);
-        return $this->get_choice_text($first_choice);
+        return $this->get_mapper()->map_response(
+            $json,
+            $this->get_model()
+        );
     }
 }

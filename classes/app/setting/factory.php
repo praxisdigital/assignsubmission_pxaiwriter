@@ -19,7 +19,7 @@ class factory implements interfaces\factory
         $this->factory = $factory;
     }
 
-    public function admin(): interfaces\admin_settings
+    public function admin(): interfaces\settings
     {
         return $this->instances[__FUNCTION__] ??= new admin_settings($this->factory);
     }

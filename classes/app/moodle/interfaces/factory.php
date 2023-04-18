@@ -3,7 +3,9 @@
 namespace assignsubmission_pxaiwriter\app\moodle\interfaces;
 
 
+use assignsubmission_pxaiwriter\app\interfaces\factory as base_factory;
 use assignsubmission_pxaiwriter\app\moodle\context\interfaces\factory as context_factory;
+use core_string_manager;
 use course_modinfo;
 use curl;
 use DateTimeZone;
@@ -15,8 +17,6 @@ defined('MOODLE_INTERNAL') || die();
 
 interface factory
 {
-    public const COMPONENT = 'assignsubmission_pxaiwriter';
-
     public function context(): context_factory;
 
     public function course(): object;
@@ -25,12 +25,14 @@ interface factory
 
     public function db(): moodle_database;
 
-    public function get_config_instance(string $component = self::COMPONENT): ?object;
+    public function get_config_instance(string $component = base_factory::COMPONENT): ?object;
+
+    public function get_string_manager(): core_string_manager;
 
     public function get_string(
         string $identifier,
         $arguments = null,
-        string $component = self::COMPONENT,
+        string $component = base_factory::COMPONENT,
         ?string $lang = null
     ): string;
 

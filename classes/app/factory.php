@@ -9,6 +9,8 @@ use assignsubmission_pxaiwriter\app\ai\interfaces\factory as ai_factory;
 use assignsubmission_pxaiwriter\app\http\interfaces\factory as http_factory;
 use assignsubmission_pxaiwriter\app\moodle\interfaces\factory as moodle_factory;
 use assignsubmission_pxaiwriter\app\setting\interfaces\factory as setting_factory;
+use Exception;
+use moodle_exception;
 
 /* @codeCoverageIgnoreStart */
 defined('MOODLE_INTERNAL') || die();

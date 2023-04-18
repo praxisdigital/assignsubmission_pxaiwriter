@@ -31,15 +31,21 @@ class generate_ai_text_test extends integration_testcase
                 $ai_text
             );
 
+        $openai_factory = new \assignsubmission_pxaiwriter\app\test\mock\ai\openai\factory();
+        $openai_factory->set_mock_method('api', $api);
+
         $ai_factory = new ai_factory();
-        $ai_factory->set_mock_method('api', $api);
+        $ai_factory->set_mock_method('openai', $openai_factory);
 
         $factory = new factory();
         $factory->set_mock_method('ai', $ai_factory);
 
+        $duedate = new \DateTime('now', new \DateTimeZone('UTC'));
+        $duedate->modify('+20day');
+
         $user = $this->create_user();
         $course = $this->create_course();
-        $assignment = $this->create_assignment_with_ai_writer($course);
+        $assignment = $this->create_assignment_with_ai_writer($course, 2, ['duedate' => $duedate->getTimestamp()]);
         $assign_id = $assignment->get_instance()->id;
 
         $this->enrol_user($user, $course);
