@@ -3,7 +3,7 @@ name: Integration & Unit test
 on:
   pull_request:
     branches:
-      - MOODLE_40_STABLE
+      - master
 
 env:
   php: 8.0

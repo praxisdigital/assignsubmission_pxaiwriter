@@ -3,6 +3,7 @@
 namespace assignsubmission_pxaiwriter\app\setting;
 
 
+use assignsubmission_pxaiwriter\app\ai\openai\interfaces\models;
 use assignsubmission_pxaiwriter\app\interfaces\factory as base_factory;
 use stdClass;
 
@@ -53,12 +54,22 @@ class admin_settings implements interfaces\settings
 
     public function get_model(): string
     {
-        return $this->config->model ?? 'text-davinci-002';
+        return $this->config->model ?? models::GPT_3_5_TURBO;
     }
 
     public function get_authorization(): string
     {
         return $this->config->authorization ?? '';
+    }
+
+    public function get_url(): string
+    {
+        $model = $this->get_model();
+        if (empty($model))
+        {
+            $model = models::GPT_3_5_TURBO;
+        }
+        return $this->factory->ai()->openai()->models()->get_model_url($model);
     }
 
     public function get_granularity(): string

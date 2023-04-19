@@ -19,6 +19,7 @@ interface settings
 
     public function get_model(): string;
     public function get_authorization(): string;
+    public function get_url(): string;
 
     public function get_granularity(): string;
 

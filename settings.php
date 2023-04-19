@@ -25,12 +25,6 @@ $settings->add(new admin_setting_configtext(
 ));
 
 // model
-$settings->add(new admin_setting_configtext(
-    'assignsubmission_pxaiwriter/model',
-    new lang_string('model', 'assignsubmission_pxaiwriter'),
-    new lang_string('model_description', 'assignsubmission_pxaiwriter'),
-    "text-davinci-002"
-));
 
 $settings->add(new admin_setting_configselect(
     'assignsubmission_pxaiwriter/model',

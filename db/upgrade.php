@@ -263,6 +263,13 @@ function xmldb_assignsubmission_pxaiwriter_upgrade($oldversion)
             $transaction->allow_commit();
         }
 
+        // Upgrade AI model from "text-davinci-002" to "gpt-3.5-turbo"
+        set_config(
+            'model',
+            \assignsubmission_pxaiwriter\app\ai\openai\interfaces\models::GPT_3_5_TURBO,
+            'assignsubmission_pxaiwriter'
+        );
+
         upgrade_plugin_savepoint(true, 2023041800, 'assignsubmission', 'pxaiwriter');
     }
 
