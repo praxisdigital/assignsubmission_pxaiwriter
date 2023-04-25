@@ -3,9 +3,12 @@
 namespace assignsubmission_pxaiwriter\external\ai;
 
 
+use assignsubmission_pxaiwriter\app\exceptions\moodle_traceable_exception;
+use assignsubmission_pxaiwriter\app\exceptions\openai_api_response_exception;
 use assignsubmission_pxaiwriter\app\exceptions\overdue_assignment_exception;
 use assignsubmission_pxaiwriter\app\exceptions\user_exceed_attempts_exception;
 use assignsubmission_pxaiwriter\external\base;
+use Exception;
 use external_description;
 use external_function_parameters;
 use external_single_structure;
@@ -70,7 +73,7 @@ class generate_ai_text extends base
         $transaction = $factory->moodle()->db()->start_delegated_transaction();
         $current_user = $factory->moodle()->user();
 
-        $history = $ai_factory->history()->archive(
+        $archive = $ai_factory->history()->archive(
             $assignment_id,
             $step,
             $current_user->id,
@@ -89,12 +92,12 @@ class generate_ai_text extends base
                 throw user_exceed_attempts_exception::by_external_api();
             }
 
-            $history->start_attempt($text);
+            $archive->start_attempt($text);
 
-            $generated_text = $ai_factory->api()->generate_ai_text($text);
+            $generated_text = $ai_factory->openai()->api()->generate_ai_text($text);
             $combined_text = $ai_factory->formatter()->text($text, $generated_text);
 
-            $history->force_commit(
+            $archive->force_commit(
                 $combined_text,
                 $generated_text
             );
@@ -106,13 +109,14 @@ class generate_ai_text extends base
                 'max_attempts' => $attempt_data->get_max_attempts()
             ];
         }
-        catch (\Exception $exception)
+        catch (Exception $exception)
         {
-            $history->rollback(
+            $error = new moodle_traceable_exception('error_generate_ai_text_api', $exception);
+            $archive->rollback(
                 $text,
-                $exception
+                $error
             );
-            throw $exception;
+            throw $error;
         }
     }
 }

@@ -9,5 +9,5 @@ defined('MOODLE_INTERNAL') || die();
 
 interface factory
 {
-    public function admin(): admin_settings;
+    public function admin(): settings;
 }

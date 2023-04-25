@@ -4,8 +4,12 @@ namespace assignsubmission_pxaiwriter\app\test;
 
 
 use advanced_testcase;
+use assignsubmission_pxaiwriter\app\factory;
 use assignsubmission_pxaiwriter\app\test\webservice\generate_ai_text_response;
 use assignsubmission_pxaiwriter\external\ai\generate_ai_text;
+use mod_assign_test_generator;
+use mod_assign_testable_assign;
+use moodle_database;
 
 
 global $CFG;
@@ -18,11 +22,16 @@ defined('MOODLE_INTERNAL') || die();
 
 abstract class integration_testcase extends advanced_testcase
 {
-    use \mod_assign_test_generator;
+    use mod_assign_test_generator;
 
     protected function setUp(): void
     {
         $this->resetAfterTest();
+    }
+
+    protected function db(): moodle_database
+    {
+        return factory::make()->moodle()->db();
     }
 
     protected function create_user(array $record = []): object
@@ -55,12 +64,12 @@ abstract class integration_testcase extends advanced_testcase
         set_config($name, $value, $component);
     }
 
-    protected function create_assignment(object $course, array $record = []): \mod_assign_testable_assign
+    protected function create_assignment(object $course, array $record = []): mod_assign_testable_assign
     {
         return $this->create_instance($course, $record);
     }
 
-    protected function create_assignment_with_ai_writer(object $course, int $steps = 2, array $record = []): \mod_assign_testable_assign
+    protected function create_assignment_with_ai_writer(object $course, int $steps = 2, array $record = []): mod_assign_testable_assign
     {
         $record['assignsubmission_pxaiwriter_enabled'] = true;
         $record['assignsubmission_pxaiwriter_steps'] = $steps;

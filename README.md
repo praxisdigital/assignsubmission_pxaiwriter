@@ -17,7 +17,6 @@ AI text submission plugin that allows admins to define submission scope of steps
 PXAIWriter requires some setup to be completed before used, forgetting this step will cause the plugin not to work as supposed to be. Here, its mandatory that you complete all the sections Open API request settings, Open API text comparer settings and Assignment Settings.
 You can access these set of settings here : https://<site>/admin/settings.php?section=assignsubmission_pxaiwriter.
 
-- URL **(url)**
 - Authorization **(authorization)**
 - Model **(model)**
 - Temperature **(temperature)**
@@ -27,9 +26,7 @@ You can access these set of settings here : https://<site>/admin/settings.php?se
 - Presence penalty **(presence_penalty)**
 - API key **(api_key)**
 - Last modified by **(last_modified_by)**
-
 - Granularity **(granularity)**
-
 - Attempt count **(attempt_count)**
 
 ## Setup
@@ -43,24 +40,29 @@ You can access these set of settings here : https://<site>/admin/settings.php?se
 
 
 ## Release notes
-- **v1.1.0** (2023040301)
+- **1.2.0** (2023041800)
+  - New feature:
+    - Add new AI model "GPT-3.5-turbo" to the plugin.
+  - Changes:
+    - Removed API URL settings.
+- **1.1.0** (2023040301)
   - New feature:
     - Record the history when user press AI text generator "Do AI magic" and the next button.
       - The history will show in the grading overview as step 1.1, 1.2 etc. 
     - Add step number overview that can indicate which step user is current on and tell the user how many step there is.    
-- **v1.0.0.23** (2023013100)
+- **1.0.0.23** (2023013100)
   - Bug fix: When "Do AI magic" is pressed the entire content of the text area needs to be sent together with the prompt
   - Bug fix: Missing language string for "Expand Selection"
   - Removed input field for Do AI Magic
   - Removed multiple linebreaks in the input whenever AI magic is done
   - Added a loading icon to display while fetching AI data
-- **v1.0.0.22** (2023012001)
+- **1.0.0.22** (2023012001)
   - Cleaning up typos and unutilized text 
   - Bug fix: Steps config doesn't allow to paste text
-- **v1.0.0.20** (2023011900)
+- **1.0.0.20** (2023011900)
   - Admin settings content type removed
   - Added API attempt count visible for students
-- **v1.0.0.17** (2023011001)
+- **1.0.0.17** (2023011001)
   - Admin settings Open API request settings
   - Admin settings Open API text comparer settings 
   - Admin settings Assignment Settings 

@@ -3,6 +3,7 @@
 namespace assignsubmission_pxaiwriter\external\ai;
 
 
+use assignsubmission_pxaiwriter\app\exceptions\moodle_traceable_exception;
 use assignsubmission_pxaiwriter\app\exceptions\overdue_assignment_exception;
 use assignsubmission_pxaiwriter\app\exceptions\user_exceed_attempts_exception;
 use assignsubmission_pxaiwriter\external\base;
@@ -111,7 +112,7 @@ class expand_ai_text extends base
 
             $archive->start_attempt($selected_text);
 
-            $generated_text = $ai_factory->api()->expand_ai_text($selected_text);
+            $generated_text = $ai_factory->openai()->api()->expand_ai_text($selected_text);
 
             $new_text = $ai_factory->formatter()->replace(
                 $text,
@@ -135,11 +136,12 @@ class expand_ai_text extends base
         }
         catch (Exception $exception)
         {
+            $error = new moodle_traceable_exception('error_expand_ai_text_api', $exception);
             $archive->rollback(
                 $text,
-                $exception
+                $error
             );
-            throw $exception;
+            throw $error;
         }
     }
 }

@@ -6,7 +6,7 @@ function xmldb_assignsubmission_pxaiwriter_upgrade($oldversion)
 
     $dbman = $DB->get_manager();
 
-    if ($oldversion < 2023040400) {
+    if ($oldversion < 2023041800) {
 
         // AI writer attempts
 
@@ -263,7 +263,14 @@ function xmldb_assignsubmission_pxaiwriter_upgrade($oldversion)
             $transaction->allow_commit();
         }
 
-        upgrade_plugin_savepoint(true, 2023032400, 'assignsubmission', 'pxaiwriter');
+        // Upgrade AI model from "text-davinci-002" to "gpt-3.5-turbo"
+        set_config(
+            'model',
+            \assignsubmission_pxaiwriter\app\ai\openai\interfaces\models::GPT_3_5_TURBO,
+            'assignsubmission_pxaiwriter'
+        );
+
+        upgrade_plugin_savepoint(true, 2023041800, 'assignsubmission', 'pxaiwriter');
     }
 
     return true;

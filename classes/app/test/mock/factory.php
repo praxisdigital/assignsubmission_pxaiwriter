@@ -28,36 +28,60 @@ class factory extends mocker implements base_factory_interface
 
     public function assign(): assign_factory
     {
-        return $this->mocks[__FUNCTION__] ?? $this->factory->assign();
+        if ($this->has_mock(__FUNCTION__))
+        {
+            return $this->call_mock_method(__FUNCTION__);
+        }
+        return $this->factory->assign();
     }
 
     public function ai(): ai_factory
     {
-        return $this->mocks[__FUNCTION__] ?? $this->factory->ai();
+        if ($this->has_mock(__FUNCTION__))
+        {
+            return $this->call_mock_method(__FUNCTION__);
+        }
+        return $this->factory->ai();
     }
 
     public function collection(array $items = []): collection
     {
-        return $this->mocks[__FUNCTION__] ?? $this->factory->collection($items);
+        return $this->call_mock_method(__FUNCTION__, $items) ?? $this->factory->collection($items);
     }
 
     public function helper(): helper_factory
     {
-        return $this->mocks[__FUNCTION__] ?? $this->factory->helper();
+        if ($this->has_mock(__FUNCTION__))
+        {
+            return $this->call_mock_method(__FUNCTION__);
+        }
+        return $this->factory->helper();
     }
 
     public function http(): http_factory
     {
-        return $this->mocks[__FUNCTION__] ?? $this->factory->http();
+        if ($this->has_mock(__FUNCTION__))
+        {
+            return $this->call_mock_method(__FUNCTION__);
+        }
+        return $this->factory->http();
     }
 
     public function moodle(): moodle_factory
     {
-        return $this->mocks[__FUNCTION__] ?? $this->factory->moodle();
+        if ($this->has_mock(__FUNCTION__))
+        {
+            return $this->call_mock_method(__FUNCTION__);
+        }
+        return $this->factory->moodle();
     }
 
     public function setting(): setting_factory
     {
-        return $this->mocks[__FUNCTION__] ?? $this->factory->setting();
+        if ($this->has_mock(__FUNCTION__))
+        {
+            return $this->call_mock_method(__FUNCTION__);
+        }
+        return $this->factory->setting();
     }
 }

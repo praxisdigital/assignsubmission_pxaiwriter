@@ -3,8 +3,10 @@
 namespace assignsubmission_pxaiwriter\app\moodle;
 
 
+use assignsubmission_pxaiwriter\app\interfaces\factory as base_factory;
 use assignsubmission_pxaiwriter\app\moodle\context\interfaces\factory as context_factory;
 use core_date;
+use core_string_manager;
 use course_modinfo;
 use curl;
 use DateTimeZone;
@@ -50,15 +52,20 @@ class factory implements interfaces\factory
      * @return object|null
      * @throws dml_exception
      */
-    public function get_config_instance(string $component = interfaces\factory::COMPONENT): ?object
+    public function get_config_instance(string $component = base_factory::COMPONENT): ?object
     {
         return get_config($component);
+    }
+
+    public function get_string_manager(): core_string_manager
+    {
+        return get_string_manager();
     }
 
     public function get_string(
         string $identifier,
         $arguments = null,
-        string $component = interfaces\factory::COMPONENT,
+        string $component = base_factory::COMPONENT,
         ?string $lang = null
     ):
     string {
