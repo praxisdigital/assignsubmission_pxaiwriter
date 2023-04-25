@@ -42,13 +42,8 @@ You can access these set of settings here : https://<site>/admin/settings.php?se
 - Either click on 'Save and return to course' or 'Save and display' button to save the submission configuration.
 
 
-**Database tables:**
-
-- assignsubmission_pxaiwriter - This records the course assignment submissions for the pxai writer.
-- pxaiwriter_api_attempts - This records the API endpoint attempts by users by the assignment.
-
 ## Release notes
-- **v1.1.0** (2023040300)
+- **v1.1.0** (2023040301)
   - New feature:
     - Record the history when user press AI text generator "Do AI magic" and the next button.
       - The history will show in the grading overview as step 1.1, 1.2 etc. 
