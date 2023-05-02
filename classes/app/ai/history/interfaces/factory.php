@@ -3,8 +3,6 @@
 namespace assignsubmission_pxaiwriter\app\ai\history\interfaces;
 
 
-use moodle_transaction;
-
 /* @codeCoverageIgnoreStart */
 defined('MOODLE_INTERNAL') || die();
 /* @codeCoverageIgnoreEnd */
@@ -13,9 +11,31 @@ interface factory
 {
     public function archive(
         int $assignment_id,
-        int $step,
-        ?int $user_id = null,
-        ?moodle_transaction $transaction = null
+        string $type,
+        int $submission = 0,
+        ?int $userid = null,
+        int $step = 1
+    ): archive;
+
+    public function archive_expand_ai_text(
+        int $assignment_id,
+        int $submission = 0,
+        ?int $userid = null,
+        int $step = 1
+    ): archive;
+
+    public function archive_generate_ai_text(
+        int $assignment_id,
+        int $submission = 0,
+        ?int $userid = null,
+        int $step = 1
+    ): archive;
+
+    public function archive_user_edit(
+        int $assignment_id,
+        int $submission = 0,
+        ?int $userid = null,
+        int $step = 1
     ): archive;
 
     public function entity(array $record = []): entity;

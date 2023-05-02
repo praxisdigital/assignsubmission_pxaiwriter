@@ -8,6 +8,9 @@ Submission
 
 See [version.php](version.php)
 
+## 3rd-party library dependencies
+* [d4h/finediff](https://github.com/D4H/php-finediff)
+
 ## Description
 
 AI text submission plugin that allows admins to define submission scope of steps, and students to generate AI assisted content based on assignment title.
@@ -17,14 +20,13 @@ AI text submission plugin that allows admins to define submission scope of steps
 PXAIWriter requires some setup to be completed before used, forgetting this step will cause the plugin not to work as supposed to be. Here, its mandatory that you complete all the sections Open API request settings, Open API text comparer settings and Assignment Settings.
 You can access these set of settings here : https://<site>/admin/settings.php?section=assignsubmission_pxaiwriter.
 
-- Authorization **(authorization)**
+- OpenAI API token **(openai_token)**
 - Model **(model)**
 - Temperature **(temperature)**
 - Max tokens **(max_tokens)**
 - Top p **(top_p)**
 - Frequency Penalty **(frequency_penalty)**
 - Presence penalty **(presence_penalty)**
-- API key **(api_key)**
 - Last modified by **(last_modified_by)**
 - Granularity **(granularity)**
 - Attempt count **(attempt_count)**
@@ -38,13 +40,13 @@ You can access these set of settings here : https://<site>/admin/settings.php?se
 - You may select 'Annotate PDF' feedback type, in case you may want to see the AI generated text vs final submission text by the student.
 - Either click on 'Save and return to course' or 'Save and display' button to save the submission configuration.
 
-
 ## Release notes
-- **1.2.0** (2023041800)
+- **1.2.0** (2023050100)
   - New feature:
     - Add new AI model "GPT-3.5-turbo" to the plugin.
   - Changes:
     - Removed API URL settings.
+    - Change from "Authorization" to "OpenAI API token".
 - **1.1.0** (2023040301)
   - New feature:
     - Record the history when user press AI text generator "Do AI magic" and the next button.

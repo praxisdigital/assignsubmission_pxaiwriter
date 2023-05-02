@@ -29,11 +29,4 @@ interface repository
         int $assignment_id,
         ?int $max_attempts = null
     ): data;
-
-    public function insert(entity $entity): void;
-
-    public function delete(entity $entity): void;
-    public function delete_by_id(string $id): void;
-    public function delete_by_user_id(string $user_id): void;
-    public function delete_by_assignment_id(string $assignment_id): void;
 }

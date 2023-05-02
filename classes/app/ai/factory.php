@@ -5,7 +5,6 @@ namespace assignsubmission_pxaiwriter\app\ai;
 
 use assignsubmission_pxaiwriter\app\ai\attempt\interfaces\factory as attempt_factory;
 use assignsubmission_pxaiwriter\app\ai\history\interfaces\factory as history_factory;
-use assignsubmission_pxaiwriter\app\ai\openai\api;
 use assignsubmission_pxaiwriter\app\ai\openai\interfaces\factory as openai_factory;
 use assignsubmission_pxaiwriter\app\interfaces\factory as base_factory;
 

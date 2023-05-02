@@ -5,7 +5,7 @@
  */
 function xmldb_assignsubmission_pxaiwriter_install()
 {
-    global $CFG, $DB, $OUTPUT;
+    global $CFG;
 
     require_once($CFG->dirroot . '/mod/assign/adminlib.php');
     $pluginmanager = new assign_plugin_manager('assignsubmission');

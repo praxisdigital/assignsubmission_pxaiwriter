@@ -3,6 +3,7 @@
 namespace assignsubmission_pxaiwriter\app\ai\attempt;
 
 
+use assignsubmission_pxaiwriter\app\exceptions\user_exceed_attempts_exception;
 use assignsubmission_pxaiwriter\app\interfaces\factory as base_factory;
 
 /* @codeCoverageIgnoreStart */
@@ -48,6 +49,15 @@ class data implements interfaces\data
     public function is_exceeded(): bool
     {
         return $this->get_attempted_count() >= $this->get_max_attempts();
+    }
+
+    public function make_attempt(): void
+    {
+        ++$this->attempted_count;
+        if ($this->get_attempted_count() > $this->get_max_attempts())
+        {
+            throw user_exceed_attempts_exception::by_making_attempt();
+        }
     }
 
     private function get_remaining_string_arguments(): object

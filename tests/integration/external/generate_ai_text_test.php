@@ -4,6 +4,7 @@ namespace assignsubmission_pxaiwriter\integration\external;
 
 
 use assignsubmission_pxaiwriter\app\ai\openai\interfaces\api;
+use assignsubmission_pxaiwriter\app\ai\openai\interfaces\response;
 use assignsubmission_pxaiwriter\app\test\integration_testcase;
 use assignsubmission_pxaiwriter\app\test\mock\ai\factory as ai_factory;
 use assignsubmission_pxaiwriter\app\test\mock\factory;
@@ -25,11 +26,13 @@ class generate_ai_text_test extends integration_testcase
 
         $ai_text = 'Hello you';
 
+        $mock_response = $this->createMock(response::class);
+        $mock_response->method('get_text')
+            ->willReturn($ai_text);
+
         $api = $this->createMock(api::class);
         $api->method('generate_ai_text')
-            ->willReturn(
-                $ai_text
-            );
+            ->willReturn($mock_response);
 
         $openai_factory = new \assignsubmission_pxaiwriter\app\test\mock\ai\openai\factory();
         $openai_factory->set_mock_method('api', $api);
@@ -65,7 +68,7 @@ class generate_ai_text_test extends integration_testcase
         );
 
         self::assertSame(
-            0,
+            1,
             $response['attempted_count']
         );
 

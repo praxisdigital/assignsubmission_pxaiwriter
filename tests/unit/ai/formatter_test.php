@@ -42,8 +42,6 @@ class formatter_test extends unit_testcase
         $user_text = 'This is a user text';
 
         $ai_text1 = 'This is a AI text 1';
-        $ai_text2 = 'This is a AI text 2';
-        $ai_text3 = 'This is a AI text 3';
 
         $formatter = new formatter();
         $actual = $formatter->text(

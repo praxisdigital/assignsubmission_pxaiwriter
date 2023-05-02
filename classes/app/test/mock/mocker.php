@@ -3,8 +3,6 @@
 namespace assignsubmission_pxaiwriter\app\test\mock;
 
 
-use PHPUnit\Framework\MockObject\MockObject;
-
 /* @codeCoverageIgnoreStart */
 defined('MOODLE_INTERNAL') || die();
 /* @codeCoverageIgnoreEnd */
@@ -13,12 +11,6 @@ abstract class mocker
 {
     protected array $mocks = [];
     protected array $mock_callbacks = [];
-
-    public function set_mock_callback(string $method, callable $callback): void
-    {
-        $this->validate_method($method);
-        $this->mock_callbacks[$method] = $callback;
-    }
 
     /**
      * @param string $method

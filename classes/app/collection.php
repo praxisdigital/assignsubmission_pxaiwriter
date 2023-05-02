@@ -70,6 +70,16 @@ class collection implements interfaces\collection, \JsonSerializable
         return current($this->items);
     }
 
+    public function last()
+    {
+        if (empty($this->items))
+        {
+            return null;
+        }
+        $last_index = array_key_last($this->items);
+        return $this->offsetGet($last_index);
+    }
+
     /**
      * @param $offset
      * @return T

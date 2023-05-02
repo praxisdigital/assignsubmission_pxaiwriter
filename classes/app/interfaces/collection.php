@@ -23,6 +23,11 @@ interface collection extends ArrayAccess, Iterator, Countable
     public function current();
 
     /**
+     * @return T|null
+     */
+    public function last();
+
+    /**
      * @param mixed $offset
      * @return T
      */

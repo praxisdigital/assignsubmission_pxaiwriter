@@ -62,7 +62,7 @@ class assessable_uploaded extends \core\event\assessable_uploaded {
     /**
      * Legacy event data if get_legacy_eventname() is not empty.
      *
-     * @return stdClass
+     * @return object
      */
     protected function get_legacy_eventdata() {
         $eventdata = new \stdClass();

@@ -1,57 +1,37 @@
-<?xml version="1.0" encoding="UTF-8" ?>                                                                                             
-<XMLDB PATH="mod/assign/submission/pxaiwriter/db" VERSION="20120423" COMMENT="XMLDB pxaiwriter for Moodle mod/assign/submission/pxaiwriter"           
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"                                                                           
-    xsi:noNamespaceSchemaLocation="../../../../../lib/xmldb/xmldb.xsd"                                                              
->                                                                                                                                   
-  <TABLES>                                                                                                                          
-    <TABLE NAME="assignsubmission_pxaiwriter" COMMENT="Info about AI writer submissions for assignments">                                      
-      <FIELDS>                                                                                                                      
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>                                                    
-        <FIELD NAME="assignment" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>                               
-        <FIELD NAME="submission" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>                               
-        <FIELD NAME="steps_data" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The text for this aiwriter submission."/>
-      </FIELDS>                                                                                                                     
-      <KEYS>                                                                                                                        
-        <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="The unique id for this submission info."/>                          
-        <KEY NAME="assignment" TYPE="foreign" FIELDS="assignment" REFTABLE="assign" REFFIELDS="id" COMMENT="The assignment instance this submission relates to"/>
-        <KEY NAME="submission" TYPE="foreign" FIELDS="submission" REFTABLE="assign_submission" REFFIELDS="id" COMMENT="The submission this AI writer submission relates to."/>
-      </KEYS>                                                                                                                       
-    </TABLE>
-
-    <TABLE NAME="pxaiwriter_user_attempts" COMMENT="AI writer user attempts">
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="mod/assign/submission/pxaiwriter/db" VERSION="20120423" COMMENT="XMLDB pxaiwriter for Moodle mod/assign/submission/pxaiwriter"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="assignsubmission_pxaiwriter" COMMENT="Info about AI writer submissions for assignments">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="ID of the user that had attempt"/>
-        <FIELD NAME="assignment" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="ID of the assignment"/>
-        <FIELD NAME="step" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" DEFAULT="0" COMMENT="Step number"/>
-        <FIELD NAME="status" TYPE="char" LENGTH="16" NOTNULL="true" DEFAULT="ok" SEQUENCE="false" COMMENT="The status of the attempt (ok, failed, deleted)"/>
-        <FIELD NAME="hashcode" TYPE="char" LENGTH="64" NOTNULL="false" SEQUENCE="false" COMMENT="User input text that hashed in SHA256 (hexadecimal). Use for checksum"/>
-        <FIELD NAME="data" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="User's input text (This could also be mixed with AI text)"/>
-        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The created time of the API call"/>
+        <FIELD NAME="assignment" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="submission" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="steps_data" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The text for this aiwriter submission."/>
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="The unique id for AI writer submission attempt"/>
-        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" COMMENT="The user instance this attempt relates to"/>
-        <KEY NAME="assignment" TYPE="foreign" FIELDS="assignment" REFTABLE="assign" REFFIELDS="id" COMMENT="The assignment instance this attempt relates to"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="The unique id for this submission info."/>
+        <KEY NAME="assignment" TYPE="foreign" FIELDS="assignment" REFTABLE="assign" REFFIELDS="id" COMMENT="The assignment instance this submission relates to"/>
+        <KEY NAME="submission" TYPE="foreign" FIELDS="submission" REFTABLE="assign_submission" REFFIELDS="id" COMMENT="The submission this AI writer submission relates to."/>
       </KEYS>
-      <INDEXES>
-        <INDEX NAME="step" UNIQUE="false" FIELDS="step"/>
-        <INDEX NAME="status" UNIQUE="false" FIELDS="status"/>
-        <INDEX NAME="hashcode" UNIQUE="false" FIELDS="hashcode"/>
-        <INDEX NAME="userattempt" UNIQUE="false" FIELDS="userid, assignment, step, status, timecreated"/>
-      </INDEXES>
     </TABLE>
 
-    <TABLE NAME="pxaiwriter_user_history" COMMENT="AI writer user history">
+    <TABLE NAME="pxaiwriter_history" COMMENT="AI writer user history">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="ID of the user that had generated the AI text"/>
         <FIELD NAME="assignment" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="ID of the assignment"/>
-        <FIELD NAME="step" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Step number"/>
-        <FIELD NAME="status" TYPE="char" LENGTH="16" NOTNULL="true" DEFAULT="ok" SEQUENCE="false" COMMENT="The status of the attempt (ok, deleted)"/>
-        <FIELD NAME="hashcode" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false" COMMENT="Text data that hashed in SHA256 (hexadecimal). Use for checksum"/>
-        <FIELD NAME="data" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Text data"/>
+        <FIELD NAME="submission" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" DEFAULT="0" COMMENT="ID of the submission, If ID is 0 the submission hasn't yet been created"/>
+        <FIELD NAME="step" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Step number"/>
+        <FIELD NAME="status" TYPE="char" LENGTH="16" NOTNULL="true" DEFAULT="ok" SEQUENCE="false" COMMENT="The status of the attempt (ok, failed, deleted)"/>
+        <FIELD NAME="type" TYPE="char" LENGTH="32" NOTNULL="true" DEFAULT="user-edit" SEQUENCE="false" COMMENT="History type (user-edit, ai-generate, ai-expand)"/>
+        <FIELD NAME="input_text" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="User input text"/>
         <FIELD NAME="ai_text" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="AI generated text"/>
+        <FIELD NAME="response" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="OpenAI API response"/>
+        <FIELD NAME="data" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The result of action, such as user text or combination of user text and AI text"/>
+        <FIELD NAME="hashcode" TYPE="char" LENGTH="64" NOTNULL="false" SEQUENCE="false" COMMENT="Text data that hashed in SHA256 (hexadecimal). Use for checksum"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The created time of generated text in unix timestamp"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The modified time of generated text in unix timestamp"/>
       </FIELDS>
@@ -63,12 +43,15 @@
       <INDEXES>
         <INDEX NAME="userassignment" UNIQUE="false" FIELDS="userid, assignment"/>
         <INDEX NAME="userhistory" UNIQUE="false" FIELDS="userid, assignment, hashcode"/>
+        <INDEX NAME="userattempt" UNIQUE="false" FIELDS="userid, assignment, step, status, type, timecreated"/>
+        <INDEX NAME="submission" UNIQUE="false" FIELDS="submission"/>
         <INDEX NAME="step" UNIQUE="false" FIELDS="step"/>
-        <INDEX NAME="hashcode" UNIQUE="false" FIELDS="hashcode"/>
         <INDEX NAME="status" UNIQUE="false" FIELDS="status"/>
+        <INDEX NAME="type" UNIQUE="false" FIELDS="type"/>
+        <INDEX NAME="hashcode" UNIQUE="false" FIELDS="hashcode"/>
         <INDEX NAME="timecreated" UNIQUE="false" FIELDS="timecreated"/>
         <INDEX NAME="timemodified" UNIQUE="false" FIELDS="timemodified"/>
       </INDEXES>
     </TABLE>
-  </TABLES>                                                                                                                         
+  </TABLES>
 </XMLDB>

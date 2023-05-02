@@ -1,6 +1,7 @@
 stepConfigForm = {};
 stepConfigForm.steps = [];
 stepConfigForm.currentStep = 1;
+stepConfigForm.prevStep = 0;
 
 stepConfigForm.init = function (config, stepConfig) {
 
@@ -89,8 +90,8 @@ stepConfigForm.init = function (config, stepConfig) {
     };
 
     var changeCurrentStep = function (incoming, value = null) {
-        var oldStep = this.currentStep;
-        var newStep = oldStep + incoming;
+        this.prevStep = this.currentStep;
+        var newStep = this.prevStep + incoming;
         if (!(this.steps.length > (newStep)) || !((newStep) < 1)) {
             this.currentStep = newStep;
         }
@@ -150,7 +151,7 @@ stepConfigForm.init = function (config, stepConfig) {
             });
         }
 
-        triggerPageChangeEvent(this.currentStep);
+        triggerPageChangeEvent(this.currentStep, this.prevStep);
 
     }.bind(this);
 

@@ -1,110 +1,105 @@
-    <div class="container-fluid p-0 assignsubmission_pxaiwriter">
-
-        <div id="pxaiwriter-input-steps-component" class="row">
-
-            <div class="steps-container col-12 ">
-                <div class="spinner d-none" id="loader">
-                    <div class="d-flex justify-content-center">
-                        <div class="spinner-border" role="status">
-                            <span class="sr-only">Loading...</span>
-                        </div>
+<div class="container-fluid p-0 assignsubmission_pxaiwriter">
+    <div id="pxaiwriter-input-steps-component" class="row">
+        <div class="steps-container col-12 ">
+            <div class="spinner d-none" id="loader">
+                <div class="d-flex justify-content-center">
+                    <div class="spinner-border" role="status">
+                        <span class="sr-only">Loading...</span>
                     </div>
                 </div>
-                <div class="steps row">
-                    <div class="step-list col-md-12 mb-2">
-                        {{#steps_data}}
-                            <button class="step-page-button btn-no-interaction btn btn-lg btn-outline-secondary rounded-circle" type="button" data-step-number="{{step}}">{{step}}</button>
-                            <span class="step-separator"></span>
-                        {{/steps_data}}
-                    </div>
+            </div>
+            <div class="steps row">
+                <div class="step-list col-md-12 mb-2">
                     {{#steps_data}}
-                        {{>assignsubmission_pxaiwriter/submission/step_editor}}
+                        <button class="step-page-button btn-no-interaction btn btn-lg btn-outline-secondary rounded-circle"
+                                type="button" data-step-number="{{step}}">{{step}}</button>
+                        <span class="step-separator"></span>
                     {{/steps_data}}
                 </div>
+                {{#steps_data}}
+                    {{>assignsubmission_pxaiwriter/submission/step_editor}}
+                {{/steps_data}}
+            </div>
 
-                {{#is_due_submission}}
-                    <div class="row mb-1">
-                        <div class="col-auto" style="color: red;">
-                            <i>{{#str}} submission_due_msg, assignsubmission_pxaiwriter{{/str}}</i>
-                        </div>
+            {{#is_due_submission}}
+                <div class="row mb-1">
+                    <div class="col-auto" style="color: red;">
+                        <i>{{#str}} submission_due_msg, assignsubmission_pxaiwriter{{/str}}</i>
                     </div>
-                {{/is_due_submission}}
-                {{#exceeds_max_attempts}}
-                    <div class="row mb-1">
-                        <div class="col-auto" style="color: red;">
-                            <i>{{#str}} ai_attempt_exceed_msg, assignsubmission_pxaiwriter{{/str}}</i>
-                        </div>
+                </div>
+            {{/is_due_submission}}
+            {{#exceeds_max_attempts}}
+                <div class="row mb-1">
+                    <div class="col-auto" style="color: red;">
+                        <i>{{#str}} ai_attempt_exceed_msg, assignsubmission_pxaiwriter{{/str}}</i>
                     </div>
-                {{/exceeds_max_attempts}}
+                </div>
+            {{/exceeds_max_attempts}}
 
-                <div class="actions-container mb-3 row d-flex justify-content-end">
+            <div class="actions-container mb-3 row d-flex justify-content-end">
 
-                    <div class="col-6 text-left">
-                        <button id="go-back" name="go-back" type="button" class="btn btn-secondary">{{#str}} previous, assignsubmission_pxaiwriter{{/str}}</button>
-                    </div>
-                    <div class="col-6 text-right">
-                        <button id="advance" name="advance" type="button"
+                <div class="col-6 text-left">
+                    <button id="go-back" name="go-back" type="button" class="btn btn-secondary">{{#str}}
+                        previous, assignsubmission_pxaiwriter{{/str}}</button>
+                </div>
+                <div class="col-6 text-right">
+                    <button id="advance" name="advance" type="button"
                             class="btn btn-secondary">{{#str}} next, assignsubmission_pxaiwriter{{/str}}</button>
-                    </div>
-       
                 </div>
 
             </div>
 
         </div>
 
-
-
-    <div class="modal fade" id="title-required-warning-modal" tabindex="-1" role="dialog" aria-labelledby="title-required-warning-modal" aria-hidden="true">
+    </div>
+    <div class="modal fade" id="title-required-warning-modal" tabindex="-1" role="dialog"
+         aria-labelledby="title-required-warning-modal" aria-hidden="true">
         <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-body">
-                {{#str}} title-required-warning, assignsubmission_pxaiwriter {{/str}}
+            <div class="modal-content">
+                <div class="modal-body">
+                    {{#str}} title-required-warning, assignsubmission_pxaiwriter {{/str}}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">{{#str}}
+                        close_button_label, assignsubmission_pxaiwriter {{/str}}</button>
+                </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-dismiss="modal">{{#str}} close_button_label, assignsubmission_pxaiwriter {{/str}}</button>
-            </div>
-        </div>
         </div>
     </div>
-
-    <div class="modal fade" id="text-selection-required-warning-modal" tabindex="-1" role="dialog" aria-labelledby="text-selection-required-warning-modal" aria-hidden="true">
+    <div class="modal fade" id="text-selection-required-warning-modal" tabindex="-1" role="dialog"
+         aria-labelledby="text-selection-required-warning-modal" aria-hidden="true">
         <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-body">
-                {{#str}} selection-required-warning, assignsubmission_pxaiwriter {{/str}}
+            <div class="modal-content">
+                <div class="modal-body">
+                    {{#str}} selection-required-warning, assignsubmission_pxaiwriter {{/str}}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">{{#str}}
+                        close_button_label, assignsubmission_pxaiwriter {{/str}}</button>
+                </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-dismiss="modal">{{#str}} close_button_label, assignsubmission_pxaiwriter {{/str}}</button>
-            </div>
-        </div>
         </div>
     </div>
-
-    <div class="modal fade" id="max-attempt-exceeds-error-msg-modal" tabindex="-1" role="dialog" aria-labelledby="max-attempt-exceeds-error-msg-modal" aria-hidden="true">
+    <div class="modal fade" id="max-attempt-exceeds-error-msg-modal" tabindex="-1" role="dialog"
+         aria-labelledby="max-attempt-exceeds-error-msg-modal" aria-hidden="true">
         <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-body">
-                {{#str}} ai_attempt_exceed_msg, assignsubmission_pxaiwriter {{/str}}
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-dismiss="modal">{{#str}} close_button_label, assignsubmission_pxaiwriter {{/str}}</button>
+            <div class="modal-content">
+                <div class="modal-body">
+                    {{#str}} ai_attempt_exceed_msg, assignsubmission_pxaiwriter {{/str}}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">{{#str}}
+                        close_button_label, assignsubmission_pxaiwriter {{/str}}</button>
+                </div>
             </div>
         </div>
-        </div>
     </div>
-
-
-    </div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/2.3.0/mustache.min.js"></script>
-
+</div>
 <style>
     .spinner {
-        position: absolute; 
-        top: 50%; 
-        left: 50%; 
+        position: absolute;
+        top: 50%;
+        left: 50%;
         z-index: 9999;
     }
 </style>

@@ -9,6 +9,7 @@ use core_string_manager;
 use course_modinfo;
 use curl;
 use DateTimeZone;
+use file_storage;
 use moodle_database;
 
 /* @codeCoverageIgnoreStart */
@@ -25,7 +26,23 @@ interface factory
 
     public function db(): moodle_database;
 
-    public function get_config_instance(string $component = base_factory::COMPONENT): ?object;
+    public function file_storage(bool $reinitialize = false): file_storage;
+
+    public function get_config_instance(string $component = base_factory::COMPONENT): object;
+
+    /**
+     * @template T
+     * @psalm-template T
+     * @param string $name
+     * @param T $value
+     * @param string $component
+     * @return void
+     */
+    public function set_config(
+        string $name,
+        $value,
+        string $component = base_factory::COMPONENT
+    ): void;
 
     public function get_string_manager(): core_string_manager;
 
@@ -35,6 +52,8 @@ interface factory
         string $component = base_factory::COMPONENT,
         ?string $lang = null
     ): string;
+
+    public function get_group_name_by_id(int $group_id): string;
 
     public function get_user_timezone(): DateTimeZone;
 

@@ -6,8 +6,6 @@ namespace assignsubmission_pxaiwriter\app\assign;
 use assignsubmission_pxaiwriter\app\exceptions\course_module_not_found_exception;
 use assignsubmission_pxaiwriter\app\interfaces\factory as base_factory;
 use cm_info;
-use dml_exception;
-use moodle_exception;
 
 /* @codeCoverageIgnoreStart */
 defined('MOODLE_INTERNAL') || die();
@@ -39,6 +37,15 @@ class repository implements interfaces\repository
     public function get_course_module_id_by_assign_id(int $assignment_id): int
     {
         return $this->get_course_module_by_assign_id($assignment_id)->id;
+    }
+
+    public function get_latest_submission_id_by_user_assignment(int $userid, int $assignment_id): int
+    {
+        $submission_id = $this->factory->moodle()->db()->get_field('assign_submission', 'id', [
+            'userid' => $userid,
+            'assignment' => $assignment_id
+        ]);
+        return empty($submission_id) ? 0 : $submission_id;
     }
 
     private function get_course_module_by_assign_id(int $id): cm_info

@@ -91,7 +91,7 @@ class api_test extends integration_testcase
         $ai_text = $api->generate_ai_text($user_text);
         self::assertSame(
             $expected_text,
-            $ai_text
+            $ai_text->get_text()
         );
     }
 
@@ -122,7 +122,7 @@ class api_test extends integration_testcase
         $ai_text = $api->expand_ai_text($user_text);
         self::assertSame(
             $expected_text,
-            $ai_text
+            $ai_text->get_text()
         );
     }
 

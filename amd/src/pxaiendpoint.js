@@ -19,11 +19,12 @@ export const init = (
 
     const defaultStep = 1;
 
-    let EventCreator = function (assignmentId) {
+    let EventCreator = function (assignmentId, submissionId) {
         this.currentStep = defaultStep;
         this.selectedStart = 0;
         this.selectedEnd = 0;
         this.assignmentId = assignmentId;
+        this.submissionId = submissionId;
         this.init();
     };
 
@@ -126,8 +127,37 @@ export const init = (
      * @param {CustomEvent|Event} event
      * @return {number}
      */
-    const getCurrentStepFromPageChangeEvent = (event) => {
+    const getCurrentStepByPageChangeEvent = (event) => {
         return event?.detail?.currentStep;
+    };
+
+    /**
+     *
+     * @param {CustomEvent|Event} event
+     * @return {number}
+     */
+    const getPreviousStepByPageChangeEvent = (event) => {
+        const currentStep = getCurrentStepByPageChangeEvent(event);
+        const prevStep = event?.detail?.prevStep;
+        return currentStep === prevStep ? 0 : prevStep;
+    };
+
+    /**
+     * @param {string} text
+     * @return {Promise<string|null>}
+     */
+    const getHashCode = async (text) => {
+        if (!text) {
+            return null;
+        }
+        try {
+            const encoder = new TextEncoder();
+            const buffer = encoder.encode(text);
+            const raw = await crypto.subtle.digest("SHA-256", buffer);
+            return Array.from(new Uint8Array(raw)).map(b => b.toString(16).padStart(2, "0")).join("");
+        }
+        catch (e) {}
+        return null;
     };
 
     /**
@@ -149,15 +179,17 @@ export const init = (
         /**
          * @template T
          * @param {number} assignmentId
+         * @param {number} submissionId
          * @param {string} text
          * @param {string} selectedText
          * @param {number} selectStart
          * @return {Promise<T>}
          */
-        expandText: (assignmentId, text, selectedText, selectStart) => {
+        expandText: (assignmentId, submissionId, text, selectedText, selectStart) => {
             return requestAIApi(
                 'assignsubmission_pxaiwriter_expand_ai_text', {
                 assignment_id: assignmentId,
+                submission: submissionId,
                 text: text,
                 selected_text: selectedText,
                 select_start: selectStart,
@@ -167,12 +199,14 @@ export const init = (
         /**
          * @template T
          * @param {number} assignmentId
+         * @param {number} submissionId
          * @param {string} text
          * @return {Promise<T>}
          */
-        generateText: (assignmentId, text) => {
+        generateText: (assignmentId, submissionId, text) => {
             return requestAIApi('assignsubmission_pxaiwriter_generate_ai_text', {
                 assignment_id: assignmentId,
+                submission: submissionId,
                 text: text,
                 step: defaultStep
             });
@@ -180,14 +214,17 @@ export const init = (
         /**
          * @template T
          * @param {number} assignmentId
+         * @param {number} submissionId
          * @param {string} text
+         * @param {number} step
          * @return {Promise<T>}
          */
-        recordHistory: (assignmentId, text) => {
+        recordHistory: (assignmentId, submissionId, text, step = 1) => {
             return requestAIApi('assignsubmission_pxaiwriter_record_history', {
                 assignment_id: assignmentId,
+                submission: submissionId,
                 text: text,
-                step: defaultStep
+                step: step
             });
         }
     };
@@ -227,7 +264,7 @@ export const init = (
                 window.console.log(`${component}: Step switched...`);
             }
 
-            let step = getCurrentStepFromPageChangeEvent(e);
+            let step = getCurrentStepByPageChangeEvent(e);
             const currentStepButton = document.querySelector(`.step-page-button[data-step-number="${step}"]`);
 
             if (!currentStepButton) {
@@ -241,18 +278,36 @@ export const init = (
             highlightStepButton(currentStepButton);
         });
 
-        wrapper?.addEventListener(eventList.stepTextSave, async (e) => {
+        wrapper?.addEventListener(eventList.pageChange, async (e) => {
 
             if (isDebugMode()) {
                 window.console.log(`${component}: Saving history...`);
             }
 
-            const step = getCurrentStepFromPageChangeEvent(e);
+            const step = getPreviousStepByPageChangeEvent(e);
+            if (step < 1) {
+                if (isDebugMode()) {
+                    window.console.log(e);
+                    window.console.log(`${component}: Nothing to be save...`);
+                }
+                return;
+            }
             const text = getStepInputText(step);
-            await api.recordHistory(this.assignmentId, text, 1);
+            const response = await api.recordHistory(this.assignmentId, this.submissionId, text, step);
 
-            if (isDebugMode()) {
-                window.console.log(`${component}: Input text got recorded`);
+            if (isDebugMode() && response.hasOwnProperty("checksum")) {
+                if (!response.checksum) {
+                    window.console.log(`${component}: Cannot determine changes in the data`);
+                    return;
+                }
+
+                const textChecksum = await getHashCode(text);
+                if (response.checksum === textChecksum) {
+                    window.console.log(`${component}: Input text got recorded`);
+                }
+                else {
+                    window.console.log(`${component}: Nothing has been changed`);
+                }
             }
         });
 
@@ -279,6 +334,7 @@ export const init = (
             try {
                 const response = await api.expandText(
                     this.assignmentId,
+                    this.submissionId,
                     text,
                     selectedText,
                     textData.selectionStart
@@ -310,6 +366,7 @@ export const init = (
             try {
                 const response = await api.generateText(
                     this.assignmentId,
+                    this.submissionId,
                     text,
                     this.currentStep
                 );

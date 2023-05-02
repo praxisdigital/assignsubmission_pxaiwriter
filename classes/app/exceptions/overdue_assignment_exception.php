@@ -5,7 +5,6 @@ namespace assignsubmission_pxaiwriter\app\exceptions;
 
 use assignsubmission_pxaiwriter\app\factory;
 use Exception;
-use moodle_exception;
 
 /* @codeCoverageIgnoreStart */
 defined('MOODLE_INTERNAL') || die();

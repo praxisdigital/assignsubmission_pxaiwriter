@@ -3,7 +3,7 @@
 namespace assignsubmission_pxaiwriter\app\ai\attempt;
 
 
-use assignsubmission_pxaiwriter\app\ai\attempt\interfaces\entity;
+use assignsubmission_pxaiwriter\app\ai\history\interfaces\entity as history_entity;
 use assignsubmission_pxaiwriter\app\exceptions\database_error_exception;
 use assignsubmission_pxaiwriter\app\interfaces\factory as base_factory;
 use dml_exception;
@@ -24,7 +24,7 @@ class repository implements interfaces\repository
 
     private function get_table(): string
     {
-        return 'pxaiwriter_user_attempts';
+        return 'pxaiwriter_history';
     }
 
     private function db(): moodle_database
@@ -73,22 +73,35 @@ class repository implements interfaces\repository
         int $to_time
     ): int
     {
+        [$in_type_sql, $type_params] = $this->db()->get_in_or_equal([
+            history_entity::TYPE_AI_GENERATE,
+            history_entity::TYPE_AI_EXPAND,
+        ], SQL_PARAMS_NAMED, 't');
+
+        [$in_status_sql, $status_params] = $this->db()->get_in_or_equal([
+            history_entity::STATUS_OK,
+            history_entity::STATUS_DELETED,
+        ], SQL_PARAMS_NAMED, 'st');
+
+        $params = array_merge($type_params, $status_params);
+
+        $params['userid'] = $user_id;
+        $params['assignment'] = $assignment_id;
+        $params['status'] = history_entity::STATUS_OK;
+        $params['step'] = 1;
+        $params['from_time'] = $from_time;
+        $params['to_time'] = $to_time;
+
+        $sql = "type $in_type_sql
+        AND status $in_status_sql
+        AND userid = :userid
+        AND assignment = :assignment
+        AND step = :step
+        AND timecreated >= :from_time
+        AND timecreated <= :to_time";
+
         try
         {
-            $params = [
-                'userid' => $user_id,
-                'assignment' => $assignment_id,
-                'status' => interfaces\entity::STATUS_OK,
-                'from_time' => $from_time,
-                'to_time' => $to_time,
-            ];
-
-            $sql = 'userid = :userid
-            AND assignment = :assignment
-            AND status = :status
-            AND timecreated >= :from_time
-            AND timecreated <= :to_time';
-
             return $this->db()->count_records_select(
                 $this->get_table(),
                 $sql,
@@ -101,61 +114,6 @@ class repository implements interfaces\repository
                 $exception->getMessage(),
                 $exception
             );
-        }
-    }
-
-    public function insert(entity $entity): void
-    {
-        try
-        {
-            $record = $entity->to_object();
-            $id = $this->db()->insert_record($this->get_table(), $record);
-            $entity->set_id($id);
-        }
-        catch (dml_exception $exception)
-        {
-            throw database_error_exception::by_insert($exception->getMessage(), $exception);
-        }
-    }
-
-    public function delete(entity $entity): void
-    {
-        $this->delete_by_id($entity->get_id());
-    }
-
-    public function delete_by_id(string $id): void
-    {
-        $this->delete_attempts([
-            'id' => $id
-        ]);
-    }
-
-    public function delete_by_user_id(string $user_id): void
-    {
-        $this->delete_attempts([
-            'userid' => $user_id
-        ]);
-    }
-
-    public function delete_by_assignment_id(string $assignment_id): void
-    {
-        $this->delete_attempts([
-            'assignment' => $assignment_id
-        ]);
-    }
-
-    private function delete_attempts(array $conditions): void
-    {
-        try
-        {
-            $this->db()->delete_records(
-                $this->get_table(),
-                $conditions
-            );
-        }
-        catch (dml_exception $exception)
-        {
-            throw database_error_exception::by_delete_records($exception->getMessage(), $exception);
         }
     }
 }

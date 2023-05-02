@@ -18,7 +18,7 @@ class header implements interfaces\header, ArrayAccess
         $this->headers = $headers;
     }
 
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         return $this->has($offset);
     }

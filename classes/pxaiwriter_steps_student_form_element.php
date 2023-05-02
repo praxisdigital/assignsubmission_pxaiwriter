@@ -5,10 +5,6 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 
-use core_competency\api;
-use core_competency\external\competency_exporter;
-use core_competency\course_module_competency;
-
 require_once($CFG->libdir . '/form/datetimeselector.php');
 require_once('HTML/QuickForm/element.php');
 require_once($CFG->dirroot . '/lib/filelib.php');
@@ -70,6 +66,7 @@ class pxaiwriter_steps_student_form_element extends HTML_QuickForm_element
         $PAGE->requires->js_init_call('stepConfigForm.init', array($stepConfigForm), true, $module);
         $PAGE->requires->js_call_amd('assignsubmission_pxaiwriter/pxaiendpoint', 'init', [
             'assignmentId' => $this->data->assignmentid,
+            'submissionId' => $this->data->submissionid,
         ]);
 
         return $html;

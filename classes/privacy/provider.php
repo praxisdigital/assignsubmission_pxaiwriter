@@ -26,6 +26,7 @@ namespace assignsubmission_pxaiwriter\privacy;
 
 defined('MOODLE_INTERNAL') || die();
 
+global $CFG;
 require_once($CFG->dirroot . '/mod/assign/locallib.php');
 
 use \core_privacy\local\metadata\collection;

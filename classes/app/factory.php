@@ -4,13 +4,14 @@ namespace assignsubmission_pxaiwriter\app;
 
 
 use assignsubmission_pxaiwriter\app\assign\interfaces\factory as assign_factory;
+use assignsubmission_pxaiwriter\app\file\interfaces\factory as file_factory;
 use assignsubmission_pxaiwriter\app\helper\interfaces\factory as helper_factory;
 use assignsubmission_pxaiwriter\app\ai\interfaces\factory as ai_factory;
 use assignsubmission_pxaiwriter\app\http\interfaces\factory as http_factory;
+use assignsubmission_pxaiwriter\app\migration\interfaces\factory as migration_factory;
 use assignsubmission_pxaiwriter\app\moodle\interfaces\factory as moodle_factory;
 use assignsubmission_pxaiwriter\app\setting\interfaces\factory as setting_factory;
-use Exception;
-use moodle_exception;
+use assignsubmission_pxaiwriter\app\submission\interfaces\factory as submission_factory;
 
 /* @codeCoverageIgnoreStart */
 defined('MOODLE_INTERNAL') || die();
@@ -47,6 +48,11 @@ class factory implements interfaces\factory
         return new collection($items);
     }
 
+    public function file(): file_factory
+    {
+        return $this->factories[__FUNCTION__] ??= new file\factory($this);
+    }
+
     public function helper(): helper_factory
     {
         return $this->factories[__FUNCTION__] ??= new helper\factory($this);
@@ -57,6 +63,11 @@ class factory implements interfaces\factory
         return $this->factories[__FUNCTION__] ??= new http\factory($this);
     }
 
+    public function migration(): migration_factory
+    {
+        return $this->factories[__FUNCTION__] ??= new migration\factory($this);
+    }
+
     public function moodle(): moodle_factory
     {
         return $this->factories[__FUNCTION__] ??= new moodle\factory();
@@ -65,5 +76,10 @@ class factory implements interfaces\factory
     public function setting(): setting_factory
     {
         return $this->factories[__FUNCTION__] ??= new setting\factory($this);
+    }
+
+    public function submission(): submission_factory
+    {
+        return $this->factories[__FUNCTION__] ??= new submission\factory($this);
     }
 }

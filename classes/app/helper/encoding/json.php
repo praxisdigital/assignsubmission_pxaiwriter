@@ -14,11 +14,11 @@ class json implements interfaces\json
         return json_encode($data, JSON_THROW_ON_ERROR, $depth);
     }
 
-    public function decode(string $data, int $depth = 512): object
+    public function decode(string $data, int $depth = 512)
     {
         return json_decode(
             $data,
-            false,
+            null,
             $depth,
             JSON_THROW_ON_ERROR
         );

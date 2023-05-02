@@ -3,6 +3,7 @@
 namespace assignsubmission_pxaiwriter\app\helper;
 
 
+use assignsubmission_pxaiwriter\app\helper\diff\interfaces\factory as diff_factory;
 use assignsubmission_pxaiwriter\app\helper\encoding\interfaces\factory as encoding_factory;
 use assignsubmission_pxaiwriter\app\helper\hash\interfaces\factory as hash_factory;
 use assignsubmission_pxaiwriter\app\helper\times\interfaces\factory as times_factory;
@@ -20,6 +21,11 @@ class factory implements interfaces\factory
     public function __construct(base_factory $factory)
     {
         $this->factory = $factory;
+    }
+
+    public function diff(): diff_factory
+    {
+        return $this->factories[__FUNCTION__] ??= new diff\factory($this->factory);
     }
 
     public function hash(): hash_factory

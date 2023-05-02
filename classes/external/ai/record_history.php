@@ -34,6 +34,12 @@ class record_history extends base
                 VALUE_DEFAULT,
                 1
             ),
+            'submission' => new external_value(
+                PARAM_INT,
+                'Submission ID',
+                VALUE_DEFAULT,
+                0
+            ),
         ]);
     }
 
@@ -55,26 +61,30 @@ class record_history extends base
         ]);
     }
 
-    public static function execute(int $assignment_id, string $text, int $step = 1): array
+    public static function execute(int $assignment_id, string $text, int $step = 1, int $submission = 0): array
     {
         self::validate_input([
             'assignment_id' => $assignment_id,
             'text' => $text,
-            'step' => $step
+            'step' => $step,
+            'submission' => $submission
         ]);
+
         self::validate_step_number($step);
         self::validate_assignment($assignment_id);
 
         $factory = self::factory();
-        $archive = $factory->ai()->history()->archive(
+        $archive = $factory->ai()->history()->archive_user_edit(
             $assignment_id,
-            $step,
-            $factory->moodle()->user()->id
+            $submission,
+            $factory->moodle()->user()->id,
+            $step
         );
 
         try
         {
-            $history = $archive->commit($text);
+            $history = $archive->commit($text, $text);
+
             return [
                 'checksum' => $history->get_hashcode(),
                 'timecreated' => $history->get_timecreated(),
@@ -83,7 +93,7 @@ class record_history extends base
         }
         catch (Exception $exception)
         {
-            $archive->rollback($text, $exception);
+            $archive->failed($text);
             throw new moodle_traceable_exception('error_record_history_api', $exception);
         }
     }

@@ -3,6 +3,9 @@
 use assignsubmission_pxaiwriter\app\factory as factory;
 use assignsubmission_pxaiwriter\app\ai\openai\interfaces\models as openai_models;
 
+/**
+ * @var admin_settingpage $settings
+ */
 $settings->add(new admin_setting_configcheckbox(
     'assignsubmission_pxaiwriter/default',
     new lang_string('default', 'assignsubmission_pxaiwriter'),
@@ -16,11 +19,11 @@ $settings->add(new admin_setting_heading(
     new lang_string('open_ai_request_settings_description', 'assignsubmission_pxaiwriter'),
 ));
 
-// authorization
+// API Token
 $settings->add(new admin_setting_configtext(
-    'assignsubmission_pxaiwriter/authorization',
-    new lang_string('authorization', 'assignsubmission_pxaiwriter'),
-    new lang_string('authorization_description', 'assignsubmission_pxaiwriter'),
+    'assignsubmission_pxaiwriter/openai_token',
+    new lang_string('openai_token', 'assignsubmission_pxaiwriter'),
+    new lang_string('openai_token_description', 'assignsubmission_pxaiwriter'),
     ""
 ));
 

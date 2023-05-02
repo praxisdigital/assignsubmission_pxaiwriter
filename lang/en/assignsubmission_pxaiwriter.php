@@ -31,8 +31,8 @@ $string['url_description'] = "Open API URL";
 
 $string['content_type'] = 'Content Type';
 $string['content_type_description'] = "";
-$string['authorization'] = "Authorization";
-$string['authorization_description'] = "Example:- Bearer sk-{token}";
+$string['openai_token'] = 'OpenAI API Token';
+$string['openai_token_description'] = 'Set your OpenAI API Token. Example: sk-{token}';
 
 $string['model'] = 'Model';
 $string['model_description'] = "";
@@ -105,7 +105,7 @@ $string['event_ai_text_generated'] = 'AI writer text generated';
 // Errors
 $string['error_course_module_not_found_by_assign_id'] = 'Could not find course module by assignment id {$a}';
 $string['error_user_exceed_attempts'] = 'You have already exceeded the attempt limit';
-$string['error_invalid_step_number'] = 'Invalid step number';
+$string['error_invalid_step_number'] = 'Invalid step number {$a}';
 $string['error_overdue_assignment'] = 'The assignment is overdue';
 $string['error_generate_ai_text_api'] = 'Could not generate AI text this time';
 $string['error_expand_ai_text_api'] = 'Could not expand AI text this time';
