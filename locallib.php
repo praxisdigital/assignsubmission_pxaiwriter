@@ -91,7 +91,6 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             $step1->removable = false;
             $step1->isreadonly = true;
             $step1->readonly = '';
-            $step1->custom_buttons = array('name' => 'do_ai_magic', 'name' => 'expand');
             $step1->ai_element = true;
             $step1->ai_expand_element = true;
             $step1->value = '';
@@ -105,7 +104,6 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             $step2->removable = false;
             $step2->isreadonly = false;
             $step2->readonly = '';
-            $step2->custom_buttons = array();
             $step2->ai_element = false;
             $step2->ai_expand_element = false;
             $step2->value = '';

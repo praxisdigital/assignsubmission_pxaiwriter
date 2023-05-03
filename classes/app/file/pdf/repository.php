@@ -36,8 +36,8 @@ class repository implements interfaces\repository
         }
 
         $this->factory->file()->repository()->delete_files_by_submission(
-            $submission_history->get_submission()->id,
-            $submission_history->get_context()
+            $submission_history->get_context(),
+            $submission_history->get_submission()->id
         );
 
         return $this->factory->file()->repository()->create_from_submission(

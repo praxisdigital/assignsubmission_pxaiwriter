@@ -176,7 +176,7 @@ class entity extends base_entity implements interfaces\entity
         else
         {
             $this->set_hashcode(
-                $this->factory->helper()->hash()->sha256()->digest($data ?? '')
+                $this->factory->helper()->hash()->sha256()->digest($data)
             );
         }
     }

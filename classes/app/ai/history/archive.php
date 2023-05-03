@@ -16,7 +16,7 @@ class archive implements interfaces\archive
     private int $userid;
     private int $assignment_id;
     private string $type;
-    private ?int $submission;
+    private ?int $submission_id;
     private int $default_step;
 
     public function __construct(
@@ -32,7 +32,7 @@ class archive implements interfaces\archive
         $this->userid = $userid ?? $this->factory->moodle()->user()->id;
         $this->assignment_id = $assignment_id;
         $this->type = $type;
-        $this->submission = $submission;
+        $this->submission_id = $submission;
         $this->default_step = $default_step;
     }
 
@@ -152,7 +152,7 @@ class archive implements interfaces\archive
 
     private function get_submission_id(): int
     {
-        return $this->submission ??= $this->factory->assign()
+        return $this->submission_id ??= $this->factory->assign()
             ->repository()
             ->get_latest_submission_id_by_user_assignment(
                 $this->userid,

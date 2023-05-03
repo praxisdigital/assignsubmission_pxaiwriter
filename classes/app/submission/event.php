@@ -75,7 +75,7 @@ class event implements interfaces\event
         $params = $this->add_related_user($params, $submission);
         $params = $this->add_anonymous($params, $assign);
 
-        $files = $this->factory->file()->repository()->get_submission_files($assign->get_context(), $submission);
+        $files = $this->factory->file()->repository()->get_submission_files($assign->get_context(), $submission->id);
         $params = $this->add_files($params, $files);
 
         $event = assessable_uploaded::create($params);

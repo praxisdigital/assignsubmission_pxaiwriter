@@ -33,7 +33,7 @@ class text implements interfaces\text
     public function diff(string $old_data, string $new_data): string
     {
         $diff = new Diff();
-        $diff->setGranularity($this->get_granularity($this->granularity));
+        $diff->setGranularity($this->get_granularity());
 
         $optionCode =  $diff->getOperationCodes($old_data, $new_data);
         $renderer = new Html();
@@ -77,9 +77,9 @@ class text implements interfaces\text
         return '</span>';
     }
 
-    private function get_granularity(?string $type): GranularityInterface
+    private function get_granularity(): GranularityInterface
     {
-        switch ($type) {
+        switch ($this->granularity) {
             case 'word':
                 $word = new Word();
                 $delimiters = $word->getDelimiters();

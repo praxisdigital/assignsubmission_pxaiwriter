@@ -28,7 +28,6 @@ class history_data_migration_test extends integration_testcase
             'type' => 'text',
             'removable' => false,
             'isreadonly' => true,
-            'custom_buttons' => ['name' => 'expand'],
             'ai_element' => true,
             'ai_expand_element' => true,
             'value' => ''
@@ -40,7 +39,6 @@ class history_data_migration_test extends integration_testcase
             'type' => 'text',
             'removable' => false,
             'isreadonly' => true,
-            'custom_buttons' => ['name' => 'expand'],
             'ai_element' => true,
             'ai_expand_element' => true,
             'value' => ''

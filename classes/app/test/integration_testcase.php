@@ -119,7 +119,6 @@ abstract class integration_testcase extends advanced_testcase
             $step_data['mandatory'] ??= true;
             $step_data['type'] ??= 'text';
             $step_data['removable'] ??= false;
-            $step_data['custom_buttons'] ??= ['name' => 'expand'];
             $step_data['mandatory'] ??= true;
             $step_data['ai_element'] ??= true;
             $step_data['ai_expand_element'] ??= true;
@@ -150,7 +149,6 @@ abstract class integration_testcase extends advanced_testcase
             'type' => 'text',
             'removable' => false,
             'isreadonly' => true,
-            'custom_buttons' => ['name' => 'expand'],
             'ai_element' => true,
             'ai_expand_element' => true,
             'value' => ''

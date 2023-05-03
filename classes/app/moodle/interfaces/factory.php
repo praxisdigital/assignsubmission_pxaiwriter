@@ -31,10 +31,8 @@ interface factory
     public function get_config_instance(string $component = base_factory::COMPONENT): object;
 
     /**
-     * @template T
-     * @psalm-template T
      * @param string $name
-     * @param T $value
+     * @param mixed $value
      * @param string $component
      * @return void
      */

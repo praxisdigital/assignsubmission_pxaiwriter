@@ -33,25 +33,25 @@ class repository implements interfaces\repository
         return 'submissions_pxaiwriter';
     }
 
-    public function get_submission_files(context $context, object $submission): array
+    public function get_submission_files(context $context, int $submission_id): array
     {
         return $this->storage->get_area_files(
             $context->id,
-            base_factory::COMPONENT,
+            $this->get_component(),
             $this->get_file_area(),
-            $submission->id,
+            $submission_id,
             'id',
             false
         );
     }
 
-    public function delete_files_by_submission(int $submission_id, context $context): void
+    public function delete_files_by_submission(context $context, int $submission_id): void
     {
         try
         {
             $this->storage->delete_area_files(
                 $context->id,
-                base_factory::COMPONENT,
+                $this->get_component(),
                 $this->get_file_area(),
                 $submission_id
             );
@@ -68,7 +68,6 @@ class repository implements interfaces\repository
     {
         $record = $this->get_stored_file_record(
             $context->id,
-            base_factory::COMPONENT,
             $this->get_file_area(),
             $submission->id,
             $submission->userid,
@@ -81,9 +80,13 @@ class repository implements interfaces\repository
         );
     }
 
+    private function get_component(): string
+    {
+        return base_factory::COMPONENT;
+    }
+
     private function get_stored_file_record(
         int $context_id,
-        string $component,
         string $area,
         int $item_id,
         int $user_id,
@@ -92,7 +95,7 @@ class repository implements interfaces\repository
     {
         return (object)[
             'contextid' => $context_id,
-            'component' => $component,
+            'component' => $this->get_component(),
             'filearea' => $area,
             'itemid' => $item_id,
             'filepath' => '/',

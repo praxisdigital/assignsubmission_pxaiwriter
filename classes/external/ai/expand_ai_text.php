@@ -151,7 +151,7 @@ class expand_ai_text extends base
             {
                 $transaction->rollback($exception);
             }
-            catch (\Exception $rollback_exception) {}
+            catch (Exception $rollback_exception) {}
 
             $archive->failed($text);
             throw new moodle_traceable_exception('error_expand_ai_text_api', $exception);

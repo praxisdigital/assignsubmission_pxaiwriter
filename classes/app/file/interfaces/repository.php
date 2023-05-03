@@ -17,7 +17,7 @@ interface repository
     /**
      * @return stored_file[]
      */
-    public function get_submission_files(context $context, object $submission): array;
+    public function get_submission_files(context $context, int $submission_id): array;
 
     public function create_from_submission(
         string $filename,
@@ -26,5 +26,5 @@ interface repository
         object $submission
     ): stored_file;
 
-    public function delete_files_by_submission(int $submission_id, context $context): void;
+    public function delete_files_by_submission(context $context, int $submission_id): void;
 }
