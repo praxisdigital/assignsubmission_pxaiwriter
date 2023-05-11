@@ -74,11 +74,7 @@ class entity extends base_entity implements interfaces\entity
 
     public function get_hashcode(): string
     {
-        return $this->record['hashcode'] ?? $this->factory
-            ->helper()
-            ->hash()
-            ->sha256()
-            ->digest($this->get_data());
+        return $this->record['hashcode'] ?? $this->get_checksum_from_data($this->get_data());
     }
 
     public function get_timecreated(): int
@@ -169,16 +165,7 @@ class entity extends base_entity implements interfaces\entity
     public function set_data(?string $data): void
     {
         $this->record['data'] = $data;
-        if ($data === null)
-        {
-            $this->set_hashcode(null);
-        }
-        else
-        {
-            $this->set_hashcode(
-                $this->factory->helper()->hash()->sha256()->digest($data)
-            );
-        }
+        $this->set_hashcode($this->get_checksum_from_data($data));
     }
 
     public function set_hashcode(?string $hashcode): void
@@ -204,5 +191,18 @@ class entity extends base_entity implements interfaces\entity
     public function to_object(): object
     {
         return (object)$this->to_array();
+    }
+
+    private function get_checksum_from_data(?string $data): string
+    {
+        if (empty($data))
+        {
+            return self::EMPTY_CHECKSUM;
+        }
+        return $this->factory
+            ->helper()
+            ->hash()
+            ->sha256()
+            ->digest($data);
     }
 }

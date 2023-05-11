@@ -8,6 +8,8 @@ use assign;
 use assign_submission_pxaiwriter;
 use assignsubmission_pxaiwriter\app\factory;
 use assignsubmission_pxaiwriter\app\interfaces\factory as base_factory_interface;
+use cm_info;
+use context;
 use mod_assign_test_generator;
 use mod_assign_testable_assign;
 use moodle_database;
@@ -153,5 +155,45 @@ abstract class integration_testcase extends advanced_testcase
             'ai_expand_element' => true,
             'value' => ''
         ];
+    }
+
+    protected function get_course_module_by_submission(object $submission): cm_info
+    {
+        $sql = 'SELECT cm.* FROM {course_modules} cm
+                    JOIN {modules} m ON m.id = cm.module
+                WHERE m.name = :module_name
+                    AND cm.instance = :instance_id';
+
+        $record = $this->db()->get_record_sql($sql, [
+            'module_name' => 'assign',
+            'instance_id' => $submission->assignment
+        ]);
+
+        $mod_info = get_fast_modinfo($record->course);
+        return $mod_info->get_cm($record->id);
+    }
+
+    protected function get_context_by_submission(object $submission): context
+    {
+        $course_module = $this->get_course_module_by_submission($submission);
+        return $course_module->context;
+    }
+
+    protected function get_submission_configs(object $submission): object
+    {
+        $records = $this->db()->get_recordset('assign_plugin_config', [
+            'assignment' => $submission->assignment,
+            'plugin' => 'pxaiwriter',
+            'subtype' => 'assignsubmission'
+        ]);
+
+        $configs = [];
+        foreach ($records as $record)
+        {
+            $configs[$record->name] = $record->value;
+        }
+        $records->close();
+
+        return (object)$configs;
     }
 }

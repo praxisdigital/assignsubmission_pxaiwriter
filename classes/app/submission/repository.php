@@ -78,9 +78,10 @@ class repository implements interfaces\repository
         $step_configs = $this->get_ai_writer_step_configs($submission_config);
 
         $entity = $this->factory->submission()->repository()->get_by_assign_submission($submission);
-
+        $history_ids = $entity ? $entity->get_history_ids() : [];
+        
         $history_list = $this->factory->ai()->history()->repository()->get_all_by_ids(
-            $entity->get_latest_step_history_ids()
+            $history_ids
         );
 
         $steps_data = [];

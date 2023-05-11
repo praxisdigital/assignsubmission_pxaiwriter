@@ -12,15 +12,19 @@ import Notification from "core/notification";
 
 /**
  * @param {number} assignmentId
+ * @param {number} submissionId
+ * @param {number} stepNumber
  */
 export const init = (
-    assignmentId
+    assignmentId,
+    submissionId,
+    stepNumber = 1
 ) => {
 
     const defaultStep = 1;
 
-    let EventCreator = function (assignmentId, submissionId) {
-        this.currentStep = defaultStep;
+    let EventCreator = function (assignmentId, submissionId, stepNumber) {
+        this.currentStep = stepNumber;
         this.selectedStart = 0;
         this.selectedEnd = 0;
         this.assignmentId = assignmentId;
@@ -287,7 +291,6 @@ export const init = (
             const step = getPreviousStepByPageChangeEvent(e);
             if (step < 1) {
                 if (isDebugMode()) {
-                    window.console.log(e);
                     window.console.log(`${component}: Nothing to be save...`);
                 }
                 return;
@@ -393,5 +396,5 @@ export const init = (
         $('#loader').addClass('d-none');
     };
 
-    return new EventCreator(assignmentId);
+    return new EventCreator(assignmentId,  submissionId, stepNumber);
 };

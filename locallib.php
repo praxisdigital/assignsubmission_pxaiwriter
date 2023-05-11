@@ -209,7 +209,14 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         );
     }
 
-    public function save_new(stdClass $submissionorgrade, stdClass $data)
+    /**
+     * Calls upon save event of the assignment
+     *
+     * @param stdClass $submissionorgrade
+     * @param stdClass $data
+     * @return bool
+     */
+    public function save(stdClass $submissionorgrade, stdClass $data)
     {
         $factory = $this->factory();
         $submission_factory = $factory->submission();
@@ -248,18 +255,6 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         );
 
         return true;
-    }
-
-    /**
-     * Calls upon save event of the assignment
-     *
-     * @param stdClass $submission
-     * @param stdClass $data
-     * @return bool
-     */
-    public function save(stdClass $submission, stdClass $data)
-    {
-        return $this->save_new($submission, $data);
     }
 
     /**

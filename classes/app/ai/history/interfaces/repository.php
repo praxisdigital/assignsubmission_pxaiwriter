@@ -18,6 +18,8 @@ interface repository
         int $to_time
     ): int;
 
+    public function count_by_user_submission(int $user_id, int $assignment_id, int $submission_id, ?int $step = null): int;
+
     public function get_by_hashcode(
         int $user_id,
         int $assignment_id,

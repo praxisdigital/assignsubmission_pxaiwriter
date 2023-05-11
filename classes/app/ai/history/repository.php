@@ -77,6 +77,28 @@ class repository implements interfaces\repository
         }
     }
 
+    public function count_by_user_submission(int $user_id, int $assignment_id, int $submission_id, ?int $step = null): int
+    {
+        try
+        {
+            $params = [
+                'userid' => $user_id,
+                'assignment' => $assignment_id,
+                'submission' => $submission_id,
+                'status' => entity::STATUS_OK,
+            ];
+
+            if ($step !== null)
+            {
+                $params['step'] = $step;
+            }
+
+            return $this->db()->count_records($this->get_table(), $params);
+        }
+        catch (\Exception $exception) {}
+        return 0;
+    }
+
     public function get_by_hashcode(int $user_id, int $assignment_id, string $hashcode, int $step = 1): ?entity
     {
         return $this->get_last_record_by_conditions([

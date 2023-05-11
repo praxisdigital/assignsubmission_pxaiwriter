@@ -67,6 +67,7 @@ class pxaiwriter_steps_student_form_element extends HTML_QuickForm_element
         $PAGE->requires->js_call_amd('assignsubmission_pxaiwriter/pxaiendpoint', 'init', [
             'assignmentId' => $this->data->assignmentid,
             'submissionId' => $this->data->submissionid,
+            'stepNumber' => 1,
         ]);
 
         return $html;

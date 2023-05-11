@@ -57,6 +57,21 @@ class archive implements interfaces\archive
     ): interfaces\entity
     {
         $data ??= $input_text;
+        if (empty(trim($input_text)))
+        {
+            $history_count = $this->get_repository()->count_by_user_submission(
+                $this->userid,
+                $this->assignment_id,
+                $this->submission_id
+            );
+
+            if ($history_count === 0)
+            {
+                $entity = $this->create_entity($step);
+                $entity->set_status_ok();
+                return $entity;
+            }
+        }
         return $this->get_entity_by_hashcode($input_text, $step) ?? $this->force_commit($input_text, $data, $step);
     }
 
@@ -159,6 +174,7 @@ class archive implements interfaces\archive
                 $this->assignment_id
             );
     }
+
     private function get_entity_by_hashcode(
         string $data,
         ?int $step = null

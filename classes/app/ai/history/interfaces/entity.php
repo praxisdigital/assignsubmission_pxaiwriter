@@ -18,6 +18,9 @@ interface entity extends base_entity
     public const TYPE_USER_EDIT = 'user-edit';
     public const TYPE_AI_GENERATE = 'ai-generate';
     public const TYPE_AI_EXPAND = 'ai-expand';
+
+    public const EMPTY_CHECKSUM = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
+
     public function get_userid(): int;
     public function get_assignment(): int;
     public function get_submission(): int;
