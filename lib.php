@@ -1,25 +1,31 @@
 <?php
+
 defined('MOODLE_INTERNAL') || die();
 
-function assignsubmission_pxaiwriter_pluginfile($course,                                                                                    
-                                        $cm,                                                                                        
-                                        context $context,                                                                           
-                                        $filearea,                                                                                  
-                                        $args,                                                                                      
-                                        $forcedownload,
-                                        array $options=array()) {                                                                           
+function assignsubmission_pxaiwriter_pluginfile(
+    $course,
+    $cm,
+    context $context,
+    $filearea,
+    $args,
+    $forcedownload,
+    array $options = array()
+) {
     global $DB, $CFG;
-                                                                                                                                    
-    if ($context->contextlevel != CONTEXT_MODULE) {                                                                                 
-        return false;                                                                                                               
-    }                                                                                                                               
-                                                                                                                                    
-    require_login($course, false, $cm);    
-    $itemid = (int)array_shift($args);                                                                                         
-    $record = $DB->get_record('assign_submission',
-                              array('id'=>$itemid),
-                              'userid, assignment, groupid',
-                              MUST_EXIST);
+
+    if ($context->contextlevel != CONTEXT_MODULE)
+    {
+        return false;
+    }
+
+    require_login($course, false, $cm);
+    $itemid = (int)array_shift($args);
+    $record = $DB->get_record(
+        'assign_submission',
+        array('id' => $itemid),
+        'userid, assignment, groupid',
+        MUST_EXIST
+    );
     $userid = $record->userid;
     $groupid = $record->groupid;
 
@@ -27,17 +33,20 @@ function assignsubmission_pxaiwriter_pluginfile($course,
 
     $assign = new assign($context, $cm, $course);
 
-    if ($assign->get_instance()->id != $record->assignment) {
+    if ($assign->get_instance()->id != $record->assignment)
+    {
         return false;
     }
 
     if ($assign->get_instance()->teamsubmission &&
-        !$assign->can_view_group_submission($groupid)) {
+        !$assign->can_view_group_submission($groupid))
+    {
         return false;
     }
 
     if (!$assign->get_instance()->teamsubmission &&
-        !$assign->can_view_submission($userid)) {
+        !$assign->can_view_submission($userid))
+    {
         return false;
     }
 
@@ -46,10 +55,11 @@ function assignsubmission_pxaiwriter_pluginfile($course,
     $fullpath = "/{$context->id}/assignsubmission_pxaiwriter/$filearea/$itemid/$relativepath";
 
     $fs = get_file_storage();
-    if (!($file = $fs->get_file_by_hash(sha1($fullpath))) || $file->is_directory()) {
+    if (!($file = $fs->get_file_by_hash(sha1($fullpath))) || $file->is_directory())
+    {
         return false;
     }
 
     // Download MUST be forced - security!
-    send_stored_file($file, 0, 0, true, $options);                                                                                  
+    send_stored_file($file, 0, 0, true, $options);
 }    

@@ -39,7 +39,7 @@ class text implements interfaces\text
         $renderer = new Html();
 
         $html = $renderer->process($old_data, $optionCode);
-        $html = nl2br(trim($html), false);
+        $html = $this->replace_newline($html);
 
         $html = $this->replace_deletion($html);
         return $this->replace_insertion($html);
@@ -57,38 +57,39 @@ class text implements interfaces\text
         return str_replace('</ins>', $this->get_insertion_close_tag(), $text);
     }
 
-    private function get_deletion_open_tag(): string
+    protected function replace_newline(string $text): string
+    {
+        return nl2br(trim($text), false);
+    }
+
+    protected function get_deletion_open_tag(): string
     {
         return '<span style="color:red;background-color:#ffdddd;text-decoration:line-through;">';
     }
 
-    private function get_deletion_close_tag(): string
+    protected function get_deletion_close_tag(): string
     {
         return '</span>';
     }
 
-    private function get_insertion_open_tag(): string
+    protected function get_insertion_open_tag(): string
     {
         return '<span style="color:green;background-color:#ddffdd;text-decoration:none;">';
     }
 
-    private function get_insertion_close_tag(): string
+    protected function get_insertion_close_tag(): string
     {
         return '</span>';
     }
 
-    private function get_granularity(): GranularityInterface
+    protected function get_granularity(): GranularityInterface
     {
         switch ($this->granularity) {
-            case 'word':
-                $word = new Word();
-                $delimiters = $word->getDelimiters();
-                $delimiters[] = '.';
-                $word->setDelimiters($delimiters);
-                return $word;
-            case 'sentence':
+            case self::GRANULARITY_WORD:
+                return new Word();
+            case self::GRANULARITY_SENTENCE:
                 return new Sentence();
-            case 'paragraph':
+            case self::GRANULARITY_PARAGRAPH:
                 return new Paragraph();
             default:
                 return new Character();

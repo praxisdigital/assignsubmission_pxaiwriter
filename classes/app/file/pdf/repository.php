@@ -186,11 +186,12 @@ class repository implements interfaces\repository
         {
             foreach ($first_steps as $step)
             {
+                $step->get_input_text();
                 $data = $step->get_data();
                 $pdf_data[] = $this->get_pdf_html(
                     $this->get_step_number_name($step, $step_count),
                     $first_step_config->get_description(),
-                    $text_diff->diff($diff_text, $data)
+                    $text_diff->diff($step->get_input_text(), $data)
                 );
                 $diff_text = $data;
                 ++$step_count;
