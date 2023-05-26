@@ -25,7 +25,7 @@
         <FIELD NAME="assignment" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="ID of the assignment"/>
         <FIELD NAME="submission" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" DEFAULT="0" COMMENT="ID of the submission, If ID is 0 the submission hasn't yet been created"/>
         <FIELD NAME="step" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Step number"/>
-        <FIELD NAME="status" TYPE="char" LENGTH="16" NOTNULL="true" DEFAULT="draft" SEQUENCE="false" COMMENT="The status of the attempt (submitted, draft, failed, deleted)"/>
+        <FIELD NAME="status" TYPE="char" LENGTH="16" NOTNULL="true" DEFAULT="drafted" SEQUENCE="false" COMMENT="The status of the attempt (submitted, drafted, failed, deleted)"/>
         <FIELD NAME="type" TYPE="char" LENGTH="32" NOTNULL="true" DEFAULT="user-edit" SEQUENCE="false" COMMENT="History type (user-edit, ai-generate, ai-expand)"/>
         <FIELD NAME="input_text" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="User input text"/>
         <FIELD NAME="ai_text" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="AI generated text"/>

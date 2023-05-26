@@ -6,6 +6,7 @@ namespace assignsubmission_pxaiwriter\app\migration;
 use assignsubmission_pxaiwriter\app\interfaces\factory as base_factory;
 use database_manager;
 use moodle_database;
+use xmldb_field;
 use xmldb_table;
 
 /* @codeCoverageIgnoreStart */
@@ -37,6 +38,8 @@ class history_table_migration implements interfaces\migration
         $this->add_indexes($table);
 
         $this->manager->create_table($table);
+
+        $this->change_fields_default($table);
     }
 
     private function add_keys(xmldb_table $table): void
@@ -48,117 +51,172 @@ class history_table_migration implements interfaces\migration
 
     private function add_fields(xmldb_table $table): void
     {
-        $table->add_field(
-            'id',
-            XMLDB_TYPE_INTEGER,
-            10,
-            true,
-            XMLDB_NOTNULL,
-            XMLDB_SEQUENCE
-        );
-        $table->add_field(
-            'userid',
-            XMLDB_TYPE_INTEGER,
-            10,
-            true,
-            XMLDB_NOTNULL
-        );
-        $table->add_field(
-            'assignment',
-            XMLDB_TYPE_INTEGER,
-            10,
-            true,
-            XMLDB_NOTNULL
-        );
-        $table->add_field(
-            'submission',
-            XMLDB_TYPE_INTEGER,
-            10,
-            true,
-            XMLDB_NOTNULL,
-            false,
-            '0'
-        );
-        $table->add_field(
-            'step',
-            XMLDB_TYPE_INTEGER,
-            10,
-            true,
-            XMLDB_NOTNULL,
-            false,
-            '1'
-        );
-        $table->add_field(
-            'status',
-            XMLDB_TYPE_CHAR,
-            16,
-            true,
-            XMLDB_NOTNULL,
-            false,
-            'draft'
-        );
-        $table->add_field(
-            'type',
-            XMLDB_TYPE_CHAR,
-            32,
-            true,
-            XMLDB_NOTNULL,
-            false,
-            'user-edit'
-        );
-        $table->add_field(
-            'input_text',
-            XMLDB_TYPE_TEXT,
-            null,
-            null,
-            XMLDB_NOTNULL
-        );
-        $table->add_field(
-            'ai_text',
-            XMLDB_TYPE_TEXT,
-            null,
-            null,
-            false
-        );
-        $table->add_field(
-            'response',
-            XMLDB_TYPE_TEXT,
-            null,
-            null,
-            false
-        );
-        $table->add_field(
-            'data',
-            XMLDB_TYPE_TEXT,
-            null,
-            null,
-            false
-        );
-        $table->add_field(
-            'hashcode',
-            XMLDB_TYPE_CHAR,
-            64,
-            null,
-            false
-        );
-        $table->add_field(
-            'timecreated',
-            XMLDB_TYPE_INTEGER,
-            10,
-            true,
-            XMLDB_NOTNULL,
-            false,
-            '0'
-        );
-        $table->add_field(
-            'timemodified',
-            XMLDB_TYPE_INTEGER,
-            10,
-            true,
-            XMLDB_NOTNULL,
-            false,
-            '0'
-        );
+        if (!$this->manager->field_exists($table, 'id'))
+        {
+            $table->add_field(
+                'id',
+                XMLDB_TYPE_INTEGER,
+                10,
+                true,
+                XMLDB_NOTNULL,
+                XMLDB_SEQUENCE
+            );
+        }
+
+        if (!$this->manager->field_exists($table, 'userid'))
+        {
+            $table->add_field(
+                'userid',
+                XMLDB_TYPE_INTEGER,
+                10,
+                true,
+                XMLDB_NOTNULL
+            );
+        }
+
+        if (!$this->manager->field_exists($table, 'assignment'))
+        {
+            $table->add_field(
+                'assignment',
+                XMLDB_TYPE_INTEGER,
+                10,
+                true,
+                XMLDB_NOTNULL
+            );
+        }
+
+        if (!$this->manager->field_exists($table, 'submission'))
+        {
+            $table->add_field(
+                'submission',
+                XMLDB_TYPE_INTEGER,
+                10,
+                true,
+                XMLDB_NOTNULL,
+                false,
+                '0'
+            );
+        }
+
+        if (!$this->manager->field_exists($table, 'step'))
+        {
+            $table->add_field(
+                'step',
+                XMLDB_TYPE_INTEGER,
+                10,
+                true,
+                XMLDB_NOTNULL,
+                false,
+                '1'
+            );
+        }
+
+        if (!$this->manager->field_exists($table, 'status'))
+        {
+            $table->add_field(
+                'status',
+                XMLDB_TYPE_CHAR,
+                16,
+                true,
+                XMLDB_NOTNULL,
+                false,
+                'drafted'
+            );
+        }
+
+        if (!$this->manager->field_exists($table, 'type'))
+        {
+            $table->add_field(
+                'type',
+                XMLDB_TYPE_CHAR,
+                32,
+                true,
+                XMLDB_NOTNULL,
+                false,
+                'user-edit'
+            );
+        }
+
+        if (!$this->manager->field_exists($table, 'input_text'))
+        {
+            $table->add_field(
+                'input_text',
+                XMLDB_TYPE_TEXT,
+                null,
+                null,
+                XMLDB_NOTNULL
+            );
+        }
+
+        if (!$this->manager->field_exists($table, 'ai_text'))
+        {
+            $table->add_field(
+                'ai_text',
+                XMLDB_TYPE_TEXT,
+                null,
+                null,
+                XMLDB_NOTNULL
+            );
+        }
+
+        if (!$this->manager->field_exists($table, 'response'))
+        {
+            $table->add_field(
+                'response',
+                XMLDB_TYPE_TEXT,
+                null,
+                null,
+                XMLDB_NOTNULL
+            );
+        }
+
+        if (!$this->manager->field_exists($table, 'data'))
+        {
+            $table->add_field(
+                'data',
+                XMLDB_TYPE_TEXT,
+                null,
+                null,
+                XMLDB_NOTNULL
+            );
+        }
+
+        if (!$this->manager->field_exists($table, 'hashcode'))
+        {
+            $table->add_field(
+                'hashcode',
+                XMLDB_TYPE_CHAR,
+                64,
+                null,
+                XMLDB_NOTNULL
+            );
+        }
+
+        if (!$this->manager->field_exists($table, 'timecreated'))
+        {
+            $table->add_field(
+                'timecreated',
+                XMLDB_TYPE_INTEGER,
+                10,
+                true,
+                XMLDB_NOTNULL,
+                false,
+                '0'
+            );
+        }
+
+        if (!$this->manager->field_exists($table, 'timemodified'))
+        {
+            $table->add_field(
+                'timemodified',
+                XMLDB_TYPE_INTEGER,
+                10,
+                true,
+                XMLDB_NOTNULL,
+                false,
+                '0'
+            );
+        }
     }
 
     private function add_indexes(xmldb_table $table)
@@ -212,6 +270,23 @@ class history_table_migration implements interfaces\migration
             'timemodified',
             XMLDB_INDEX_NOTUNIQUE,
             ['timemodified']
+        );
+    }
+
+    private function change_fields_default(xmldb_table $table): void
+    {
+        $field = new xmldb_field(
+            'status',
+            XMLDB_TYPE_CHAR,
+            16,
+            true,
+            XMLDB_NOTNULL,
+            false,
+            'drafted'
+        );
+        $this->manager->change_field_default(
+            $table,
+            $field
         );
     }
 }
