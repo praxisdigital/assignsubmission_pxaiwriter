@@ -14,4 +14,5 @@ interface repository
 {
     public function save_submission_as_pdf(submission_history $submission_history): ?stored_file;
     public function get_pdf_diff_by_history_list(submission_history $submission_history): ?string;
+    public function get_html_diff_by_history_list(submission_history $submission_history): ?string;
 }

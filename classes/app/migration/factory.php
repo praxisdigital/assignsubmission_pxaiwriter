@@ -22,7 +22,7 @@ class factory implements interfaces\factory
     {
         switch ($version)
         {
-            case '2023050100':
+            case '2023052500':
                 return [
                     new history_table_migration($this->factory),
                     new history_data_migration($this->factory),

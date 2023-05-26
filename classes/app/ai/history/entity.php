@@ -21,6 +21,21 @@ class entity extends base_entity implements interfaces\entity
         parent::__construct($record);
     }
 
+    public function is_ai_expand(): bool
+    {
+        return $this->get_type() === self::TYPE_AI_EXPAND;
+    }
+
+    public function is_ai_generate(): bool
+    {
+        return $this->get_type() === self::TYPE_AI_GENERATE;
+    }
+
+    public function is_user_edit(): bool
+    {
+        return $this->get_type() === self::TYPE_USER_EDIT;
+    }
+
     public function get_userid(): int
     {
         return $this->record['userid'] ?? 0;
@@ -112,9 +127,14 @@ class entity extends base_entity implements interfaces\entity
         $this->record['status'] = $status;
     }
 
-    public function set_status_ok(): void
+    public function set_status_draft(): void
     {
-        $this->set_status(interfaces\entity::STATUS_OK);
+        $this->set_status(interfaces\entity::STATUS_DRAFTED);
+    }
+
+    public function set_status_submitted(): void
+    {
+        $this->set_status(interfaces\entity::STATUS_SUBMITTED);
     }
 
     public function set_status_failed(): void

@@ -4,6 +4,7 @@ namespace assignsubmission_pxaiwriter\app\submission;
 
 
 use assignsubmission_pxaiwriter\app\ai\history\interfaces\collection as history_collection;
+use assignsubmission_pxaiwriter\app\ai\history\interfaces\entity as history_entity;
 use assignsubmission_pxaiwriter\app\interfaces\factory as base_factory;
 use assignsubmission_pxaiwriter\app\submission\interfaces\entity;
 use context;
@@ -195,6 +196,10 @@ class repository implements interfaces\repository
             $submission->userid
         );
 
+        $draft_history_list = $this->factory->ai()->history()->repository()->get_all_drafted_by_submission(
+            $submission->id
+        );
+
         foreach ($step_data as $step)
         {
             if (!isset($step->value, $step->step))
@@ -203,12 +208,21 @@ class repository implements interfaces\repository
             }
 
             $text = (string)$step->value;
+            $step_number = (int)$step->step;
+
+            $history = $draft_history_list->get_latest_entity_by_step($step_number);
+            if (!$this->is_modified($history, $text))
+            {
+                continue;
+            }
+
             $archive->commit(
                 $text,
-                $text,
-                $step->step
+                $step_number
             );
         }
+
+        $archive->save_draft();
     }
 
     public function insert(interfaces\entity $entity): void
@@ -241,5 +255,22 @@ class repository implements interfaces\repository
         }
         
         return $this->factory->helper()->encoding()->json()->decode($config->pxaiwritersteps);
+    }
+
+    private function is_modified(?history_entity $history, ?string $text): bool
+    {
+        if ($history === null)
+        {
+            if (empty($text))
+            {
+                return false;
+            }
+        }
+        elseif ($history->get_data() === $text)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

@@ -209,13 +209,6 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         );
     }
 
-    /**
-     * Calls upon save event of the assignment
-     *
-     * @param stdClass $submissionorgrade
-     * @param stdClass $data
-     * @return bool
-     */
     public function save(stdClass $submissionorgrade, stdClass $data)
     {
         $factory = $this->factory();

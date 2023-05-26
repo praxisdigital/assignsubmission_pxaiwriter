@@ -95,7 +95,7 @@ class history_table_migration implements interfaces\migration
             true,
             XMLDB_NOTNULL,
             false,
-            'ok'
+            'draft'
         );
         $table->add_field(
             'type',

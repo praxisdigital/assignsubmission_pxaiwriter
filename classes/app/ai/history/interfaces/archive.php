@@ -18,8 +18,8 @@ interface archive
 
     public function commit(
         string $input_text,
-        ?string $data = null,
-        ?int $step = null
+        ?int $step = null,
+        ?string $data = null
     ): entity;
 
     public function commit_by_generate_ai_text(
@@ -42,4 +42,6 @@ interface archive
         string $input_text,
         ?int $step = null
     ): entity;
+
+    public function save_draft(): void;
 }

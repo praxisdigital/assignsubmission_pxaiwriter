@@ -81,7 +81,7 @@ abstract class integration_testcase extends advanced_testcase
     protected function create_assignment_with_ai_writer(object $course, int $steps = 2, array $record = []): mod_assign_testable_assign
     {
         $steps_data = [];
-        for ($step_number = 1; $step_number < $steps; $step_number++)
+        for ($step_number = 1; $step_number <= $steps; $step_number++)
         {
             $steps_data[] = $this->get_step_data($step_number, "Step description $step_number");
         }

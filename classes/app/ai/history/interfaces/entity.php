@@ -11,7 +11,8 @@ defined('MOODLE_INTERNAL') || die();
 
 interface entity extends base_entity
 {
-    public const STATUS_OK = 'ok';
+    public const STATUS_DRAFTED = 'drafted';
+    public const STATUS_SUBMITTED = 'submitted';
     public const STATUS_FAILED = 'failed';
     public const STATUS_DELETED = 'deleted';
 
@@ -20,6 +21,12 @@ interface entity extends base_entity
     public const TYPE_AI_EXPAND = 'ai-expand';
 
     public const EMPTY_CHECKSUM = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
+
+    public function is_ai_expand(): bool;
+
+    public function is_ai_generate(): bool;
+
+    public function is_user_edit(): bool;
 
     public function get_userid(): int;
     public function get_assignment(): int;
@@ -42,7 +49,8 @@ interface entity extends base_entity
     public function set_step(int $step): void;
 
     public function set_status(string $status): void;
-    public function set_status_ok(): void;
+    public function set_status_draft(): void;
+    public function set_status_submitted(): void;
     public function set_status_failed(): void;
     public function set_status_deleted(): void;
 

@@ -83,7 +83,7 @@ class record_history extends base
 
         try
         {
-            $history = $archive->commit($text, $text);
+            $history = $archive->commit($text);
 
             return [
                 'checksum' => $history->get_hashcode(),

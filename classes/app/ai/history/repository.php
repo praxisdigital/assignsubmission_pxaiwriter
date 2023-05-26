@@ -3,6 +3,7 @@
 namespace assignsubmission_pxaiwriter\app\ai\history;
 
 
+use assignsubmission_pxaiwriter\app\ai\history\interfaces\collection;
 use assignsubmission_pxaiwriter\app\ai\history\interfaces\entity;
 use assignsubmission_pxaiwriter\app\exceptions\database_error_exception;
 use assignsubmission_pxaiwriter\app\interfaces\factory as base_factory;
@@ -42,7 +43,8 @@ class repository implements interfaces\repository
         ], SQL_PARAMS_NAMED, 't');
 
         [$in_status_sql, $status_params] = $this->db()->get_in_or_equal([
-            entity::STATUS_OK,
+            entity::STATUS_DRAFTED,
+            entity::STATUS_SUBMITTED,
             entity::STATUS_DELETED,
         ], SQL_PARAMS_NAMED, 'st');
 
@@ -51,7 +53,6 @@ class repository implements interfaces\repository
 
         $params['userid'] = $user_id;
         $params['assignment'] = $assignment_id;
-        $params['status'] = entity::STATUS_OK;
         $params['from_time'] = $from_time;
         $params['to_time'] = $to_time;
 
@@ -85,7 +86,6 @@ class repository implements interfaces\repository
                 'userid' => $user_id,
                 'assignment' => $assignment_id,
                 'submission' => $submission_id,
-                'status' => entity::STATUS_OK,
             ];
 
             if ($step !== null)
@@ -93,7 +93,22 @@ class repository implements interfaces\repository
                 $params['step'] = $step;
             }
 
-            return $this->db()->count_records($this->get_table(), $params);
+            [$in_status_sql, $status_params] = $this->db()->get_in_or_equal([
+                entity::STATUS_DRAFTED,
+                entity::STATUS_SUBMITTED
+            ], SQL_PARAMS_NAMED, 'st');
+
+            $params = array_merge($params, $status_params);
+
+            $sql = "userid = :userid
+            AND assignment = :assignment
+            AND submission = :submission
+            AND status $in_status_sql";
+
+            return $this->db()->count_records_select($this->get_table(),
+                $sql,
+                $params
+            );
         }
         catch (\Exception $exception) {}
         return 0;
@@ -101,12 +116,33 @@ class repository implements interfaces\repository
 
     public function get_by_hashcode(int $user_id, int $assignment_id, string $hashcode, int $step = 1): ?entity
     {
-        return $this->get_last_record_by_conditions([
-            'userid' => $user_id,
-            'assignment' => $assignment_id,
-            'step' => $step,
-            'hashcode' => $hashcode
-        ], 'id DESC');
+        try
+        {
+            $params = [
+                'userid' => $user_id,
+                'assignment' => $assignment_id,
+                'step' => $step,
+                'hashcode' => $hashcode
+            ];
+
+            $sql = "userid = :userid
+            AND assignment = :assignment
+            AND hashcode = :hashcode
+            AND step = :step";
+
+            $records = $this->db()->get_records_select(
+                $this->get_table(),
+                $sql,
+                $params,
+                'id DESC',
+                0,
+                1
+            );
+            return $this->get_last_item($records);
+        }
+        catch (dml_exception $exception) {}
+
+        return null;
     }
 
     public function get_last_by_ids(array $ids): ?entity
@@ -136,10 +172,28 @@ class repository implements interfaces\repository
 
     public function get_latest_by_submission(object $submission): ?entity
     {
-        return $this->get_last_record_by_conditions([
-            'submission' => $submission->id,
-            'status' => entity::STATUS_OK
-        ], 'step DESC, id DESC');
+        try
+        {
+            [$in_sql, $params] = $this->db()->get_in_or_equal([
+                entity::STATUS_DRAFTED,
+                entity::STATUS_SUBMITTED
+            ], SQL_PARAMS_NAMED, 'st');
+
+            $params['submission'] = $submission->id;
+
+            $records = $this->db()->get_records_select(
+                $this->get_table(),
+                "status $in_sql AND submission = :submission",
+                $params,
+                'step DESC, id DESC',
+                '*',
+                0,
+                1
+            );
+            return $this->get_last_item($records);
+        }
+        catch (dml_exception $exception) {}
+        return null;
     }
 
     public function get_all_by_user_assignment(
@@ -151,11 +205,19 @@ class repository implements interfaces\repository
     {
         try
         {
-            $records = $this->db()->get_recordset($this->get_table(), [
-                'userid' => $user_id,
-                'assignment' => $assignment_id,
-                'status' => entity::STATUS_OK
-            ], 'step,id');
+            [$in_status_sql, $params] = $this->db()->get_in_or_equal([
+                entity::STATUS_DRAFTED,
+                entity::STATUS_SUBMITTED,
+            ], SQL_PARAMS_NAMED, 'st');
+
+            $params['userid'] = $user_id;
+            $params['assignment'] = $assignment_id;
+
+            $sql = "userid = :userid
+            AND assignment = :assignment
+            AND status $in_status_sql";
+
+            $records = $this->db()->get_recordset_select($this->get_table(), $sql, $params);
             $collection = $this->mapper->map_collection($records);
             $records->close();
             return $collection;
@@ -167,6 +229,48 @@ class repository implements interfaces\repository
                 $exception
             );
         }
+    }
+
+    public function get_all_by_submission(
+        int $submission_id,
+        int $user_id = 0,
+        int $assignment_id = 0,
+        int $offset = 0,
+        int $limit = 0
+    ): collection
+    {
+        if ($submission_id < 1)
+        {
+            return $this->mapper->map_collection([]);
+        }
+
+        return $this->get_all_by_status_submission(
+            [entity::STATUS_DRAFTED, entity::STATUS_SUBMITTED],
+            $submission_id,
+            $assignment_id,
+            $user_id
+        );
+    }
+
+    public function get_all_submitted_by_submission(
+        int $submission_id,
+        int $user_id = 0,
+        int $assignment_id = 0,
+        int $offset = 0,
+        int $limit = 0
+    ): collection
+    {
+        if ($submission_id < 1)
+        {
+            return $this->mapper->map_collection([]);
+        }
+
+        return $this->get_all_by_status_submission(
+            [entity::STATUS_SUBMITTED],
+            $submission_id,
+            $assignment_id,
+            $user_id
+        );
     }
 
     public function get_all_by_ids(array $ids): collection
@@ -198,6 +302,24 @@ class repository implements interfaces\repository
         }
     }
 
+    public function get_all_drafted_by_submission(
+        int $submission_id,
+        int $assignment_id = 0,
+        int $user_id = 0
+    ): collection
+    {
+        if ($submission_id < 1)
+        {
+            return $this->mapper->map_collection([]);
+        }
+
+        return $this->get_all_by_status_submission(
+            [entity::STATUS_DRAFTED],
+            $submission_id,
+            $assignment_id,
+            $user_id
+        );
+    }
 
     public function insert(entity $entity): void
     {
@@ -212,6 +334,24 @@ class repository implements interfaces\repository
         catch (dml_exception $exception)
         {
             throw database_error_exception::by_insert(
+                $exception->getMessage(),
+                $exception
+            );
+        }
+    }
+
+    public function update(entity $entity): void
+    {
+        try
+        {
+            $this->db()->update_record(
+                $this->get_table(),
+                $entity->to_object()
+            );
+        }
+        catch (dml_exception $exception)
+        {
+            throw database_error_exception::by_update(
                 $exception->getMessage(),
                 $exception
             );
@@ -282,23 +422,47 @@ class repository implements interfaces\repository
         }
     }
 
-    private function get_last_record_by_conditions(array $conditions, string $sort = ''): ?entity
+    private function get_all_by_status_submission(
+        array $statuses,
+        int $submission_id,
+        int $assignment_id = 0,
+        int $user_id = 0
+    ): collection
     {
         try
         {
-            $records = $this->db()->get_records(
-                $this->get_table(),
-                $conditions,
-                $sort,
-                '*',
-                0,
-                1
-            );
-            return $this->get_last_item($records);
-        }
-        catch (dml_exception $exception) {}
+            [$in_status_sql, $params] = $this->db()->get_in_or_equal($statuses, SQL_PARAMS_NAMED, 'st');
 
-        return null;
+            $params['submission'] = $submission_id;
+            $params['status'] = entity::STATUS_SUBMITTED;
+
+            $sql = "submission = :submission
+            AND status $in_status_sql";
+
+            if ($user_id > 0)
+            {
+                $params['userid'] = $user_id;
+                $sql .= " AND userid = :userid";
+            }
+
+            if ($assignment_id > 0)
+            {
+                $params['assignment'] = $assignment_id;
+                $sql .= " AND assignment = :assignment";
+            }
+
+            $records = $this->db()->get_recordset_select($this->get_table(), $sql, $params);
+            $collection = $this->mapper->map_collection($records);
+            $records->close();
+            return $collection;
+        }
+        catch (dml_exception $exception)
+        {
+            throw database_error_exception::by_get_recordset(
+                $exception->getMessage(),
+                $exception
+            );
+        }
     }
 
     private function get_last_item(array $items): ?entity

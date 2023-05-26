@@ -43,7 +43,7 @@ class archive implements interfaces\archive
     ): interfaces\entity
     {
         $entity = $this->create_entity($step);
-        $entity->set_status_ok();
+        $entity->set_status_draft();
         $entity->set_input_text($input_text);
         $entity->set_data($data);
         $this->get_repository()->insert($entity);
@@ -52,8 +52,8 @@ class archive implements interfaces\archive
 
     public function commit(
         string $input_text,
-        ?string $data = null,
-        ?int $step = null
+        ?int $step = null,
+        ?string $data = null
     ): interfaces\entity
     {
         $data ??= $input_text;
@@ -68,7 +68,7 @@ class archive implements interfaces\archive
             if ($history_count === 0)
             {
                 $entity = $this->create_entity($step);
-                $entity->set_status_ok();
+                $entity->set_status_draft();
                 return $entity;
             }
         }
@@ -125,7 +125,7 @@ class archive implements interfaces\archive
     ): interfaces\entity
     {
         $entity = $this->create_entity($step);
-        $entity->set_status_ok();
+        $entity->set_status_draft();
         $entity->set_input_text($input_text);
         $entity->set_ai_text($ai_text);
         $entity->set_data($data);
@@ -143,6 +143,38 @@ class archive implements interfaces\archive
         $entity->set_input_text($input_text);
         $this->get_repository()->insert($entity);
         return $entity;
+    }
+
+    public function save_draft(): void
+    {
+        $entities = $this->get_repository()->get_all_drafted_by_submission(
+            $this->submission_id,
+            $this->assignment_id,
+            $this->userid
+        );
+
+        $transaction = $this->factory->moodle()->db()->start_delegated_transaction();
+
+        try
+        {
+            foreach ($entities as $entity)
+            {
+                $entity->set_status_submitted();
+                $entity->set_timemodified($this->factory->helper()->times()->current_time());
+                $this->get_repository()->update($entity);
+            }
+
+            $transaction->allow_commit();
+        }
+        catch (\Exception $exception)
+        {
+            try
+            {
+                $transaction->rollback($exception);
+            }
+            catch (\Exception $transaction_exception)
+            { }
+        }
     }
 
     private function get_repository(): interfaces\repository

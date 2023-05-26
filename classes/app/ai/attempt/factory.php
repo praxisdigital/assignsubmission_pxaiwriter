@@ -19,16 +19,6 @@ class factory implements interfaces\factory
         $this->factory = $factory;
     }
 
-    public function entity(array $record = []): interfaces\entity
-    {
-        return new entity($record);
-    }
-
-    public function mapper(): interfaces\mapper
-    {
-        return $this->instances[__FUNCTION__] ??= new mapper($this->factory);
-    }
-
     public function repository(): interfaces\repository
     {
         return $this->instances[__FUNCTION__] ??= new repository($this->factory);

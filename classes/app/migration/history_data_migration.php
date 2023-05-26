@@ -3,6 +3,7 @@
 namespace assignsubmission_pxaiwriter\app\migration;
 
 
+use assignsubmission_pxaiwriter\app\ai\history\interfaces\entity;
 use assignsubmission_pxaiwriter\app\interfaces\factory as base_factory;
 use dml_exception;
 use Exception;
@@ -26,8 +27,24 @@ class history_data_migration implements interfaces\migration
 
     public function up(): void
     {
-        $submissions = $this->get_submission_instances();
+        $submissions = $this->get_legacy_submission_instances();
         $this->add_submissions_history($submissions);
+        $this->convert_history_status();
+    }
+
+    private function convert_history_status(): void
+    {
+        $records = $this->factory->moodle()->db()->get_recordset('pxaiwriter_history', [
+            'status' => 'ok'
+        ], '', 'id, status');
+
+        foreach ($records as $record)
+        {
+            $record->status = entity::STATUS_SUBMITTED;
+            $this->db->update_record('pxaiwriter_history', $record);
+        }
+
+        $records->close();
     }
 
     /**
@@ -52,7 +69,7 @@ class history_data_migration implements interfaces\migration
                 $entity->set_assignment($submission->get_assignment());
                 $entity->set_submission($submission->get_submission());
                 $entity->set_step($step->get_step());
-                $entity->set_status_ok();
+                $entity->set_status_submitted();
                 $entity->set_type_user_edit();
                 $entity->set_input_text($step->get_value());
                 $entity->set_data($step->get_value());
@@ -77,7 +94,7 @@ class history_data_migration implements interfaces\migration
      * @return submission_instance[]
      * @throws dml_exception
      */
-    private function get_submission_instances(): array
+    private function get_legacy_submission_instances(): array
     {
         $sql = "SELECT ss.*, s.userid FROM {assignsubmission_pxaiwriter} ss
             JOIN {assign_submission} s ON s.id = ss.submission";
@@ -89,6 +106,10 @@ class history_data_migration implements interfaces\migration
             {
                 try
                 {
+                    if (!$this->is_legacy_data($record->steps_data))
+                    {
+                        continue;
+                    }
                     $record->steps_data = $this->get_new_steps_data($record->steps_data);
                 }
                 catch (Exception $exception)
@@ -116,9 +137,37 @@ class history_data_migration implements interfaces\migration
         ]);
     }
 
+    private function is_legacy_data(string $json): bool
+    {
+        $data = $this->factory->helper()->encoding()->json()->decode($json);
+        if (!is_array($data) || empty($data))
+        {
+            return false;
+        }
+
+        $first_item = $data[array_key_first($data)];
+        if (!isset($first_item['value'], $first_item['step']))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     private function get_items_by_json(string $json): array
     {
-        return $this->factory->helper()->encoding()->json()->decode($json);
+        $data = $this->factory->helper()->encoding()->json()->decode($json);
+        if (!is_array($data) || empty($data))
+        {
+            return [];
+        }
+
+        $first_item = $data[array_key_first($data)];
+        if (!isset($first_item['value'], $first_item['step']))
+        {
+            return [];
+        }
+        return $data;
     }
 
 }

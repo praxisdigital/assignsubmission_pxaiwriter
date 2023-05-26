@@ -79,7 +79,8 @@ class repository implements interfaces\repository
         ], SQL_PARAMS_NAMED, 't');
 
         [$in_status_sql, $status_params] = $this->db()->get_in_or_equal([
-            history_entity::STATUS_OK,
+            history_entity::STATUS_DRAFTED,
+            history_entity::STATUS_SUBMITTED,
             history_entity::STATUS_DELETED,
         ], SQL_PARAMS_NAMED, 'st');
 
@@ -87,7 +88,6 @@ class repository implements interfaces\repository
 
         $params['userid'] = $user_id;
         $params['assignment'] = $assignment_id;
-        $params['status'] = history_entity::STATUS_OK;
         $params['step'] = 1;
         $params['from_time'] = $from_time;
         $params['to_time'] = $to_time;

@@ -53,6 +53,66 @@ export const init = (
     };
 
     /**
+     * @param {number} step
+     * @return {HTMLTextAreaElement|null}
+     */
+    const getStepInput = (step) => {
+        const element = document.querySelector(`${selectors.input}[data-input-step="${step}"]`);
+        if (element instanceof HTMLTextAreaElement) {
+            return element;
+        }
+        return null;
+    };
+
+    /**
+     * @param {number} step
+     */
+    const copyTextFromPreviousStep = (step) => {
+
+        if (isDebugMode()) {
+            window.console.log(`${component}: Try to copy the text from the previous step to step ${step}...`);
+        }
+
+        const currentStepInput = getStepInput(step);
+        if (currentStepInput === null) {
+            if (isDebugMode()) {
+                window.console.log(`${component}: Cannot find the current step ${step}`);
+            }
+            return;
+        }
+
+        if (currentStepInput.value.trim().length !== 0) {
+            if (isDebugMode()) {
+                window.console.log(`${component}: Cannot copy because the current step (${step}) is not empty`);
+            }
+            return;
+        }
+
+        const previousStep = step - 1;
+        const previousStepInput = getStepInput(previousStep);
+
+        if (previousStepInput === null) {
+            if (isDebugMode()) {
+                window.console.log(`${component}: Cannot find the previous step ${previousStep}`);
+            }
+            return;
+        }
+
+        if (previousStepInput.value.trim().length === 0) {
+            if (isDebugMode()) {
+                window.console.log(`${component}: Cannot copy because the previous step (${step}) is empty`);
+            }
+            return;
+        }
+
+        currentStepInput.value = previousStepInput.value;
+
+        if (isDebugMode()) {
+            window.console.log(`${component}: Copied the text from step ${previousStep} to ${step}`);
+        }
+    };
+
+    /**
      * @param {string} target
      */
     const preventPasting = (target) => {
@@ -316,6 +376,8 @@ export const init = (
                 blurStepButton(button);
             }
             highlightStepButton(currentStepButton);
+
+            copyTextFromPreviousStep(step);
         });
 
         wrapper?.addEventListener(eventList.pageChange, async (e) => {
@@ -349,8 +411,8 @@ export const init = (
 
             try {
                 const response = await api.expandText(
-                    this.assignmentId,
-                    this.submissionId,
+                    assignmentId,
+                    submissionId,
                     text,
                     selectedText,
                     textData.selectionStart
@@ -382,8 +444,8 @@ export const init = (
 
             try {
                 const response = await api.generateText(
-                    this.assignmentId,
-                    this.submissionId,
+                    assignmentId,
+                    submissionId,
                     text,
                     defaultStep
                 );
@@ -408,29 +470,11 @@ export const init = (
         if (response.hasOwnProperty('data')) {
             const textArea = getStepTextArea(step);
             if (textArea instanceof HTMLTextAreaElement) {
-                if (step === defaultStep) {
-                    distributeTextToInputs(response.data);
-                }
-                else {
-                    textArea.value = response.data;
-                    textArea.dispatchEvent(new Event("change"));
-                }
+                textArea.value = response.data;
+                textArea.dispatchEvent(new Event("change"));
             }
         }
         $('#loader').addClass('d-none');
-    };
-
-    /**
-     * @param {string} text
-     */
-    const distributeTextToInputs = (text) => {
-        const elements = document.querySelectorAll(selectors.input);
-        for (const element of elements) {
-            if (element instanceof HTMLTextAreaElement) {
-                element.value = text;
-                element.dispatchEvent(new Event("change"));
-            }
-        }
     };
 
     /**
@@ -449,7 +493,7 @@ export const init = (
             return;
         }
         const text = getStepInputText(step);
-        const response = await api.recordHistory(this.assignmentId, this.submissionId, text, step);
+        const response = await api.recordHistory(assignmentId, submissionId, text, step);
 
         if (isDebugMode() && response.hasOwnProperty("checksum")) {
             if (!response.checksum) {

@@ -13,6 +13,7 @@ defined('MOODLE_INTERNAL') || die();
  * @extends base_collection<entity>
  * @method entity|null last()
  * @method entity current()
+ * @method base_collection<entity>|array<int, entity>|entity[] skip(int $count)
  */
 interface collection extends base_collection
 {

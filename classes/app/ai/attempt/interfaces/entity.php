@@ -11,7 +11,7 @@ defined('MOODLE_INTERNAL') || die();
 
 interface entity extends base_entity
 {
-    public const STATUS_OK = 'ok';
+    public const STATUS_DRAFTED = 'drafted';
     public const STATUS_FAILED = 'failed';
     public const STATUS_DELETED = 'deleted';
 
@@ -28,7 +28,7 @@ interface entity extends base_entity
     public function set_assignment(int $id): void;
     public function set_step(int $step): void;
     public function set_status(string $status): void;
-    public function set_status_ok(): void;
+    public function set_status_draft(): void;
     public function set_status_failed(): void;
     public function set_status_deleted(): void;
     public function set_hashcode(string $hash): void;

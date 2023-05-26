@@ -84,9 +84,15 @@ class submission_history implements interfaces\submission_history
         return $this->get_submission()->assignment;
     }
 
+    private function get_submission_id(): int
+    {
+        return $this->get_submission()->id;
+    }
+
     private function get_submission_history_list(): history_collection
     {
-        return $this->factory->ai()->history()->repository()->get_all_by_user_assignment(
+        return $this->factory->ai()->history()->repository()->get_all_submitted_by_submission(
+            $this->get_submission_id(),
             $this->get_userid(),
             $this->get_assignment_id()
         );

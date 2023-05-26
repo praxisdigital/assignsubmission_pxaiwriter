@@ -50,6 +50,15 @@ class repository implements interfaces\repository
 
     public function get_pdf_diff_by_history_list(submission_history $submission_history): ?string
     {
+        $data = $this->get_html_diff_by_history_list($submission_history);
+        return $this->factory->file()->pdf()->converter()->convert_to_pdf_file(
+            $this->get_filename($submission_history),
+            $data
+        );
+    }
+
+    public function get_html_diff_by_history_list(submission_history $submission_history): ?string
+    {
         $history_list = $submission_history->get_history_list();
         $step_numbers = $history_list->get_step_numbers();
 
@@ -83,11 +92,7 @@ class repository implements interfaces\repository
             $pdf_data
         );
 
-        $pdf = $this->factory->file()->pdf()->converter();
-        return $pdf->convert_to_pdf_file(
-            $this->get_filename($submission_history),
-            implode(self::PDF_PAGE_BREAK, $pdf_data)
-        );
+        return implode(self::PDF_PAGE_BREAK, $pdf_data);
     }
 
     private function get_filename(submission_history $submission_history): string
@@ -154,8 +159,10 @@ class repository implements interfaces\repository
         $first_steps = $history_list->get_step_entities($first_step_number);
         $first_step_config = $submission_history->get_step_config($first_step_number);
         $first_history = $first_steps->get_first_entity_by_step($first_step_number);
-        $first_steps_count = $first_steps->count();
         $step_count = 1;
+
+        $sub_steps = $first_steps->skip(1);
+        $sub_steps_count = $sub_steps->count();
 
         if ($first_history !== null)
         {
@@ -182,16 +189,28 @@ class repository implements interfaces\repository
             }
         }
 
-        if ($first_steps_count > 1)
+        if ($sub_steps_count > 1)
         {
-            foreach ($first_steps as $step)
+            foreach ($sub_steps as $step)
             {
-                $step->get_input_text();
+                if ($step->is_ai_generate())
+                {
+                    $data = $step->get_data();
+                    $pdf_data[] = $this->get_pdf_html(
+                        $this->get_step_number_name($step, $step_count),
+                        $first_step_config->get_description(),
+                        $text_diff->diff($step->get_input_text(), $data)
+                    );
+                    $diff_text = $data;
+                    ++$step_count;
+                    continue;
+                }
+
                 $data = $step->get_data();
                 $pdf_data[] = $this->get_pdf_html(
                     $this->get_step_number_name($step, $step_count),
                     $first_step_config->get_description(),
-                    $text_diff->diff($step->get_input_text(), $data)
+                    $text_diff->diff($diff_text, $data)
                 );
                 $diff_text = $data;
                 ++$step_count;

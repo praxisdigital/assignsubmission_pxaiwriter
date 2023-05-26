@@ -45,13 +45,44 @@ interface repository
         int $limit = 0
     ): collection;
 
+    public function get_all_by_submission(
+        int $submission_id,
+        int $user_id = 0,
+        int $assignment_id = 0,
+        int $offset = 0,
+        int $limit = 0
+    ): collection;
+
+    public function get_all_submitted_by_submission(
+        int $submission_id,
+        int $user_id = 0,
+        int $assignment_id = 0,
+        int $offset = 0,
+        int $limit = 0
+    ): collection;
+
     /**
      * @param array $ids
      * @return collection<entity>|entity[]
      */
     public function get_all_by_ids(array $ids): collection;
 
+    /**
+     * @param int $submission_id
+     * @param int $assignment_id
+     * @param int $user_id
+     * @return collection<entity>|entity[]
+     */
+    public function get_all_drafted_by_submission(
+        int $submission_id,
+        int $assignment_id = 0,
+        int $user_id = 0
+    ): collection;
+
     public function insert(entity $entity): void;
+
+    public function update(entity $entity): void;
+
     public function delete_by_id(int $id): void;
     public function delete_by_user_id(int $user_id): void;
     public function delete_by_user_assignment(int $user_id, int $assignment_id): void;
