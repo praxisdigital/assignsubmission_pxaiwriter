@@ -118,27 +118,33 @@ class repository implements interfaces\repository
     {
         try
         {
-            $params = [
-                'userid' => $user_id,
-                'assignment' => $assignment_id,
-                'step' => $step,
-                'hashcode' => $hashcode
-            ];
+            [$in_sql, $params] = $this->db()->get_in_or_equal([
+                entity::STATUS_DRAFTED,
+                entity::STATUS_SUBMITTED
+            ], SQL_PARAMS_NAMED, 'st');
+
+            $params['userid'] = $user_id;
+            $params['assignment'] = $assignment_id;
+            $params['hashcode'] = $hashcode;
+            $params['step'] = $step;
 
             $sql = "userid = :userid
             AND assignment = :assignment
             AND hashcode = :hashcode
-            AND step = :step";
+            AND step = :step
+            AND status $in_sql";
 
             $records = $this->db()->get_records_select(
                 $this->get_table(),
                 $sql,
                 $params,
                 'id DESC',
+                '*',
                 0,
                 1
             );
-            return $this->get_last_item($records);
+
+            return $this->get_first_item($records);
         }
         catch (dml_exception $exception) {}
 
@@ -164,7 +170,7 @@ class repository implements interfaces\repository
                 0,
                 1
             );
-            return $this->get_last_item($records);
+            return $this->get_first_item($records);
         }
         catch (dml_exception $exception) {}
         return null;
@@ -190,7 +196,7 @@ class repository implements interfaces\repository
                 0,
                 1
             );
-            return $this->get_last_item($records);
+            return $this->get_first_item($records);
         }
         catch (dml_exception $exception) {}
         return null;
@@ -465,14 +471,13 @@ class repository implements interfaces\repository
         }
     }
 
-    private function get_last_item(array $items): ?entity
+    private function get_first_item(array $items): ?entity
     {
         if (empty($items))
         {
             return null;
         }
-        $last_index = array_key_last($items);
-        $record = $items[$last_index];
+        $record = $items[array_key_first($items)];
         return $this->mapper->map($record);
     }
 }

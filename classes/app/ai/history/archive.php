@@ -72,7 +72,7 @@ class archive implements interfaces\archive
                 return $entity;
             }
         }
-        return $this->get_entity_by_hashcode($input_text, $step) ?? $this->force_commit($input_text, $data, $step);
+        return $this->get_entity_by_input_text($input_text, $step) ?? $this->force_commit($input_text, $data, $step);
     }
 
     public function commit_by_generate_ai_text(
@@ -207,7 +207,7 @@ class archive implements interfaces\archive
             );
     }
 
-    private function get_entity_by_hashcode(
+    private function get_entity_by_input_text(
         string $data,
         ?int $step = null
     ): ?interfaces\entity

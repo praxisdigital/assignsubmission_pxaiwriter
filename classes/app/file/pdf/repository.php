@@ -51,6 +51,10 @@ class repository implements interfaces\repository
     public function get_pdf_diff_by_history_list(submission_history $submission_history): ?string
     {
         $data = $this->get_html_diff_by_history_list($submission_history);
+        if ($data === null)
+        {
+            return null;
+        }
         return $this->factory->file()->pdf()->converter()->convert_to_pdf_file(
             $this->get_filename($submission_history),
             $data

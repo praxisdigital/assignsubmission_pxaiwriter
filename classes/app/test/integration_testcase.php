@@ -196,4 +196,9 @@ abstract class integration_testcase extends advanced_testcase
 
         return (object)$configs;
     }
+
+    protected function get_assign_id(mod_assign_testable_assign $assign): int
+    {
+        return $assign->get_instance()->id;
+    }
 }

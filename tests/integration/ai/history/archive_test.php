@@ -33,7 +33,7 @@ class archive_test extends integration_testcase
     {
         $submission = $this->create_submission($this->assignment, $this->user);
 
-        $archive = factory::make()->ai()->history()->archive_user_edit(
+        $archive = $this->factory()->ai()->history()->archive_user_edit(
             $submission->assignment,
             $submission->id,
             $submission->userid
@@ -42,7 +42,7 @@ class archive_test extends integration_testcase
         $user_text = 'This is a user text';
         $archive->commit($user_text);
 
-        $history_list = factory::make()->ai()->history()->repository()->get_all_by_user_assignment(
+        $history_list = $this->factory()->ai()->history()->repository()->get_all_by_user_assignment(
             $this->user->id,
             $submission->assignment
         );
@@ -71,7 +71,7 @@ class archive_test extends integration_testcase
     {
         $submission = $this->create_submission($this->assignment, $this->user);
 
-        $archive = factory::make()->ai()->history()->archive_user_edit(
+        $archive = $this->factory()->ai()->history()->archive_user_edit(
             $submission->assignment,
             $submission->id,
             $submission->userid
@@ -87,7 +87,7 @@ class archive_test extends integration_testcase
             '{"message": "Well done!"}'
         );
 
-        $history_list = factory::make()->ai()->history()->repository()->get_all_by_user_assignment(
+        $history_list = $this->factory()->ai()->history()->repository()->get_all_by_user_assignment(
             $this->user->id,
             $submission->assignment
         );
@@ -121,7 +121,7 @@ class archive_test extends integration_testcase
     {
         $submission = $this->create_submission($this->assignment, $this->user);
 
-        $archive = factory::make()->ai()->history()->archive_user_edit(
+        $archive = $this->factory()->ai()->history()->archive_user_edit(
             $submission->assignment,
             $submission->id,
             $submission->userid
@@ -137,7 +137,7 @@ class archive_test extends integration_testcase
             '{"message": "Well done!"}'
         );
 
-        $history_list = factory::make()->ai()->history()->repository()->get_all_by_user_assignment(
+        $history_list = $this->factory()->ai()->history()->repository()->get_all_by_user_assignment(
             $this->user->id,
             $submission->assignment
         );
@@ -164,6 +164,30 @@ class archive_test extends integration_testcase
         self::assertSame(
             history_entity::TYPE_AI_EXPAND,
             $history->get_type()
+        );
+    }
+
+    public function test_commit_with_existed_input_text_should_not_be_record(): void
+    {
+        $submission = $this->create_submission($this->assignment, $this->user);
+
+        $user_text = 'This is a user text';
+        $archive = $this->factory()->ai()->history()->archive_generate_ai_text(
+            $submission->assignment,
+            $submission->id,
+            $submission->userid
+        );
+
+        $history = $archive->commit($user_text);
+        self::assertSame(
+            $user_text,
+            $history->get_data()
+        );
+
+        $history2 = $archive->commit($user_text);
+        self::assertSame(
+            $history->get_id(),
+            $history2->get_id()
         );
     }
 }

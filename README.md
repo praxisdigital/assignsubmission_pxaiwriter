@@ -41,7 +41,7 @@ You can access these set of settings here : https://<site>/admin/settings.php?se
 - Either click on 'Save and return to course' or 'Save and display' button to save the submission configuration.
 
 ## Release notes
-- **1.2.0** (2023052300)
+- **1.2.0** (2023060100)
   - New feature:
     - Add new AI model "GPT-3.5-turbo" to the plugin.
   - Changes:

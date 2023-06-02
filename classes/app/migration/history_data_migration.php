@@ -30,6 +30,7 @@ class history_data_migration implements interfaces\migration
         $submissions = $this->get_legacy_submission_instances();
         $this->add_submissions_history($submissions);
         $this->convert_history_status();
+        $this->remove_duplicate_history();
     }
 
     private function convert_history_status(): void
@@ -45,6 +46,63 @@ class history_data_migration implements interfaces\migration
         }
 
         $records->close();
+    }
+
+    private function remove_duplicate_history(): void
+    {
+        $sql = "SELECT * FROM {pxaiwriter_history}";
+        $records = $this->db->get_recordset_sql($sql);
+        $history_list = [];
+        $empty_data_list = [];
+        $sha256 = $this->factory->helper()->hash()->sha256();
+
+        foreach ($records as $id => $record)
+        {
+            if (!isset($record->data))
+            {
+                $empty_data_list[] = $id;
+                continue;
+            }
+            $checksum = $sha256->digest($record->data);
+            $key = "{$record->assignment}-{$record->submission}-{$record->step}-{$record->userid}-{$checksum}";
+            if (!isset($history_list[$key][$id]))
+            {
+                $history_list[$key][$id] = $id;
+            }
+        }
+
+        $records->close();
+
+        if (empty($history_list))
+        {
+            return;
+        }
+
+        $duplicate_list = [];
+
+        foreach ($history_list as $ids)
+        {
+            if (count($ids) < 2)
+            {
+                continue;
+            }
+            array_shift($ids);
+            $duplicate_list[] = $ids;
+        }
+
+        $duplicate_list = array_merge([], ...$duplicate_list);
+
+        if (empty($duplicate_list))
+        {
+            return;
+        }
+
+        $this->db->delete_records_list('pxaiwriter_history', 'id', $duplicate_list);
+
+        if (!empty($empty_data_list))
+        {
+            $this->db->delete_records_list('pxaiwriter_history', 'id', $empty_data_list);
+        }
     }
 
     /**
@@ -145,7 +203,9 @@ class history_data_migration implements interfaces\migration
             return false;
         }
 
-        $first_item = $data[array_key_first($data)];
+
+        $first_item = (array)$data[array_key_first($data)];
+
         if (!isset($first_item['value'], $first_item['step']))
         {
             return false;
@@ -162,7 +222,7 @@ class history_data_migration implements interfaces\migration
             return [];
         }
 
-        $first_item = $data[array_key_first($data)];
+        $first_item = (array)$data[array_key_first($data)];
         if (!isset($first_item['value'], $first_item['step']))
         {
             return [];
