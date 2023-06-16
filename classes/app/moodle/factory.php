@@ -5,12 +5,15 @@ namespace assignsubmission_pxaiwriter\app\moodle;
 
 use assignsubmission_pxaiwriter\app\interfaces\factory as base_factory;
 use assignsubmission_pxaiwriter\app\moodle\context\interfaces\factory as context_factory;
+use coding_exception;
 use core_date;
 use core_string_manager;
 use course_modinfo;
 use curl;
 use DateTimeZone;
 use dml_exception;
+use Exception;
+use file_storage;
 use moodle_database;
 use moodle_exception;
 
@@ -47,14 +50,40 @@ class factory implements interfaces\factory
         return $DB;
     }
 
+    public function file_storage(bool $reinitialize = false): file_storage
+    {
+        $storage = get_file_storage($reinitialize);
+        if (empty($storage))
+        {
+            throw new coding_exception(
+                'Missing file storage cause by Moodle'
+            );
+        }
+        return $storage;
+    }
+
     /**
      * @param string $component
-     * @return object|null
+     * @return object
      * @throws dml_exception
      */
-    public function get_config_instance(string $component = base_factory::COMPONENT): ?object
+    public function get_config_instance(string $component = base_factory::COMPONENT): object
     {
-        return get_config($component);
+        $config = get_config($component);
+        if (empty($config))
+        {
+            return (object)[];
+        }
+        return $config;
+    }
+
+    public function set_config(string $name, $value, string $component = base_factory::COMPONENT): void
+    {
+        set_config(
+            $name,
+            $value,
+            $component
+        );
     }
 
     public function get_string_manager(): core_string_manager
@@ -74,6 +103,18 @@ class factory implements interfaces\factory
             $component,
             $arguments
         );
+    }
+
+    public function get_group_name_by_id(int $group_id): string
+    {
+        try
+        {
+            return groups_get_group_name($group_id);
+        }
+        catch (Exception $exception)
+        {
+            throw new moodle_exception('cannot_found_group_name');
+        }
     }
 
     public function get_user_timezone(): DateTimeZone

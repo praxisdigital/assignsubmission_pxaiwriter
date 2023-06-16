@@ -4,7 +4,6 @@ namespace assignsubmission_pxaiwriter\external\ai;
 
 
 use assignsubmission_pxaiwriter\app\exceptions\moodle_traceable_exception;
-use assignsubmission_pxaiwriter\app\exceptions\openai_api_response_exception;
 use assignsubmission_pxaiwriter\app\exceptions\overdue_assignment_exception;
 use assignsubmission_pxaiwriter\app\exceptions\user_exceed_attempts_exception;
 use assignsubmission_pxaiwriter\external\base;
@@ -39,6 +38,12 @@ class generate_ai_text extends base
                 VALUE_DEFAULT,
                 1
             ),
+            'submission' => new external_value(
+                PARAM_INT,
+                'Submission ID',
+                VALUE_DEFAULT,
+                0
+            ),
         ]);
     }
 
@@ -52,12 +57,13 @@ class generate_ai_text extends base
         ]);
     }
 
-    public  static function execute(int $assignment_id, string $text, int $step = 1): array
+    public  static function execute(int $assignment_id, string $text, int $step = 1, int $submission = 0): array
     {
         self::validate_input([
             'assignment_id' => $assignment_id,
             'text' => $text,
-            'step' => $step
+            'step' => $step,
+            'submission' => $submission
         ]);
         self::validate_step_number($step);
         self::validate_assignment($assignment_id);
@@ -73,11 +79,11 @@ class generate_ai_text extends base
         $transaction = $factory->moodle()->db()->start_delegated_transaction();
         $current_user = $factory->moodle()->user();
 
-        $archive = $ai_factory->history()->archive(
+        $archive = $ai_factory->history()->archive_generate_ai_text(
             $assignment_id,
-            $step,
+            $submission,
             $current_user->id,
-            $transaction
+            $step
         );
 
         try
@@ -92,15 +98,19 @@ class generate_ai_text extends base
                 throw user_exceed_attempts_exception::by_external_api();
             }
 
-            $archive->start_attempt($text);
+            $response_data = $ai_factory->openai()->api()->generate_ai_text($text);
+            $combined_text = $ai_factory->formatter()->text($text, $response_data->get_text());
 
-            $generated_text = $ai_factory->openai()->api()->generate_ai_text($text);
-            $combined_text = $ai_factory->formatter()->text($text, $generated_text);
-
-            $archive->force_commit(
+            $archive->commit_by_generate_ai_text(
+                $text,
+                $response_data->get_text(),
                 $combined_text,
-                $generated_text
+                $response_data->get_response_json()
             );
+            
+            $attempt_data->make_attempt();
+
+            $transaction->allow_commit();
 
             return [
                 'data' => $combined_text,
@@ -111,12 +121,14 @@ class generate_ai_text extends base
         }
         catch (Exception $exception)
         {
-            $error = new moodle_traceable_exception('error_generate_ai_text_api', $exception);
-            $archive->rollback(
-                $text,
-                $error
-            );
-            throw $error;
+            try
+            {
+                $transaction->rollback($exception);
+            }
+            catch (Exception $rollback_exception) {}
+
+            $archive->failed($text);
+            throw new moodle_traceable_exception('error_generate_ai_text_api', $exception);
         }
     }
 }

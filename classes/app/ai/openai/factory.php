@@ -31,4 +31,15 @@ class factory implements interfaces\factory
     {
         return $this->instances[__FUNCTION__] ??= new models();
     }
+
+    public function response(
+        string $json,
+        string $text
+    ): interfaces\response
+    {
+        return new response(
+            $json,
+            $text
+        );
+    }
 }

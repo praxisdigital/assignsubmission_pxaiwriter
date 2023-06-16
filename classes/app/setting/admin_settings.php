@@ -5,7 +5,6 @@ namespace assignsubmission_pxaiwriter\app\setting;
 
 use assignsubmission_pxaiwriter\app\ai\openai\interfaces\models;
 use assignsubmission_pxaiwriter\app\interfaces\factory as base_factory;
-use stdClass;
 
 /* @codeCoverageIgnoreStart */
 defined('MOODLE_INTERNAL') || die();
@@ -19,7 +18,7 @@ class admin_settings implements interfaces\settings
     public function __construct(base_factory $factory)
     {
         $this->factory = $factory;
-        $this->config = $this->factory->moodle()->get_config_instance() ?? new stdClass();
+        $this->config = $this->factory->moodle()->get_config_instance();
     }
 
     public function get_default(): bool
@@ -57,9 +56,9 @@ class admin_settings implements interfaces\settings
         return $this->config->model ?? models::GPT_3_5_TURBO;
     }
 
-    public function get_authorization(): string
+    public function get_openai_token(): string
     {
-        return $this->config->authorization ?? '';
+        return $this->config->openai_token ?? '';
     }
 
     public function get_url(): string

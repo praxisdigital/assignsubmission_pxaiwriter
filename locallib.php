@@ -1,12 +1,17 @@
 <?php
 
-use assignsubmission_pxaiwriter\app\factory;
+use assignsubmission_pxaiwriter\app\factory as base_factory;
+use assignsubmission_pxaiwriter\app\interfaces\factory as base_factory_interface;
 
 define('ASSIGNSUBMISSION_FILE_MAXFILES', 10);
 define('ASSIGNSUBMISSION_PXAIWRITER_FILEAREA', 'submissions_pxaiwriter');
 
 class assign_submission_pxaiwriter extends assign_submission_plugin
 {
+    private function factory(): base_factory_interface
+    {
+        return base_factory::make();
+    }
 
     /**
      * Gets the current assignment id by the loaded object
@@ -86,7 +91,6 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             $step1->removable = false;
             $step1->isreadonly = true;
             $step1->readonly = '';
-            $step1->custom_buttons = array('name' => 'do_ai_magic', 'name' => 'expand');
             $step1->ai_element = true;
             $step1->ai_expand_element = true;
             $step1->value = '';
@@ -100,7 +104,6 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             $step2->removable = false;
             $step2->isreadonly = false;
             $step2->readonly = '';
-            $step2->custom_buttons = array();
             $step2->ai_element = false;
             $step2->ai_expand_element = false;
             $step2->value = '';
@@ -147,38 +150,23 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
      */
     public function get_form_elements($submission, MoodleQuickForm $mform, stdClass $data)
     {
-        global $CFG, $DB, $USER;
+        global $CFG;
 
-        $pxaiwritersubmission = $this->get_pxaiwriter_submission($submission->id);
-        $data->assignmentid = $this->get_assignment_id();
+        $repo = $this->factory()->submission()->repository();
 
-        $current_time = factory::make()->helper()->times()->current_time();
-        $duedate = $this->get_assignment_duedate();
-        $data->is_due_submission = $duedate < $current_time;
-        $data->enabled_ai_actions = false;
-
-        if (!$data->is_due_submission) {
-            $day = factory::make()->helper()->times()->day();
-            $attempt = factory::make()->ai()->attempt()->repository()->get_remaining_attempt(
-                $USER->id,
-                $data->assignmentid,
-                $day->get_start_of_day()->getTimestamp(),
-                $day->get_end_of_day()->getTimestamp()
-            );
-            $data->exceeds_max_attempts = $attempt->is_exceeded();
-            $data->enabled_ai_actions = !$data->exceeds_max_attempts;
-        }
-
-        $steps_data_string = $pxaiwritersubmission->steps_data ?? $this->get_config('pxaiwritersteps');
-
-        $data->steps_data = json_decode($steps_data_string);
-
-
-        $attempt_data = factory::make()->ai()->attempt()->repository()->get_today_remaining_attempt(
-            $USER->id,
-            $data->assignmentid
+        $steps_data = $repo->get_step_data_by_assign_submission(
+            $submission,
+            $this->get_config(),
+            $this->assignment->get_context()
         );
-        $data->attempt_text =  $attempt_data->get_attempt_text();
+
+        $data = $repo->add_ai_writer_submission_data(
+            $submission,
+            $data,
+            $steps_data,
+            $this->get_assignment_duedate()
+        );
+        $steps_data_json = $repo->get_step_data_json($steps_data);
 
         MoodleQuickForm::registerElementType(
             'pxaiwriter_steps_section',
@@ -188,7 +176,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
         $mform->addElement('pxaiwriter_steps_section', 'assignsubmission_pxaiwriter_steps_config', null, null, $data);
 
-        $mform->addElement('hidden', 'assignsubmission_pxaiwriter_student_data', $steps_data_string);
+        $mform->addElement('hidden', 'assignsubmission_pxaiwriter_student_data', $steps_data_json);
         $mform->setType('assignsubmission_pxaiwriter_student_data', PARAM_RAW);
 
         return true;
@@ -221,192 +209,45 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         );
     }
 
-    /**
-     * Calls upon save event of the assignment
-     *
-     * @param stdClass $submission
-     * @param stdClass $data
-     * @return bool
-     */
-    public function save(stdClass $submission, stdClass $data)
+    public function save(stdClass $submissionorgrade, stdClass $data)
     {
-        global $USER, $DB, $CFG;
+        $factory = $this->factory();
+        $submission_factory = $factory->submission();
+        $repo = $submission_factory->repository();
 
-        $pxaiwritersubmission = $this->get_pxaiwriter_submission($submission->id);
+        $repo->save_data($submissionorgrade, $data);
 
-        // delete existing file when updating a submission
-        if ($pxaiwritersubmission) {
-            $this->delete_pdf_file($submission->id);
-        }
-
-        $assignmentid = $this->get_assignment_id();
-        $filename = $this->get_pdf_file_name($assignmentid, $USER->id);
-
-        $stepsdatastring = $data->assignsubmission_pxaiwriter_student_data;
-        $stepsdata = json_decode($stepsdatastring);
-        $granularity = self::getPluginAdminSettings('granularity');
-
-        $diffhtmlcontent = "";
-
-        $step_history = factory::make()->ai()->history()->repository()->get_all_by_user_assignment(
-            $USER->id,
-            $assignmentid
+        $entity = $repo->get_by_assign_submission($submissionorgrade);
+        $submission_history = $repo->get_submission_history(
+            $this->assignment->get_context(),
+            $submissionorgrade,
+            $this->get_config()
         );
 
-        $history_list = $step_history->to_step_array();
+        $factory->file()->pdf()->repository()->save_submission_as_pdf($submission_history);
 
-        $total_steps = count($stepsdata);
-        $page_break = '<br pagebreak="true" />';
-
-        foreach ($stepsdata as $key => $step) {
-
-            $step_number = (int)$step->step;
-            $prev_step_number = $key - 1;
-
-            $initvalue = $stepsdata[$prev_step_number]->value ?? "";
-
-            $diffhtmlcontent .= $this->get_diff($step_number, $step->description, $granularity, $initvalue, $step->value);
-            $diffhtmlcontent .= $page_break;
-
-            if (!isset($history_list[$step_number])) {
-                continue;
-            }
-
-            $inner_step = 0;
-
-            // Inject inner steps
-            foreach ($history_list[$step_number] as $index => $history)
-            {
-                $prev_step_data = '';
-                if (isset($history_list[$prev_step_number][$index]))
-                {
-                    $prev_step_data = $history_list[$prev_step_number][$index]->get_data();
-                }
-
-                ++$inner_step;
-                $inner_step_number = "{$step_number}.{$inner_step}";
-                $diffhtmlcontent .= $this->get_diff(
-                    $inner_step_number,
-                    $step->description,
-                    $granularity,
-                    $prev_step_data,
-                    $history->get_data()
-                );
-
-                $diffhtmlcontent .= $page_break;
-            }
-        }
-
-        if (!empty($diffhtmlcontent))
+        if (empty($entity))
         {
-            $break_index = mb_strrpos($diffhtmlcontent, $page_break);
-            $diffhtmlcontent = mb_substr($diffhtmlcontent, 0, $break_index);
+            $entity = $repo->create_by_submission_history($submission_history);
+
+            $submission_factory->event()->created(
+                $this->assignment,
+                $submissionorgrade,
+                $entity
+            );
+
+            return true;
         }
 
-        require_once($CFG->libdir . '/pdflib.php');
+        $repo->update_by_submission_history($entity, $submission_history);
 
-        $pdf = new pdf();
-        $pdf->AddPage();
-        $pdf->writeHTML($diffhtmlcontent, false, false, true, false, '');
-        $pdf->lastPage();
-
-        $file = $pdf->Output($filename, 'S');
-
-        $fs = get_file_storage();
-
-        $files = $fs->get_area_files(
-            $this->assignment->get_context()->id,
-            'assignsubmission_pxaiwriter',
-            ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
-            $submission->id,
-            'id',
-            false
+        $submission_factory->event()->updated(
+            $this->assignment,
+            $submissionorgrade,
+            $entity
         );
 
-        // Prepare file record object
-        $fileinfo = array(
-            'contextid' => $this->assignment->get_context()->id, // ID of context
-            'component' => 'assignsubmission_pxaiwriter',     // usually = table name
-            'filearea' => ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,     // usually = table name
-            'itemid' => $submission->id,               // usually = ID of row in table
-            'filepath' => '/',           // any path beginning and ending in /
-            'userid' => $submission->userid,
-            'author' => $USER->firstname . ' ' . $USER->lastname,
-            'source' => $filename,
-            'filename' => $filename
-        );
-
-        $fs->create_file_from_string($fileinfo, $file);
-
-        $files = $fs->get_area_files(
-            $this->assignment->get_context()->id,
-            'assignsubmission_pxaiwriter',
-            ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
-            $submission->id,
-            'id',
-            false
-        );
-
-        $params = array(
-            'context' => context_module::instance($this->assignment->get_course_module()->id),
-            'courseid' => $this->assignment->get_course()->id,
-            'objectid' => $submission->id,
-            'other' => array(
-                'pathnamehashes' => array_keys($files),
-                'content' => '',
-            )
-        );
-        if (!empty($submission->userid) && ($submission->userid != $USER->id)) {
-            $params['relateduserid'] = $submission->userid;
-        }
-        if ($this->assignment->is_blind_marking()) {
-            $params['anonymous'] = 1;
-        }
-        $event = \assignsubmission_pxaiwriter\event\assessable_uploaded::create($params);
-        $event->set_legacy_files($files);
-        $event->trigger();
-
-        $groupname = null;
-        $groupid = 0;
-        // Get the group name as other fields are not transcribed in the logs and this information is important.
-        if (empty($submission->userid) && !empty($submission->groupid)) {
-            $groupname = $DB->get_field('groups', 'name', array('id' => $submission->groupid), MUST_EXIST);
-            $groupid = $submission->groupid;
-        } else {
-            $params['relateduserid'] = $submission->userid;
-        }
-
-        // Unset the objectid and other field from params for use in submission events.
-        unset($params['objectid']);
-        unset($params['other']);
-        $params['other'] = array(
-            'submissionid' => $submission->id,
-            'submissionattempt' => $submission->attemptnumber,
-            'submissionstatus' => $submission->status,
-            'groupid' => $groupid,
-            'groupname' => $groupname
-        );
-
-        if ($pxaiwritersubmission) { //when editing a submission
-            $pxaiwritersubmission->steps_data = $data->assignsubmission_pxaiwriter_student_data;
-            $params['objectid'] = $pxaiwritersubmission->id;
-            $updatestatus = $DB->update_record('assignsubmission_pxaiwriter', $pxaiwritersubmission);
-            $event = \assignsubmission_pxaiwriter\event\submission_updated::create($params);
-            $event->set_assign($this->assignment);
-            $event->trigger();
-            return $updatestatus;
-        } else { // when it is new submission
-            $pxaiwritersubmission = new stdClass();
-            $pxaiwritersubmission->steps_data = $data->assignsubmission_pxaiwriter_student_data;
-            $pxaiwritersubmission->submission = $submission->id;
-            $pxaiwritersubmission->assignment = $this->assignment->get_instance()->id;
-            $pxaiwritersubmission->id = $DB->insert_record('assignsubmission_pxaiwriter', $pxaiwritersubmission);
-            $params['objectid'] = $pxaiwritersubmission->id;
-            $event = \assignsubmission_pxaiwriter\event\submission_created::create($params);
-            $event->set_assign($this->assignment);
-            $event->trigger();
-            return $pxaiwritersubmission->id > 0;
-        }
+        return true;
     }
 
     /**
@@ -466,6 +307,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
      *
      * @param stdClass $submission The submission
      * @return boolean
+     * @throws dml_exception
      */
     public function remove(stdClass $submission)
     {
@@ -478,6 +320,8 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         if ($is_deleted) {
             $this->delete_pdf_file($submission->id);
         }
+
+        $this->factory()->submission()->repository()->delete_by_submission($submission);
 
         return true;
     }
@@ -508,13 +352,6 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         return $result;
     }
 
-    /**
-     * Views summary view of a submission
-     *
-     * @param stdClass $submission
-     * @param [type] $showviewlink
-     * @return void
-     */
     public function view_summary(stdClass $submission, &$showviewlink)
     {
         $subm = $this->get_pxaiwriter_submission($submission->id);
@@ -534,20 +371,31 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
      */
     public function view(stdClass $submission)
     {
-        $record = $this->get_pxaiwriter_submission($submission->id);
-        if (isset($record->steps_data)) {
-            $data = json_decode($record->steps_data);
-            $last_step = array_key_last($data);
-            $final_value = $data[$last_step]->value ?? '';
-            $final_value = trim($final_value);
-
-            if (!empty($final_value)) {
-                $final_value = nl2br($final_value, false);
-                return "<br>$final_value";
-            }
+        $entity = $this->factory()->submission()->repository()->get_by_assign_submission($submission);
+        if ($entity === null)
+        {
+            return '';
         }
 
-        return '';
+        $history_ids = $entity->get_latest_step_history_ids();
+        if (empty($history_ids))
+        {
+            return '';
+        }
+
+        $history = $this->factory()->ai()->history()->repository()->get_last_by_ids($history_ids);
+        if ($history === null)
+        {
+            return '';
+        }
+
+        $data = trim($history->get_data());
+        if (empty($data))
+        {
+            return '';
+        }
+
+        return "<br>" . nl2br($data, false);
     }
 
     /**
@@ -622,7 +470,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     {
         global $DB;
         // will throw exception on failure                                                                                          
-        $response = $DB->delete_records('assignsubmission_pxaiwriter', array('assignment' => $this->assignment->get_instance()->id));
+        $DB->delete_records('assignsubmission_pxaiwriter', array('assignment' => $this->assignment->get_instance()->id));
 
         $fs = get_file_storage();
 
@@ -655,7 +503,6 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         global $CFG;
         require_once("$CFG->dirroot/mod/assign/submission/pxaiwriter/vendor/autoload.php");
 
-        $grOption = null;
         switch ($granularity) {
             case "word":
                 $grOption = new FineDiff\Granularity\Word();

@@ -3,12 +3,8 @@
 namespace assignsubmission_pxaiwriter\app\ai\history;
 
 
-use assignsubmission_pxaiwriter\app\ai\attempt\interfaces\entity as attempt_entity;
-use assignsubmission_pxaiwriter\app\ai\history\interfaces\entity as history_entity;
+use assignsubmission_pxaiwriter\app\ai\history\interfaces\entity;
 use assignsubmission_pxaiwriter\app\interfaces\factory as base_factory;
-use dml_transaction_exception;
-use Exception;
-use moodle_transaction;
 
 /* @codeCoverageIgnoreStart */
 defined('MOODLE_INTERNAL') || die();
@@ -17,109 +13,211 @@ defined('MOODLE_INTERNAL') || die();
 class archive implements interfaces\archive
 {
     private base_factory $factory;
+    private int $userid;
     private int $assignment_id;
-    private int $step;
-    private int $user_id;
-    private int $current_time;
-    private moodle_transaction $transaction;
-    private ?attempt_entity $attempt = null;
+    private string $type;
+    private ?int $submission_id;
+    private int $default_step;
 
     public function __construct(
         base_factory $factory,
         int $assignment_id,
-        int $step,
-        ?int $user_id = null,
-        ?moodle_transaction $transaction = null
+        string $type,
+        ?int $submission = null,
+        ?int $userid = null,
+        int $default_step = 1
     )
     {
         $this->factory = $factory;
+        $this->userid = $userid ?? $this->factory->moodle()->user()->id;
         $this->assignment_id = $assignment_id;
-        $this->step = $step;
-        $this->user_id = $user_id ?? $factory->moodle()->user()->id;
-        $this->transaction = $transaction ?? $factory->moodle()->db()->start_delegated_transaction();
-        $this->current_time = time();
+        $this->type = $type;
+        $this->submission_id = $submission;
+        $this->default_step = $default_step;
     }
 
-    public function start_attempt(string $text): void
+    public function force_commit(
+        string $input_text,
+        string $data,
+        ?int $step = null
+    ): interfaces\entity
     {
-        $attempt = $this->get_attempt();
-        $attempt->set_data($text);
-        $attempt->set_status_ok();
-        $this->save_attempt($attempt);
+        $entity = $this->create_entity($step);
+        $entity->set_status_draft();
+        $entity->set_input_text($input_text);
+        $entity->set_data($data);
+        $this->get_repository()->insert($entity);
+        return $entity;
     }
 
-    public function commit(string $text, ?string $ai_text = null): history_entity
+    public function commit(
+        string $input_text,
+        ?int $step = null,
+        ?string $data = null
+    ): interfaces\entity
     {
-        $history = $this->factory->ai()->history()->entity();
-        $history->set_data($text);
+        $data ??= $input_text;
+        if (empty(trim($input_text)))
+        {
+            $history_count = $this->get_repository()->count_by_user_submission(
+                $this->userid,
+                $this->assignment_id,
+                $this->submission_id
+            );
 
-        $old_history = $this->factory->ai()->history()->repository()->get_by_hashcode(
-            $this->user_id,
+            if ($history_count === 0)
+            {
+                $entity = $this->create_entity($step);
+                $entity->set_status_draft();
+                return $entity;
+            }
+        }
+        return $this->get_entity_by_input_text($input_text, $step) ?? $this->force_commit($input_text, $data, $step);
+    }
+
+    public function commit_by_generate_ai_text(
+        string $input_text,
+        string $ai_text,
+        string $data,
+        string $response_data,
+        ?int $step = null
+    ): entity
+    {
+        $entity = $this->get_history_with_ai_data(
+            $input_text,
+            $ai_text,
+            $data,
+            $response_data,
+            $step
+        );
+        $entity->set_type_ai_generate();
+        $this->get_repository()->insert($entity);
+        return $entity;
+    }
+
+    public function commit_by_expand_ai_text(
+        string $input_text,
+        string $ai_text,
+        string $data,
+        string $response_data,
+        ?int $step = null
+    ): entity
+    {
+        $entity = $this->get_history_with_ai_data(
+            $input_text,
+            $ai_text,
+            $data,
+            $response_data,
+            $step
+        );
+        $entity->set_type_ai_expand();
+        $this->get_repository()->insert($entity);
+        return $entity;
+    }
+
+
+    private function get_history_with_ai_data(
+        string $input_text,
+        string $ai_text,
+        string $data,
+        string $response_data,
+        ?int $step = null
+    ): interfaces\entity
+    {
+        $entity = $this->create_entity($step);
+        $entity->set_status_draft();
+        $entity->set_input_text($input_text);
+        $entity->set_ai_text($ai_text);
+        $entity->set_data($data);
+        $entity->set_response($response_data);
+        return $entity;
+    }
+
+    public function failed(
+        string $input_text,
+        ?int $step = null
+    ): interfaces\entity
+    {
+        $entity = $this->create_entity($step);
+        $entity->set_status_failed();
+        $entity->set_input_text($input_text);
+        $this->get_repository()->insert($entity);
+        return $entity;
+    }
+
+    public function save_draft(): void
+    {
+        $entities = $this->get_repository()->get_all_drafted_by_submission(
+            $this->submission_id,
             $this->assignment_id,
-            $history->get_hashcode()
+            $this->userid
         );
 
-        return $old_history ?? $this->push_history($history, $ai_text);
-    }
+        $transaction = $this->factory->moodle()->db()->start_delegated_transaction();
 
-    public function force_commit(string $text, ?string $ai_text = null): history_entity
-    {
-        $history = $this->factory->ai()->history()->entity();
-        $history->set_data($text);
-        return $this->push_history($history, $ai_text);
-    }
-
-    public function rollback(string $input_text, Exception $exception): void
-    {
         try
         {
-            $this->transaction->rollback($exception);
+            foreach ($entities as $entity)
+            {
+                $entity->set_status_submitted();
+                $entity->set_timemodified($this->factory->helper()->times()->current_time());
+                $this->get_repository()->update($entity);
+            }
+
+            $transaction->allow_commit();
         }
-        catch (Exception $error)
-        { }
-
-        $this->get_attempt()->set_status_failed();
-        $this->save_attempt($this->get_attempt());
-    }
-
-    private function get_attempt(): attempt_entity
-    {
-        if ($this->attempt === null)
+        catch (\Exception $exception)
         {
-            $this->attempt = $this->factory->ai()->attempt()->entity();
-            $this->attempt->set_userid($this->user_id);
-            $this->attempt->set_assignment($this->assignment_id);
-            $this->attempt->set_step($this->step);
-            $this->attempt->set_timecreated($this->current_time);
+            try
+            {
+                $transaction->rollback($exception);
+            }
+            catch (\Exception $transaction_exception)
+            { }
         }
-        return $this->attempt;
     }
 
-    /**
-     * @param history_entity $history
-     * @param string|null $ai_text
-     * @return history_entity
-     * @throws dml_transaction_exception
-     */
-    private function push_history(history_entity $history, ?string $ai_text): history_entity
+    private function get_repository(): interfaces\repository
     {
-        $history->set_userid($this->user_id);
-        $history->set_assignment($this->assignment_id);
-        $history->set_step($this->step);
-        $history->set_ai_text($ai_text);
-        $history->set_timecreated($this->current_time);
-        $history->set_timemodified($this->current_time);
-        $history->set_status_ok();
-
-        $this->factory->ai()->history()->repository()->insert($history);
-
-        $this->transaction->allow_commit();
-
-        return $history;
+        return $this->factory->ai()->history()->repository();
     }
 
-    private function save_attempt(attempt_entity $attempt): void
+    private function create_entity(?int $step = null): interfaces\entity
     {
-        $this->factory->ai()->attempt()->repository()->insert($attempt);
+        $current_time = $this->factory->helper()->times()->current_time();
+        $entity = $this->factory->ai()->history()->entity();
+        $entity->set_userid($this->userid);
+        $entity->set_assignment($this->assignment_id);
+        $entity->set_submission($this->get_submission_id());
+        $entity->set_step($step ?? $this->default_step);
+        $entity->set_type($this->type);
+        $entity->set_timecreated($current_time);
+        $entity->set_timemodified($current_time);
+        $entity->set_status_failed();
+        return $entity;
+    }
+
+    private function get_submission_id(): int
+    {
+        return $this->submission_id ??= $this->factory->assign()
+            ->repository()
+            ->get_latest_submission_id_by_user_assignment(
+                $this->userid,
+                $this->assignment_id
+            );
+    }
+
+    private function get_entity_by_input_text(
+        string $data,
+        ?int $step = null
+    ): ?interfaces\entity
+    {
+        $hash = $this->factory->helper()->hash()->sha256()->digest($data);
+        return $this->get_repository()->get_by_hashcode(
+            $this->userid,
+            $this->assignment_id,
+            $hash,
+            $step ?? $this->default_step
+        );
     }
 }

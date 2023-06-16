@@ -10,6 +10,14 @@ defined('MOODLE_INTERNAL') || die();
 interface json
 {
     public function encode($data, int $depth = 512): string;
-    public function decode(string $data, int $depth = 512): object;
+
+    /**
+     * @template T
+     * @psalm-template T
+     * @param string $data
+     * @param int $depth
+     * @return T|mixed
+     */
+    public function decode(string $data, int $depth = 512);
     public function decode_as_array(string $data, int $depth = 512): array;
 }

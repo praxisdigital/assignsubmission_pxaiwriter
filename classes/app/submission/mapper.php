@@ -1,9 +1,8 @@
 <?php
 
-namespace assignsubmission_pxaiwriter\app\ai\attempt;
+namespace assignsubmission_pxaiwriter\app\submission;
 
 
-use assignsubmission_pxaiwriter\app\ai\attempt\interfaces\entity;
 use assignsubmission_pxaiwriter\app\interfaces\factory as base_factory;
 
 /* @codeCoverageIgnoreStart */
@@ -19,8 +18,8 @@ class mapper implements interfaces\mapper
         $this->factory = $factory;
     }
 
-    public function map(object $record): entity
+    public function map(?object $record = null): interfaces\entity
     {
-        return $this->factory->ai()->attempt()->entity((array)$record);
+        return $this->factory->submission()->entity((array)$record);
     }
 }

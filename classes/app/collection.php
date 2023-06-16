@@ -3,6 +3,8 @@
 namespace assignsubmission_pxaiwriter\app;
 
 
+use JsonSerializable;
+
 /* @codeCoverageIgnoreStart */
 defined('MOODLE_INTERNAL') || die();
 /* @codeCoverageIgnoreEnd */
@@ -12,7 +14,7 @@ defined('MOODLE_INTERNAL') || die();
  * @psalm-template T
  * @implements interfaces\collection<T>
  */
-class collection implements interfaces\collection, \JsonSerializable
+class collection implements interfaces\collection, JsonSerializable
 {
     /** @var T[] */
     protected array $items;
@@ -68,6 +70,22 @@ class collection implements interfaces\collection, \JsonSerializable
     public function current()
     {
         return current($this->items);
+    }
+
+    public function last()
+    {
+        if (empty($this->items))
+        {
+            return null;
+        }
+        $last_index = array_key_last($this->items);
+        return $this->offsetGet($last_index);
+    }
+
+    public function skip(int $count): interfaces\collection
+    {
+        $items = array_slice($this->items, $count);
+        return new static($items);
     }
 
     /**

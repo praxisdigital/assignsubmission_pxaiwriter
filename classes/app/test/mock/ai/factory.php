@@ -4,7 +4,7 @@ namespace assignsubmission_pxaiwriter\app\test\mock\ai;
 
 
 use assignsubmission_pxaiwriter\app\ai\openai\interfaces\factory as openai_factory;
-use \assignsubmission_pxaiwriter\app\factory as base_factory;
+use assignsubmission_pxaiwriter\app\factory as base_factory;
 use assignsubmission_pxaiwriter\app\ai\attempt\interfaces\factory as attempt_factory;
 use assignsubmission_pxaiwriter\app\ai\history\interfaces\factory as history_factory;
 use assignsubmission_pxaiwriter\app\ai\interfaces\factory as ai_factory_interface;

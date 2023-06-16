@@ -23,7 +23,7 @@ class api implements interfaces\api
         $this->setup_api();
     }
 
-    public function generate_ai_text(string $user_text): string
+    public function generate_ai_text(string $user_text): interfaces\response
     {
         $params = $this->get_default_params($user_text);
         $json = $this->rest->post(
@@ -31,12 +31,10 @@ class api implements interfaces\api
             $params
         )->get_text();
 
-        return trim(
-            $this->get_text_from_json_response($json)
-        );
+        return $this->get_response_from_json($json);
     }
 
-    public function expand_ai_text(string $user_text): string
+    public function expand_ai_text(string $user_text): interfaces\response
     {
         $params = $this->get_default_params(
             $this->get_expand_text_sentence($user_text)
@@ -47,8 +45,17 @@ class api implements interfaces\api
             $params
         )->get_text();
 
-        return trim(
+        return $this->get_response_from_json($json);
+    }
+
+    private function get_response_from_json(string $json): interfaces\response
+    {
+        $text = trim(
             $this->get_text_from_json_response($json)
+        );
+        return new response(
+            $json,
+            $text
         );
     }
 
@@ -77,7 +84,7 @@ class api implements interfaces\api
     {
         $this->rest->header()->set(
             'Authorization',
-            $this->get_settings()->get_authorization()
+            "Bearer {$this->get_settings()->get_openai_token()}"
         );
     }
 

@@ -3,26 +3,45 @@
 namespace assignsubmission_pxaiwriter\app\ai\history\interfaces;
 
 
-use Exception;
-use moodle_transaction;
-
 /* @codeCoverageIgnoreStart */
 defined('MOODLE_INTERNAL') || die();
 /* @codeCoverageIgnoreEnd */
 
 interface archive
 {
-    public function start_attempt(string $text): void;
 
-    /**
-     * Record history (only if text is has been changed)
-     * @param string $text
-     * @param string|null $ai_text
-     * @return entity
-     */
-    public function commit(string $text, ?string $ai_text = null): entity;
+    public function force_commit(
+        string $input_text,
+        string $data,
+        ?int $step = null
+    ): entity;
 
-    public function force_commit(string $text, ?string $ai_text = null): entity;
+    public function commit(
+        string $input_text,
+        ?int $step = null,
+        ?string $data = null
+    ): entity;
 
-    public function rollback(string $input_text, Exception $exception): void;
+    public function commit_by_generate_ai_text(
+        string $input_text,
+        string $ai_text,
+        string $data,
+        string $response_data,
+        ?int $step = null
+    ): entity;
+
+    public function commit_by_expand_ai_text(
+        string $input_text,
+        string $ai_text,
+        string $data,
+        string $response_data,
+        ?int $step = null
+    ): entity;
+
+    public function failed(
+        string $input_text,
+        ?int $step = null
+    ): entity;
+
+    public function save_draft(): void;
 }

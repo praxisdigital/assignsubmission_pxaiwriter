@@ -20,6 +20,24 @@ class admin_settings extends mocker implements settings
         $this->settings = $settings ?? base_factory::make()->setting()->admin();
     }
 
+    public function get_openai_token(): string
+    {
+        if ($this->has_mock(__FUNCTION__))
+        {
+            return $this->call_mock_method(__FUNCTION__);
+        }
+        return $this->settings->get_openai_token();
+    }
+
+    public function get_url(): string
+    {
+        if ($this->has_mock(__FUNCTION__))
+        {
+            return $this->call_mock_method(__FUNCTION__);
+        }
+        return $this->settings->get_url();
+    }
+
     public function get_default(): bool
     {
         if ($this->has_mock(__FUNCTION__))
@@ -81,15 +99,6 @@ class admin_settings extends mocker implements settings
             return $this->call_mock_method(__FUNCTION__);
         }
         return $this->settings->get_model();
-    }
-
-    public function get_authorization(): string
-    {
-        if ($this->has_mock(__FUNCTION__))
-        {
-            return $this->call_mock_method(__FUNCTION__);
-        }
-        return $this->settings->get_authorization();
     }
 
     public function get_granularity(): string

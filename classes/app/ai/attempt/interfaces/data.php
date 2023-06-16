@@ -13,4 +13,6 @@ interface data
     public function get_attempted_count(): int;
     public function get_max_attempts(): int;
     public function is_exceeded(): bool;
+
+    public function make_attempt(): void;
 }

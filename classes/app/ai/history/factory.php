@@ -4,7 +4,6 @@ namespace assignsubmission_pxaiwriter\app\ai\history;
 
 
 use assignsubmission_pxaiwriter\app\interfaces\factory as base_factory;
-use moodle_transaction;
 
 /* @codeCoverageIgnoreStart */
 defined('MOODLE_INTERNAL') || die();
@@ -22,19 +21,70 @@ class factory implements interfaces\factory
 
     public function archive(
         int $assignment_id,
-        int $step,
-        ?int $user_id = null,
-        ?moodle_transaction $transaction = null
+        string $type,
+        int $submission = 0,
+        ?int $userid = null,
+        int $step = 1
     ): interfaces\archive
     {
         return new archive(
             $this->factory,
             $assignment_id,
+            $type,
+            $submission,
+            $userid,
             $step,
-            $user_id,
-            $transaction
         );
     }
+
+    public function archive_expand_ai_text(
+        int $assignment_id,
+        int $submission = 0,
+        ?int $userid = null,
+        int $step = 1
+    ): interfaces\archive
+    {
+        return $this->archive(
+            $assignment_id,
+            interfaces\entity::TYPE_AI_EXPAND,
+            $submission,
+            $userid,
+            $step
+        );
+    }
+
+    public function archive_generate_ai_text(
+        int $assignment_id,
+        int $submission = 0,
+        ?int $userid = null,
+        int $step = 1
+    ): interfaces\archive
+    {
+        return $this->archive(
+            $assignment_id,
+            interfaces\entity::TYPE_AI_GENERATE,
+            $submission,
+            $userid,
+            $step
+        );
+    }
+
+    public function archive_user_edit(
+        int $assignment_id,
+        int $submission = 0,
+        ?int $userid = null,
+        int $step = 1
+    ): interfaces\archive
+    {
+        return $this->archive(
+            $assignment_id,
+            interfaces\entity::TYPE_USER_EDIT,
+            $submission,
+            $userid,
+            $step
+        );
+    }
+
 
     public function entity(array $record = []): interfaces\entity
     {

@@ -12,10 +12,10 @@ defined('MOODLE_INTERNAL') || die();
 
 class invalid_step_number_exception extends plugin_exception
 {
-    public static function by_web_service(?Exception $exception = null): self
+    public static function by_web_service(int $step, ?Exception $exception = null): self
     {
         return new self(
-            factory::make()->moodle()->get_string('error_invalid_step_number'),
+            factory::make()->moodle()->get_string('error_invalid_step_number', $step),
             0,
             $exception
         );

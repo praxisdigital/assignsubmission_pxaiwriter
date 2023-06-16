@@ -1,0 +1,10 @@
+styles.css linguist-generated=true
+styles.css.map linguist-generated=true
+vendor/* linguist-generated=true
+vendor/**/* linguist-generated=true
+amd/build/* linguist-generated=true
+amd/build/**/* linguist-generated=true
+*.min.js linguist-generated=true
+*.min.js.map linguist-generated=true
+**/*.min.js linguist-generated=true
+**/*.min.js.map linguist-generated=true

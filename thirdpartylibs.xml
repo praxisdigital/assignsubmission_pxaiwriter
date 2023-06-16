@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<libraries>
+    <library>
+        <location>vendor/d4h/finediff/</location>
+        <name>finediff</name>
+        <version>1.0.1</version>
+        <license>MIT</license>
+    </library>
+</libraries>

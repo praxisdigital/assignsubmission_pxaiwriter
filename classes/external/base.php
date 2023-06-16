@@ -51,9 +51,9 @@ abstract class base extends external_api
     
     protected static function validate_step_number(int $step): void
     {
-        if ($step !== 1)
+        if ($step < 1)
         {
-            throw invalid_step_number_exception::by_web_service();
+            throw invalid_step_number_exception::by_web_service($step);
         }
     }
 }

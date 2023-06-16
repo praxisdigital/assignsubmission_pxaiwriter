@@ -9,7 +9,5 @@ defined('MOODLE_INTERNAL') || die();
 
 interface factory
 {
-    public function entity(array $record = []): entity;
-    public function mapper(): mapper;
     public function repository(): repository;
 }

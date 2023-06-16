@@ -12,18 +12,29 @@ import Notification from "core/notification";
 
 /**
  * @param {number} assignmentId
+ * @param {number} submissionId
+ * @param {number} stepNumber
  */
 export const init = (
-    assignmentId
+    assignmentId,
+    submissionId,
+    stepNumber = 1
 ) => {
 
     const defaultStep = 1;
 
-    let EventCreator = function (assignmentId) {
-        this.currentStep = defaultStep;
+    /**
+     * @param {number} assignmentId
+     * @param {number} submissionId
+     * @param {number} stepNumber
+     * @constructor
+     */
+    let EventCreator = function (assignmentId, submissionId, stepNumber) {
+        this.currentStep = stepNumber;
         this.selectedStart = 0;
         this.selectedEnd = 0;
         this.assignmentId = assignmentId;
+        this.submissionId = submissionId;
         this.init();
     };
 
@@ -37,7 +48,92 @@ export const init = (
     const selectors = {
         wrapper: '.assignsubmission_pxaiwriter',
         doAIMagic: '#pxaiwriter-do-ai-magic',
-        expandSelection: '#pxaiwriter-expand-selection'
+        expandSelection: '#pxaiwriter-expand-selection',
+        input: '.pxaiwriter-student-data[data-input-step]',
+    };
+
+    /**
+     * @param {number} step
+     * @return {HTMLTextAreaElement|null}
+     */
+    const getStepInput = (step) => {
+        const element = document.querySelector(`${selectors.input}[data-input-step="${step}"]`);
+        if (element instanceof HTMLTextAreaElement) {
+            return element;
+        }
+        return null;
+    };
+
+    /**
+     * @param {number} step
+     */
+    const copyTextFromPreviousStep = (step) => {
+
+        if (isDebugMode()) {
+            window.console.log(`${component}: Try to copy the text from the previous step to step ${step}...`);
+        }
+
+        const currentStepInput = getStepInput(step);
+        if (currentStepInput === null) {
+            if (isDebugMode()) {
+                window.console.log(`${component}: Cannot find the current step ${step}`);
+            }
+            return;
+        }
+
+        if (currentStepInput.value.trim().length !== 0) {
+            if (isDebugMode()) {
+                window.console.log(`${component}: Cannot copy because the current step (${step}) is not empty`);
+            }
+            return;
+        }
+
+        const previousStep = step - 1;
+        const previousStepInput = getStepInput(previousStep);
+
+        if (previousStepInput === null) {
+            if (isDebugMode()) {
+                window.console.log(`${component}: Cannot find the previous step ${previousStep}`);
+            }
+            return;
+        }
+
+        if (previousStepInput.value.trim().length === 0) {
+            if (isDebugMode()) {
+                window.console.log(`${component}: Cannot copy because the previous step (${step}) is empty`);
+            }
+            return;
+        }
+
+        currentStepInput.value = previousStepInput.value;
+
+        if (isDebugMode()) {
+            window.console.log(`${component}: Copied the text from step ${previousStep} to ${step}`);
+        }
+    };
+
+    /**
+     * @param {string} target
+     */
+    const preventPasting = (target) => {
+        const elements = document.querySelectorAll(target);
+        if (!elements) {
+            return;
+        }
+        for (const element of elements) {
+            element.addEventListener('keydown', (event) => {
+                if (event.ctrlKey && event.key === 'v') {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    return false;
+                }
+            });
+            element.addEventListener('paste', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                return false;
+            });
+        }
     };
 
     /**
@@ -72,7 +168,7 @@ export const init = (
      * @param {HTMLElement} element
      * @return {number}
      */
-    const getCurrentStep = (element) => {
+    const getStepNumber = (element) => {
         const currentStep = Number.parseInt(element?.dataset?.step);
         if (Number.isNaN(currentStep)) {
             return 0;
@@ -126,8 +222,37 @@ export const init = (
      * @param {CustomEvent|Event} event
      * @return {number}
      */
-    const getCurrentStepFromPageChangeEvent = (event) => {
+    const getCurrentStepByPageChangeEvent = (event) => {
         return event?.detail?.currentStep;
+    };
+
+    /**
+     *
+     * @param {CustomEvent|Event} event
+     * @return {number}
+     */
+    const getPreviousStepByPageChangeEvent = (event) => {
+        const currentStep = getCurrentStepByPageChangeEvent(event);
+        const prevStep = event?.detail?.prevStep;
+        return currentStep === prevStep ? 0 : prevStep;
+    };
+
+    /**
+     * @param {string} text
+     * @return {Promise<string|null>}
+     */
+    const getHashCode = async (text) => {
+        if (!text) {
+            return null;
+        }
+        try {
+            const encoder = new TextEncoder();
+            const buffer = encoder.encode(text);
+            const raw = await crypto.subtle.digest("SHA-256", buffer);
+            return Array.from(new Uint8Array(raw)).map(b => b.toString(16).padStart(2, "0")).join("");
+        }
+        catch (e) {}
+        return null;
     };
 
     /**
@@ -149,50 +274,62 @@ export const init = (
         /**
          * @template T
          * @param {number} assignmentId
+         * @param {number} submissionId
          * @param {string} text
          * @param {string} selectedText
          * @param {number} selectStart
+         * @param {number} step
          * @return {Promise<T>}
          */
-        expandText: (assignmentId, text, selectedText, selectStart) => {
+        expandText: (assignmentId, submissionId, text, selectedText, selectStart, step = 1) => {
             return requestAIApi(
                 'assignsubmission_pxaiwriter_expand_ai_text', {
                 assignment_id: assignmentId,
+                submission: submissionId,
                 text: text,
                 selected_text: selectedText,
                 select_start: selectStart,
-                step: defaultStep
+                step: step
             });
         },
         /**
          * @template T
          * @param {number} assignmentId
+         * @param {number} submissionId
          * @param {string} text
+         * @param {number} step
          * @return {Promise<T>}
          */
-        generateText: (assignmentId, text) => {
+        generateText: (assignmentId, submissionId, text, step = 1) => {
             return requestAIApi('assignsubmission_pxaiwriter_generate_ai_text', {
                 assignment_id: assignmentId,
+                submission: submissionId,
                 text: text,
-                step: defaultStep
+                step: step
             });
         },
         /**
          * @template T
          * @param {number} assignmentId
+         * @param {number} submissionId
          * @param {string} text
+         * @param {number} step
          * @return {Promise<T>}
          */
-        recordHistory: (assignmentId, text) => {
+        recordHistory: (assignmentId, submissionId, text, step = 1) => {
             return requestAIApi('assignsubmission_pxaiwriter_record_history', {
                 assignment_id: assignmentId,
+                submission: submissionId,
                 text: text,
-                step: defaultStep
+                step: step
             });
         }
     };
 
     EventCreator.prototype.init = function () {
+
+        preventPasting(selectors.input);
+
         /**
          * @param {HTMLElement} button
          */
@@ -227,7 +364,7 @@ export const init = (
                 window.console.log(`${component}: Step switched...`);
             }
 
-            let step = getCurrentStepFromPageChangeEvent(e);
+            let step = getCurrentStepByPageChangeEvent(e);
             const currentStepButton = document.querySelector(`.step-page-button[data-step-number="${step}"]`);
 
             if (!currentStepButton) {
@@ -239,21 +376,17 @@ export const init = (
                 blurStepButton(button);
             }
             highlightStepButton(currentStepButton);
+
+            copyTextFromPreviousStep(step);
         });
 
-        wrapper?.addEventListener(eventList.stepTextSave, async (e) => {
-
+        wrapper?.addEventListener(eventList.pageChange, async (e) => {
             if (isDebugMode()) {
-                window.console.log(`${component}: Saving history...`);
+                window.console.log(`${component}: Page changed`);
             }
 
-            const step = getCurrentStepFromPageChangeEvent(e);
-            const text = getStepInputText(step);
-            await api.recordHistory(this.assignmentId, text, 1);
-
-            if (isDebugMode()) {
-                window.console.log(`${component}: Input text got recorded`);
-            }
+            const step = getPreviousStepByPageChangeEvent(e);
+            await recordHistory(step);
         });
 
         document.querySelector(selectors.expandSelection)?.addEventListener("click", async (e) => {
@@ -261,7 +394,7 @@ export const init = (
             if (isDebugMode()) {
                 window.console.log(`${component}: Expand selected text...`);
             }
-            const step = getCurrentStep(e.target);
+            const step = getStepNumber(e.target);
             const textData = getStepTextAreaData(step);
 
             const text = textData.text;
@@ -278,12 +411,14 @@ export const init = (
 
             try {
                 const response = await api.expandText(
-                    this.assignmentId,
+                    assignmentId,
+                    submissionId,
                     text,
                     selectedText,
                     textData.selectionStart
                 );
                 setApiResponseToInput(this.currentStep, response);
+                await dispatchHistoryFromInput();
             }
             catch (exception) {
                 await Notification.exception(exception);
@@ -296,7 +431,7 @@ export const init = (
                 window.console.log(`${component}: Do AI magic...`);
             }
 
-            const text = getStepInputText(getCurrentStep(e.target));
+            const text = getStepInputText(getStepNumber(e.target));
 
             if (!validateInputText(text)) {
                 if (isDebugMode()) {
@@ -309,11 +444,13 @@ export const init = (
 
             try {
                 const response = await api.generateText(
-                    this.assignmentId,
+                    assignmentId,
+                    submissionId,
                     text,
-                    this.currentStep
+                    defaultStep
                 );
                 setApiResponseToInput(this.currentStep, response);
+                await dispatchHistoryFromInput();
             }
             catch (exception) {
                 await Notification.exception(exception);
@@ -321,6 +458,10 @@ export const init = (
         });
     };
 
+    /**
+     * @param {number} step
+     * @param {*} response
+     */
     const setApiResponseToInput = (step, response) => {
         $(':button').prop('disabled', false);
         if (response.hasOwnProperty('attempt_text')) {
@@ -336,5 +477,49 @@ export const init = (
         $('#loader').addClass('d-none');
     };
 
-    return new EventCreator(assignmentId);
+    /**
+     * @param {number} step
+     * @return {Promise<void>}
+     */
+    const recordHistory = async (step) => {
+        if (isDebugMode()) {
+            window.console.log(`${component}: Saving history...`);
+        }
+
+        if (step < 1) {
+            if (isDebugMode()) {
+                window.console.log(`${component}: Nothing to be save...`);
+            }
+            return;
+        }
+        const text = getStepInputText(step);
+        const response = await api.recordHistory(assignmentId, submissionId, text, step);
+
+        if (isDebugMode() && response.hasOwnProperty("checksum")) {
+            if (!response.checksum) {
+                window.console.log(`${component}: Cannot determine the changes in the data`);
+                return;
+            }
+
+            let textChecksum = await getHashCode(text);
+            textChecksum = textChecksum.toLocaleLowerCase();
+            if (response.checksum === textChecksum) {
+                window.console.log(`${component}: Input text got recorded`);
+            }
+            else {
+                window.console.log(`${component}: Nothing has been changed`);
+            }
+        }
+    };
+
+    const dispatchHistoryFromInput = async () => {
+        const elements = document.querySelectorAll(selectors.input);
+        for (const element of elements) {
+            if (element instanceof HTMLTextAreaElement) {
+                await recordHistory(getStepNumber(element));
+            }
+        }
+    };
+
+    return new EventCreator(assignmentId,  submissionId, stepNumber);
 };

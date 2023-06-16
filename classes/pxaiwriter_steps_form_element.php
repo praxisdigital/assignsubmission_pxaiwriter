@@ -5,10 +5,6 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 
-use core_competency\api;
-use core_competency\external\competency_exporter;
-use core_competency\course_module_competency;
-
 require_once($CFG->libdir . '/form/datetimeselector.php');
 require_once('HTML/QuickForm/element.php');
 require_once($CFG->dirroot . '/lib/filelib.php');

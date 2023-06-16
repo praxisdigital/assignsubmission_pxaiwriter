@@ -10,7 +10,6 @@ use assignsubmission_pxaiwriter\app\ai\history\interfaces\mapper;
 use assignsubmission_pxaiwriter\app\ai\history\interfaces\repository;
 use assignsubmission_pxaiwriter\app\factory as base_factory;
 use assignsubmission_pxaiwriter\app\test\mock\mocker;
-use moodle_transaction;
 
 /* @codeCoverageIgnoreStart */
 defined('MOODLE_INTERNAL') || die();
@@ -27,9 +26,10 @@ class factory extends mocker implements history_factory_interface
 
     public function archive(
         int $assignment_id,
-        int $step,
-        ?int $user_id = null,
-        ?moodle_transaction $transaction = null
+        string $type,
+        int $submission = 0,
+        ?int $userid = null,
+        int $step = 1
     ): archive
     {
         if ($this->has_mock(__FUNCTION__))
@@ -37,18 +37,101 @@ class factory extends mocker implements history_factory_interface
             return $this->call_mock_method(
                 __FUNCTION__,
                 $assignment_id,
-                $step,
-                $user_id,
-                $transaction
+                $type,
+                $submission,
+                $userid,
+                $step
             );
         }
         return $this->factory->archive(
             $assignment_id,
-            $step,
-            $user_id,
-            $transaction
+            $type,
+            $submission,
+            $userid,
+            $step
         );
     }
+
+    public function archive_expand_ai_text(
+        int $assignment_id,
+        int $submission = 0,
+        ?int $userid = null,
+        int $step = 1
+    ): archive
+    {
+        if ($this->has_mock(__FUNCTION__))
+        {
+            return $this->call_mock_method(
+                __FUNCTION__,
+                $assignment_id,
+                $submission,
+                $userid,
+                $step
+            );
+        }
+        return $this->factory->archive(
+            $assignment_id,
+            entity::TYPE_AI_EXPAND,
+            $submission,
+            $userid,
+            $step
+        );
+    }
+
+    public function archive_generate_ai_text(
+        int $assignment_id,
+        int $submission = 0,
+        ?int $userid = null,
+        int $step = 1
+    ): archive
+    {
+        if ($this->has_mock(__FUNCTION__))
+        {
+            return $this->call_mock_method(
+                __FUNCTION__,
+                $assignment_id,
+                $submission,
+                $userid,
+                $step
+            );
+        }
+
+        return $this->factory->archive(
+            $assignment_id,
+            entity::TYPE_AI_GENERATE,
+            $submission,
+            $userid,
+            $step
+        );
+    }
+
+    public function archive_user_edit(
+        int $assignment_id,
+        int $submission = 0,
+        ?int $userid = null,
+        int $step = 1
+    ): archive
+    {
+        if ($this->has_mock(__FUNCTION__))
+        {
+            return $this->call_mock_method(
+                __FUNCTION__,
+                $assignment_id,
+                $submission,
+                $userid,
+                $step
+            );
+        }
+
+        return $this->factory->archive(
+            $assignment_id,
+            entity::TYPE_USER_EDIT,
+            $submission,
+            $userid,
+            $step
+        );
+    }
+
 
     public function entity(array $record = []): entity
     {

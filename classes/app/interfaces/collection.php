@@ -23,6 +23,17 @@ interface collection extends ArrayAccess, Iterator, Countable
     public function current();
 
     /**
+     * @return T|null
+     */
+    public function last();
+
+    /**
+     * @param int $count
+     * @return collection<T>|array<int,T>|T[]
+     */
+    public function skip(int $count): collection;
+
+    /**
      * @param mixed $offset
      * @return T
      */

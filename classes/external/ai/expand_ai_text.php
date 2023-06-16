@@ -49,6 +49,12 @@ class expand_ai_text extends base
                 VALUE_DEFAULT,
                 1
             ),
+            'submission' => new external_value(
+                PARAM_INT,
+                'submission',
+                VALUE_DEFAULT,
+                0
+            ),
         ]);
     }
 
@@ -67,7 +73,8 @@ class expand_ai_text extends base
         string $text,
         string $selected_text,
         int $select_start = 0,
-        int $step = 1
+        int $step = 1,
+        int $submission = 0
     ): array
     {
         self::validate_input([
@@ -91,11 +98,11 @@ class expand_ai_text extends base
         $transaction = $factory->moodle()->db()->start_delegated_transaction();
         $current_user = $factory->moodle()->user();
 
-        $archive = $ai_factory->history()->archive(
+        $archive = $ai_factory->history()->archive_expand_ai_text(
             $assignment_id,
-            $step,
+            $submission,
             $current_user->id,
-            $transaction
+            $step
         );
 
         try
@@ -110,25 +117,29 @@ class expand_ai_text extends base
                 throw user_exceed_attempts_exception::by_external_api();
             }
 
-            $archive->start_attempt($selected_text);
-
             $generated_text = $ai_factory->openai()->api()->expand_ai_text($selected_text);
 
             $new_text = $ai_factory->formatter()->replace(
                 $text,
                 $selected_text,
-                $generated_text,
+                $generated_text->get_text(),
                 $select_start
             );
 
-            $archive->force_commit(
+            $archive->commit_by_expand_ai_text(
+                $selected_text,
+                $generated_text->get_text(),
                 $new_text,
-                $generated_text
+                $generated_text->get_response_json()
             );
+
+            $transaction->allow_commit();
+
+            $attempt_data->make_attempt();
 
             return [
                 'data' => $new_text,
-                'ai_text' => $generated_text,
+                'ai_text' => $generated_text->get_text(),
                 'attempt_text' => $attempt_data->get_attempt_text(),
                 'attempted_count' => $attempt_data->get_attempted_count(),
                 'max_attempts' => $attempt_data->get_max_attempts()
@@ -136,12 +147,14 @@ class expand_ai_text extends base
         }
         catch (Exception $exception)
         {
-            $error = new moodle_traceable_exception('error_expand_ai_text_api', $exception);
-            $archive->rollback(
-                $text,
-                $error
-            );
-            throw $error;
+            try
+            {
+                $transaction->rollback($exception);
+            }
+            catch (Exception $rollback_exception) {}
+
+            $archive->failed($text);
+            throw new moodle_traceable_exception('error_expand_ai_text_api', $exception);
         }
     }
 }

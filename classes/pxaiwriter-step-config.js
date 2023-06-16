@@ -50,7 +50,6 @@ stepConfig.init = function (config, stepConfig) {
                 removable: true,
                 readonly: '',
                 isreadonly: false,
-                custom_buttons: [],
                 ai_element: false,
                 ai_expand_element: false,
                 value: ""
@@ -72,7 +71,6 @@ stepConfig.init = function (config, stepConfig) {
         //     mandatory: true,
         //     type: 'text',
         //     removable: true,
-        //     custom_buttons: [],
         //     value: ""
         // };
         // this.steps.push(newStep);
