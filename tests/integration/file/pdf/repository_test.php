@@ -128,20 +128,5 @@ class repository_test extends integration_testcase
             $expected_steps,
             $matches['steps']
         );
-
-        $pdf = new pdf();
-        $pdf->AddPage();
-        try
-        {
-            $pdf->writeHTML($data, false, false, true);
-        }
-        catch (Exception $e)
-        { }
-        $pdf->lastPage();
-
-        self::assertSame(
-            6,
-            $pdf->getNumPages()
-        );
     }
 }

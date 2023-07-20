@@ -449,22 +449,6 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         return true;
     }
 
-    /**
-     * format the info for each submission plugin add_to_log   
-     *
-     * @param stdClass $submission
-     * @return void
-     */
-    public function format_for_log(stdClass $submission)
-    {
-
-        $fileloginfo = '';
-        $fileloginfo .= 'PXAIWriter submission.<br>';
-
-        return $fileloginfo;
-    }
-
-
     public function delete_instance()
     {
         $assign_id = $this->assignment->get_instance()->id;
