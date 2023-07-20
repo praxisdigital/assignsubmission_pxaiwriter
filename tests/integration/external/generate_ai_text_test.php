@@ -14,6 +14,8 @@ use assignsubmission_pxaiwriter\external\ai\generate_ai_text;
 defined('MOODLE_INTERNAL') || die();
 /* @codeCoverageIgnoreEnd */
 
+define('PHPUNIT_ISOLATED_TEST', true);
+
 class generate_ai_text_test extends integration_testcase
 {
     public function test_execute(): void
