@@ -71,11 +71,6 @@ class generate_ai_text extends base
         $factory = self::factory();
         $ai_factory = $factory->ai();
 
-        if ($factory->assign()->repository()->is_overdue($assignment_id))
-        {
-            throw overdue_assignment_exception::by_web_service();
-        }
-
         $transaction = $factory->moodle()->db()->start_delegated_transaction();
         $current_user = $factory->moodle()->user();
 

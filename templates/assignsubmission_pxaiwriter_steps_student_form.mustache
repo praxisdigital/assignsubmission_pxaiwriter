@@ -20,14 +20,6 @@
                     {{>assignsubmission_pxaiwriter/submission/step_editor}}
                 {{/steps_data}}
             </div>
-
-            {{#is_due_submission}}
-                <div class="row mb-1">
-                    <div class="col-auto" style="color: red;">
-                        <i>{{#str}} submission_due_msg, assignsubmission_pxaiwriter{{/str}}</i>
-                    </div>
-                </div>
-            {{/is_due_submission}}
             {{#exceeds_max_attempts}}
                 <div class="row mb-1">
                     <div class="col-auto" style="color: red;">
