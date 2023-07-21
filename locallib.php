@@ -2,6 +2,7 @@
 
 use assignsubmission_pxaiwriter\app\factory as base_factory;
 use assignsubmission_pxaiwriter\app\interfaces\factory as base_factory_interface;
+use assignsubmission_pxaiwriter\task\delete_user_history;
 
 define('ASSIGNSUBMISSION_FILE_MAXFILES', 10);
 define('ASSIGNSUBMISSION_PXAIWRITER_FILEAREA', 'submissions_pxaiwriter');
@@ -323,6 +324,8 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
         $this->factory()->submission()->repository()->delete_by_submission($submission);
 
+        delete_user_history::schedule_by_submission_id($submission->id);
+
         return true;
     }
 
@@ -446,45 +449,28 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         return true;
     }
 
-    /**
-     * format the info for each submission plugin add_to_log   
-     *
-     * @param stdClass $submission
-     * @return void
-     */
-    public function format_for_log(stdClass $submission)
-    {
-
-        $fileloginfo = '';
-        $fileloginfo .= 'PXAIWriter submission.<br>';
-
-        return $fileloginfo;
-    }
-
-    /**
-     * Delete instance
-     *
-     * @return void
-     */
     public function delete_instance()
     {
-        global $DB;
-        // will throw exception on failure                                                                                          
-        $DB->delete_records('assignsubmission_pxaiwriter', array('assignment' => $this->assignment->get_instance()->id));
+        $assign_id = $this->assignment->get_instance()->id;
 
-        $fs = get_file_storage();
+        // will throw exception on failure
+        $this->factory()->moodle()->db()->delete_records('assignsubmission_pxaiwriter', [
+            'assignment' => $assign_id
+        ]);
 
-        $existingfiles = $fs->get_area_files(
+        $storage = get_file_storage();
+
+        $files = $storage->get_area_files(
             $this->assignment->get_context()->id,
             'assignsubmission_pxaiwriter',
             ASSIGNSUBMISSION_PXAIWRITER_FILEAREA
         );
 
-        foreach ($existingfiles as $ef) {
-            if ($ef) {
-                $ef->delete();
-            }
+        foreach ($files as $file) {
+            $file->delete();
         }
+
+        delete_user_history::schedule_by_assignment_id($assign_id);
 
         return true;
     }

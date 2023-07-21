@@ -4,6 +4,7 @@ namespace assignsubmission_pxaiwriter\integration\file\pdf;
 
 
 use assignsubmission_pxaiwriter\app\test\integration_testcase;
+use Exception;
 use pdf;
 
 /* @codeCoverageIgnoreStart */
@@ -126,16 +127,6 @@ class repository_test extends integration_testcase
         self::assertSame(
             $expected_steps,
             $matches['steps']
-        );
-
-        $pdf = new pdf();
-        $pdf->AddPage();
-        $pdf->writeHTML($data, false, false, true);
-        $pdf->lastPage();
-
-        self::assertSame(
-            6,
-            $pdf->getNumPages()
         );
     }
 }

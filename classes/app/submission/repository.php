@@ -124,17 +124,15 @@ class repository implements interfaces\repository
         $submission_data->is_due_submission = $duedate < $current_time;
         $submission_data->enabled_ai_actions = false;
 
-        if (!$submission_data->is_due_submission) {
-            $day = $this->factory->helper()->times()->day();
-            $attempt = $this->factory->ai()->attempt()->repository()->get_remaining_attempt(
-                $submission->userid,
-                $submission_data->assignmentid,
-                $day->get_start_of_day()->getTimestamp(),
-                $day->get_end_of_day()->getTimestamp()
-            );
-            $submission_data->exceeds_max_attempts = $attempt->is_exceeded();
-            $submission_data->enabled_ai_actions = !$submission_data->exceeds_max_attempts;
-        }
+        $day = $this->factory->helper()->times()->day();
+        $attempt = $this->factory->ai()->attempt()->repository()->get_remaining_attempt(
+            $submission->userid,
+            $submission_data->assignmentid,
+            $day->get_start_of_day()->getTimestamp(),
+            $day->get_end_of_day()->getTimestamp()
+        );
+        $submission_data->exceeds_max_attempts = $attempt->is_exceeded();
+        $submission_data->enabled_ai_actions = !$submission_data->exceeds_max_attempts;
 
         $submission_data->steps_data = $steps_data;
 

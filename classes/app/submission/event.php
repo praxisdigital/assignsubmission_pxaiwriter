@@ -79,7 +79,6 @@ class event implements interfaces\event
         $params = $this->add_files($params, $files);
 
         $event = assessable_uploaded::create($params);
-        $event->set_legacy_files($files);
         $event->trigger();
     }
 
