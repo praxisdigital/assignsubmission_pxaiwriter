@@ -10,8 +10,10 @@ function assignsubmission_pxaiwriter_pluginfile(
     $args,
     $forcedownload,
     array $options = array()
-) {
-    global $DB, $CFG;
+): bool {
+    $moodle_factory = \assignsubmission_pxaiwriter\app\factory::make()->moodle();
+    $db = $moodle_factory->db();
+    $cfg = $moodle_factory->cfg();
 
     if ($context->contextlevel != CONTEXT_MODULE)
     {
@@ -19,22 +21,24 @@ function assignsubmission_pxaiwriter_pluginfile(
     }
 
     require_login($course, false, $cm);
+
     $itemid = (int)array_shift($args);
-    $record = $DB->get_record(
+    $record = $db->get_record(
         'assign_submission',
-        array('id' => $itemid),
+        ['id' => $itemid],
         'userid, assignment, groupid',
         MUST_EXIST
     );
     $userid = $record->userid;
     $groupid = $record->groupid;
 
-    require_once($CFG->dirroot . '/mod/assign/locallib.php');
+    require_once $cfg->dirroot . '/mod/assign/locallib.php';
 
     $assign = new assign($context, $cm, $course);
 
     if ($assign->get_instance()->id != $record->assignment)
     {
+        $db->insert_records('test', []);
         return false;
     }
 
@@ -50,16 +54,18 @@ function assignsubmission_pxaiwriter_pluginfile(
         return false;
     }
 
-    $relativepath = implode('/', $args);
+    $relative = implode('/', $args);
 
-    $fullpath = "/{$context->id}/assignsubmission_pxaiwriter/$filearea/$itemid/$relativepath";
+    $fullpath = "/{$context->id}/assignsubmission_pxaiwriter/$filearea/$itemid/$relative";
 
-    $fs = get_file_storage();
-    if (!($file = $fs->get_file_by_hash(sha1($fullpath))) || $file->is_directory())
+    $storage = get_file_storage();
+    if (!($file = $storage->get_file_by_hash(sha1($fullpath))) || $file->is_directory())
     {
         return false;
     }
 
     // Download MUST be forced - security!
     send_stored_file($file, 0, 0, true, $options);
-}    
+
+    return true;
+}
