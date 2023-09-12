@@ -21,7 +21,5 @@ interface settings
     public function get_openai_token(): string;
     public function get_url(): string;
 
-    public function get_granularity(): string;
-
     public function get_attempt_count(): int;
 }

@@ -71,11 +71,6 @@ class admin_settings implements interfaces\settings
         return $this->factory->ai()->openai()->models()->get_model_url($model);
     }
 
-    public function get_granularity(): string
-    {
-        return $this->config->granularity ?? 'character';
-    }
-
     public function get_attempt_count(): int
     {
         return $this->config->attempt_count ?? 0;

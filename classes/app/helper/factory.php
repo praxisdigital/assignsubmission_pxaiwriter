@@ -25,7 +25,7 @@ class factory implements interfaces\factory
 
     public function diff(): diff_factory
     {
-        return $this->factories[__FUNCTION__] ??= new diff\factory($this->factory);
+        return $this->factories[__FUNCTION__] ??= new diff\factory();
     }
 
     public function hash(): hash_factory

@@ -101,15 +101,6 @@ class admin_settings extends mocker implements settings
         return $this->settings->get_model();
     }
 
-    public function get_granularity(): string
-    {
-        if ($this->has_mock(__FUNCTION__))
-        {
-            return $this->call_mock_method(__FUNCTION__);
-        }
-        return $this->settings->get_granularity();
-    }
-
     public function get_attempt_count(): int
     {
         if ($this->has_mock(__FUNCTION__))

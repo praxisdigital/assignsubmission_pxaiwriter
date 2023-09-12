@@ -10,4 +10,8 @@ defined('MOODLE_INTERNAL') || die();
 interface factory
 {
     public function text(): text;
+    public function html_diff(): text;
+
+    public function deletion_tag(): html;
+    public function insertion_tag(): html;
 }

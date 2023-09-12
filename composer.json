@@ -1,18 +1,7 @@
 {
-    "name": "99x/pxaiwriter",
-    "description": "Pxaiwriter introduces AI to the assign submission for students to complete assignment using AI",
-    "type": "project",
-    "autoload": {
-        "psr-4": {
-            "99x\\Pxaiwriter\\": "src/"
-        }
-    },
-    "authors": [
-        {
-            "name": "99x"
-        }
-    ],
+    "name": "praxis/assignsubmission_pxaiwriter",
+    "description": "Praxis AI writer introduces AI to the assign submission for students to complete assignment using AI",
     "require": {
-        "d4h/finediff": "^1.0"
+        "caxy/php-htmldiff": "^0.1.14"
     }
 }

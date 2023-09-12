@@ -3,6 +3,8 @@
 namespace assignsubmission_pxaiwriter\app\ai\history\interfaces;
 
 
+use cm_info;
+
 /* @codeCoverageIgnoreStart */
 defined('MOODLE_INTERNAL') || die();
 /* @codeCoverageIgnoreEnd */
@@ -78,6 +80,8 @@ interface repository
         int $assignment_id = 0,
         int $user_id = 0
     ): collection;
+
+    public function get_cm_info_by_history(entity $history): cm_info;
 
     public function insert(entity $entity): void;
 

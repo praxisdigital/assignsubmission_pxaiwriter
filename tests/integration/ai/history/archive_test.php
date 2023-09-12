@@ -15,7 +15,6 @@ defined('MOODLE_INTERNAL') || die();
 class archive_test extends integration_testcase
 {
     private object $user;
-    private object $course;
     private mod_assign_testable_assign $assignment;
 
     protected function setUp(): void
@@ -23,10 +22,10 @@ class archive_test extends integration_testcase
         parent::setUp();
 
         $this->user = $this->create_user();
-        $this->course = $this->create_course();
-        $this->assignment = $this->create_assignment_with_ai_writer($this->course);
+        $course = $this->create_course();
+        $this->assignment = $this->create_assignment_with_ai_writer($course);
 
-        $this->enrol_user($this->user, $this->course);
+        $this->enrol_user($this->user, $course);
     }
 
     public function test_commit_by_user(): void
