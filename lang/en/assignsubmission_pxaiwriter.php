@@ -88,6 +88,7 @@ $string['system_role_message'] = 'You are a helpful assistant.';
 // Events
 $string['eventassessableuploaded'] = 'Uploaded assessable';
 $string['event_ai_text_generated'] = 'AI writer text generated';
+$string['event_history_record_updated'] = 'AI writer history record updated';
 
 // Errors
 $string['error_course_module_not_found_by_assign_id'] = 'Could not find course module by assignment id {$a}';

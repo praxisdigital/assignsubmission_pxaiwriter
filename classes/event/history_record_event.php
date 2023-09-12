@@ -7,6 +7,7 @@ use assignsubmission_pxaiwriter\app\ai\history\interfaces\entity;
 use assignsubmission_pxaiwriter\app\factory;
 use core\event\base;
 use Exception;
+use moodle_url;
 
 /* @codeCoverageIgnoreStart */
 defined('MOODLE_INTERNAL') || die();
@@ -14,6 +15,11 @@ defined('MOODLE_INTERNAL') || die();
 
 abstract class history_record_event extends base
 {
+    public function get_url()
+    {
+        return new moodle_url('/mod/assign/view.php', ['id' => $this->contextinstanceid]);
+    }
+
     abstract protected function get_crud_type(): string;
 
     protected function init()

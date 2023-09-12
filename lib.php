@@ -38,7 +38,6 @@ function assignsubmission_pxaiwriter_pluginfile(
 
     if ($assign->get_instance()->id != $record->assignment)
     {
-        $db->insert_records('test', []);
         return false;
     }
 
@@ -59,7 +58,8 @@ function assignsubmission_pxaiwriter_pluginfile(
     $fullpath = "/{$context->id}/assignsubmission_pxaiwriter/$filearea/$itemid/$relative";
 
     $storage = get_file_storage();
-    if (!($file = $storage->get_file_by_hash(sha1($fullpath))) || $file->is_directory())
+    $file = $storage->get_file_by_hash(sha1($fullpath));
+    if (!$file || $file->is_directory())
     {
         return false;
     }
