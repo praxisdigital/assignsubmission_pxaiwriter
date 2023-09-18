@@ -86,8 +86,7 @@ class provider implements
         }
 
         $writer = writer::with_context($exportdata->get_context());
-        $data_path = $exportdata->get_subcontext();
-        $data_path[] = self::get_privacy_string('path');
+        $data_path = self::get_sub_context_path($exportdata);
 
         $data = self::get_history_data_by_submission($exportdata->get_pluginobject());
 
@@ -161,6 +160,13 @@ class provider implements
         );
     }
 
+    public static function get_sub_context_path(assign_plugin_request_data $request): array
+    {
+        $path = $request->get_subcontext();
+        $path[] = self::get_privacy_string('path');
+        return $path;
+    }
+
     private static function get_history_data(entity $history): object
     {
         return (object)[
@@ -205,7 +211,7 @@ class provider implements
     {
         foreach ($history_list as $history)
         {
-            $data[$history->get_status()][] = self::get_history_data($history);
+            $data[$history->get_status()][$history->get_id()] = self::get_history_data($history);
         }
         return $data;
     }

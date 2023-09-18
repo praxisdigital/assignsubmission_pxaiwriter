@@ -5,6 +5,7 @@ namespace assignsubmission_pxaiwriter\integration\privacy;
 
 use assign;
 use assignsubmission_pxaiwriter\app\ai\history\interfaces\collection as history_collection;
+use assignsubmission_pxaiwriter\app\ai\history\interfaces\entity;
 use assignsubmission_pxaiwriter\app\test\privacy_testcase;
 use assignsubmission_pxaiwriter\privacy\provider;
 use assignsubmission_pxaiwriter\task\delete_user_history;
@@ -62,28 +63,12 @@ class provider_test extends privacy_testcase
 
         provider::export_submission_user_data($request);
 
-        $history = $this->factory()->ai()->history()->repository()->get_latest_by_submission($submission);
-        $data = (array)$writer->get_data($request->get_subcontext());
+        $path = provider::get_sub_context_path($request);
 
-        self::assertSame(
-            $this->get_privacy_string("pxaiwriter_history:status:{$history->get_status()}"),
-            $data['status']
-        );
+        $history_list = $this->factory()->ai()->history()->repository()->get_all_by_submission($submission->id);
+        $data = (array)$writer->get_data($path);
 
-        self::assertSame(
-            $this->get_privacy_string("pxaiwriter_history:type:{$history->get_type()}"),
-            $data['type']
-        );
-
-        self::assertSame(
-            $history->get_input_text(),
-            $data['input_text']
-        );
-
-        self::assertSame(
-            $history->get_data(),
-            $data['data']
-        );
+        $this->assert_history_list($history_list, $data);
     }
 
     public function test_delete_submission_for_userid(): void
@@ -234,6 +219,41 @@ class provider_test extends privacy_testcase
             $submission3->id,
             $history->get_submission()
         );
+    }
+
+    /**
+     * @param history_collection|entity[] $history_list
+     * @param array $data
+     * @return void
+     * @throws \Exception
+     */
+    private function assert_history_list(iterable $history_list, array $data): void
+    {
+        foreach ($history_list as $history)
+        {
+            if (!isset($data[$history->get_status()][$history->get_id()]))
+            {
+                throw new \Exception("History not found: {$history->get_status()} {$history->get_id()}");
+            }
+
+            $record = (array)$data[$history->get_status()][$history->get_id()];
+
+
+            self::assertSame(
+                $this->get_privacy_string("pxaiwriter_history:status:{$history->get_status()}"),
+                $record['status']
+            );
+
+            self::assertSame(
+                $this->get_privacy_string("pxaiwriter_history:type:{$history->get_type()}"),
+                $record['type']
+            );
+
+            self::assertSame(
+                $history->get_data(),
+                $record['data']
+            );
+        }
     }
 
     private function get_all_history_by_user_id(int $user_id): history_collection
