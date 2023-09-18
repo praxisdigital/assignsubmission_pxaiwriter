@@ -45,6 +45,23 @@ class repository implements interfaces\repository
         );
     }
 
+    public function get_submission_files_with_path(context $context, object $submission): array
+    {
+        if (!isset($submission->id))
+        {
+            return [];
+        }
+
+        $items = [];
+        $files = $this->get_submission_files($context, $submission->id);
+
+        foreach ($files as $file)
+        {
+            $items[$this->get_submission_file_path($file, $submission)] = $file;
+        }
+        return $items;
+    }
+
     public function delete_files_by_submission(context $context, int $submission_id): void
     {
         try
@@ -54,6 +71,19 @@ class repository implements interfaces\repository
                 $this->get_component(),
                 $this->get_file_area(),
                 $submission_id
+            );
+        }
+        catch (Exception $exception) {}
+    }
+
+    public function delete_files_by_context(context $context): void
+    {
+        try
+        {
+            $this->storage->delete_area_files(
+                $context->id,
+                $this->get_component(),
+                $this->get_file_area()
             );
         }
         catch (Exception $exception) {}
@@ -102,5 +132,17 @@ class repository implements interfaces\repository
             'userid' => $user_id,
             'filename' => $filename
         ];
+    }
+
+    private function get_submission_file_path(stored_file $file, object $submission): string
+    {
+        return $this->is_export_full_path($submission)
+            ? $file->get_filepath() . $file->get_filename()
+            : $file->get_filename();
+    }
+
+    private function is_export_full_path(object $submission): bool
+    {
+        return isset($submission->exportfullpath) && $submission->exportfullpath;
     }
 }

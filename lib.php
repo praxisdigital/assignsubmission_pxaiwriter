@@ -11,9 +11,10 @@ function assignsubmission_pxaiwriter_pluginfile(
     $forcedownload,
     array $options = array()
 ): bool {
+    global $CFG;
+
     $moodle_factory = \assignsubmission_pxaiwriter\app\factory::make()->moodle();
     $db = $moodle_factory->db();
-    $cfg = $moodle_factory->cfg();
 
     if ($context->contextlevel != CONTEXT_MODULE)
     {
@@ -32,7 +33,7 @@ function assignsubmission_pxaiwriter_pluginfile(
     $userid = $record->userid;
     $groupid = $record->groupid;
 
-    require_once $cfg->dirroot . '/mod/assign/locallib.php';
+    require_once $CFG->dirroot . '/mod/assign/locallib.php';
 
     $assign = new assign($context, $cm, $course);
 

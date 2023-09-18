@@ -3,6 +3,7 @@
 use assignsubmission_pxaiwriter\app\factory as base_factory;
 use assignsubmission_pxaiwriter\app\interfaces\factory as base_factory_interface;
 use assignsubmission_pxaiwriter\app\moodle\interfaces\factory as moodle_factory;
+use assignsubmission_pxaiwriter\pxaiwriter_steps_form_element;
 use assignsubmission_pxaiwriter\task\delete_user_history;
 
 define('ASSIGNSUBMISSION_FILE_MAXFILES', 10);
@@ -10,43 +11,6 @@ define('ASSIGNSUBMISSION_PXAIWRITER_FILEAREA', 'submissions_pxaiwriter');
 
 class assign_submission_pxaiwriter extends assign_submission_plugin
 {
-    private function factory(): base_factory_interface
-    {
-        return base_factory::make();
-    }
-
-    private function db(): moodle_database
-    {
-        return $this->moodle()->db();
-    }
-    
-    private function moodle(): moodle_factory
-    {
-        return $this->factory()->moodle();
-    }
-
-    private function get_assignment_id()
-    {
-        try {
-            return $this->assignment->get_instance()->id ?? null;
-        } catch (Exception $e) {}
-        return null;
-    }
-
-    private function get_assignment_duedate()
-    {
-        try {
-            return $this->assignment->get_instance()->duedate ?? null;
-        } catch (Exception $e) {}
-        return null;
-    }
-
-    private function get_pxaiwriter_submission($submissionid)
-    {
-        return $this->db()->get_record('assignsubmission_pxaiwriter', ['submission' => $submissionid]);
-    }
-
-
     public function get_name()
     {
         return $this->moodle()->get_string('pluginname');
@@ -56,49 +20,9 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     {
         global $CFG;
 
-        $aiwritersteps = $this->get_config('pxaiwritersteps');
-
-        $stepList = [];
-
-        if (!$aiwritersteps) {
-            $description = $this->moodle()->get_string('first_step_description');
-
-            $step1 = new stdClass();
-            $step1->step = 1;
-            $step1->description = $description;
-            $step1->mandatory = true;
-            $step1->type = 'text';
-            $step1->removable = false;
-            $step1->isreadonly = true;
-            $step1->readonly = '';
-            $step1->ai_element = true;
-            $step1->ai_expand_element = true;
-            $step1->value = '';
-
-            $description = $this->moodle()->get_string('second_step_description');
-            $step2 = new stdClass();
-            $step2->step = 2;
-            $step2->description = $description;
-            $step2->mandatory = true;
-            $step2->type = 'text';
-            $step2->removable = false;
-            $step2->isreadonly = false;
-            $step2->readonly = '';
-            $step2->ai_element = false;
-            $step2->ai_expand_element = false;
-            $step2->value = '';
-
-            array_push($stepList, $step1, $step2);
-        } else {
-            $stepList = json_decode($aiwritersteps);
-        }
-
-        $assignmentId = $this->get_assignment_id();
-
-        $hasUsedInAssignments = $assignmentId != null && $this->db()->record_exists(
-                'assignsubmission_pxaiwriter',
-                ['assignment' => $assignmentId]
-            );
+        $steps_info = $this->get_config('pxaiwritersteps');
+        $is_in_used = empty($steps_info);
+        $steps = $is_in_used ? $this->get_default_steps_info() : json_decode($steps_info);
 
         $mform->addElement('hidden', 'assignsubmission_pxaiwriter_steps', null);
         $mform->setType('assignsubmission_pxaiwriter_steps', PARAM_RAW);
@@ -106,10 +30,18 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         MoodleQuickForm::registerElementType(
             'pxaiwriter_steps_section',
             "$CFG->dirroot/mod/assign/submission/pxaiwriter/classes/pxaiwriter_steps_form_element.php",
-            'pxaiwriter_steps_form_element'
+            pxaiwriter_steps_form_element::class
         );
-        $mform->addElement('pxaiwriter_steps_section', 'assignsubmission_pxaiwriter_steps_config', null, null, $stepList, $hasUsedInAssignments);
+        $mform->addElement(
+            'pxaiwriter_steps_section',
+            'assignsubmission_pxaiwriter_steps_config',
+            null,
+            null,
+            $steps,
+            $is_in_used
+        );
     }
+
 
     /**
      * Helper for saving the settings
@@ -198,21 +130,6 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         return true;
     }
 
-    private function delete_pdf_file($submissionid)
-    {
-        $storage = get_file_storage();
-        $files = $storage->get_area_files(
-            $this->assignment->get_context()->id,
-            'assignsubmission_pxaiwriter',
-            ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
-            $submissionid
-        );
-
-        foreach ($files as $file) {
-            $file->delete();
-        }
-    }
-
     public function submission_is_empty(stdClass $data)
     {
         return false;
@@ -229,7 +146,10 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             ['submission' => $submission->id]
         );
         if ($is_deleted) {
-            $this->delete_pdf_file($submission->id);
+            $this->factory()->file()->repository()->delete_files_by_submission(
+                $this->assignment->get_context(),
+                $submission->id
+            );
         }
 
         $this->factory()->submission()->repository()->delete_by_submission($submission);
@@ -239,36 +159,18 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         return true;
     }
 
-
     public function get_files(stdClass $submission, stdClass $user)
     {
-        $result = [];
-        $fs = get_file_storage();
-
-        $files = $fs->get_area_files(
-            $this->assignment->get_context()->id,
-            'assignsubmission_pxaiwriter',
-            ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
-            $submission->id,
-            'timemodified',
-            false
+        return $this->factory()->file()->repository()->get_submission_files_with_path(
+            $this->assignment->get_context(),
+            $submission
         );
-
-        foreach ($files as $file) {
-            // Do we return the full folder path or just the file name?
-            if (isset($submission->exportfullpath) && !$submission->exportfullpath) {
-                $result[$file->get_filename()] = $file;
-                continue;
-            }
-            $result[$file->get_filepath() . $file->get_filename()] = $file;
-        }
-        return $result;
     }
 
     public function view_summary(stdClass $submission, &$showviewlink)
     {
-        $instance = $this->get_pxaiwriter_submission($submission->id);
-        if (empty($instance)) {
+        if (!$this->factory()->submission()->repository()->has_id($submission->id))
+        {
             return $this->moodle()->get_string('not_available');
         }
 
@@ -331,14 +233,19 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         return [ASSIGNSUBMISSION_PXAIWRITER_FILEAREA => $this->get_name()];
     }
 
+
     public function copy_submission(stdClass $sourcesubmission, stdClass $destsubmission)
     {
-        $instance = $this->get_pxaiwriter_submission($sourcesubmission->id);
-        if (!empty($instance)) {
-            unset($instance->id);
-            $instance->submission = $destsubmission->id;
-            $this->db()->insert_record('assignsubmission_pxaiwriter', $instance);
+        $entity = $this->factory()->submission()->repository()->get_by_assign_submission($sourcesubmission);
+        if ($entity === null)
+        {
+            return true;
         }
+
+        $this->factory()->submission()->repository()->copy_to(
+            $entity,
+            $destsubmission->id
+        );
         return true;
     }
 
@@ -346,30 +253,94 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     {
         $assign_id = $this->assignment->get_instance()->id;
 
-        // will throw exception on failure
-        $this->db()->delete_records('assignsubmission_pxaiwriter', [
-            'assignment' => $assign_id
-        ]);
+        $this->factory()->submission()->repository()->delete_by_assignment_id($assign_id);
 
-        $storage = get_file_storage();
-
-        $files = $storage->get_area_files(
-            $this->assignment->get_context()->id,
-            'assignsubmission_pxaiwriter',
-            ASSIGNSUBMISSION_PXAIWRITER_FILEAREA
+        $this->factory()->file()->repository()->delete_files_by_context(
+            $this->assignment->get_context()
         );
-
-        foreach ($files as $file) {
-            $file->delete();
-        }
 
         delete_user_history::schedule_by_assignment_id($assign_id);
 
         return true;
     }
 
+    private function factory(): base_factory_interface
+    {
+        return base_factory::make();
+    }
+
+    private function db(): moodle_database
+    {
+        return $this->moodle()->db();
+    }
+
+    private function moodle(): moodle_factory
+    {
+        return $this->factory()->moodle();
+    }
+
     public function get_config_for_external()
     {
         return (array) $this->get_config();
+    }
+
+    private function get_assignment_duedate()
+    {
+        try {
+            return $this->assignment->get_instance()->duedate ?? null;
+        } catch (Exception $e) {}
+        return null;
+    }
+
+    private function get_pxaiwriter_submission($submissionid)
+    {
+        return $this->db()->get_record('assignsubmission_pxaiwriter', ['submission' => $submissionid]);
+    }
+
+    private function get_step_info(
+        ?object $instance = null,
+        string $description = ''
+    ): object
+    {
+        $instance ??= new stdClass();
+        $instance->step ??= 1;
+        $instance->description ??= $description;
+        $instance->mandatory = true;
+        $instance->type = 'text';
+        $instance->removable = false;
+        $instance->isreadonly = false;
+        $instance->readonly = '';
+        $instance->ai_element = false;
+        $instance->ai_expand_element = false;
+        $instance->value = '';
+
+        return $instance;
+    }
+
+    private function get_first_step_info(): object
+    {
+        return $this->get_step_info((object)[
+            'step' => 1,
+            'description' => $this->moodle()->get_string('first_step_description'),
+            'isreadonly' => true,
+            'ai_element' => true,
+            'ai_expand_element' => true,
+        ]);
+    }
+
+    private function get_second_step_info(): object
+    {
+        return $this->get_step_info((object)[
+            'step' => 2,
+            'description' => $this->moodle()->get_string('second_step_description'),
+        ]);
+    }
+
+    private function get_default_steps_info(): array
+    {
+        return [
+            $this->get_first_step_info(),
+            $this->get_second_step_info(),
+        ];
     }
 }

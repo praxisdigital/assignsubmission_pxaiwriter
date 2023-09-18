@@ -21,28 +21,15 @@ class history_data_migration_test extends integration_testcase
         self::setUser($user);
 
         $steps_config = [];
-        $steps_config[] = [
-            'step' => 1,
-            'description' => 'Step 1 AI description',
-            'mandatory' => true,
-            'type' => 'text',
-            'removable' => false,
-            'isreadonly' => true,
-            'ai_element' => true,
-            'ai_expand_element' => true,
-            'value' => ''
-        ];
-        $steps_config[] = [
-            'step' => 2,
-            'description' => 'Step 2 user description',
-            'mandatory' => true,
-            'type' => 'text',
-            'removable' => false,
-            'isreadonly' => true,
-            'ai_element' => true,
-            'ai_expand_element' => true,
-            'value' => ''
-        ];
+        $steps_config[] = $this->get_step_data_with_ai_text(
+            '',
+            'Step 1 AI description'
+        );
+        $steps_config[] = $this->get_step_data_with_user_text(
+            2,
+            '',
+            'Step 2 user description'
+        );
 
         $assign = $this->create_assignment_with_ai_writer($course);
         $submission = $this->create_submission($assign, $user);

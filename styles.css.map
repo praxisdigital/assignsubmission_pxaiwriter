@@ -1,1 +1,1 @@
-{"version":3,"sourceRoot":"","sources":["scss/default.scss","scss/step-submission.scss"],"names":[],"mappings":"AACE,iDACE,0BACA,wBACA,2BCFA,wDACE,YACA,WACA,qBACA,gCAEA,qEACE,aACA,kBACA,QACA","file":"styles.css"}
+{"version":3,"sourceRoot":"","sources":["scss/variables.scss","scss/base/default.scss","scss/submission/editor.scss"],"names":[],"mappings":"AAAA,6BACE,mCACA,yBACA,iDCFA,iDACE,0BACA,wBACA,2BCFA,wDACE,YACA,WACA,qBACA,gCAEA,qEACE,aACA,kBACA,QACA,SAIN,+CACE,WACA,YACA,+BACA,YACA,4BACA,0BAEF,uDACE,qDAGA,wFACE,4BAGJ,yDACE,qDACA,cACA","file":"styles.css"}

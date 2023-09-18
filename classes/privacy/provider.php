@@ -14,20 +14,18 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->dirroot . '/mod/assign/locallib.php');
 
+use assignsubmission_pxaiwriter\app\ai\history\interfaces\entity;
 use assignsubmission_pxaiwriter\app\factory;
+use assignsubmission_pxaiwriter\task\delete_user_history;
 use \core_privacy\local\metadata\collection;
+use core_privacy\local\request\content_writer;
 use core_privacy\local\request\userlist;
 use \core_privacy\local\request\contextlist;
+use core_privacy\local\request\writer;
 use \mod_assign\privacy\assign_plugin_request_data;
 use mod_assign\privacy\useridlist;
 
-/**
- * Privacy class for requesting user data.
- *
- * @package    assignsubmission_pxaiwriter
- * @copyright  2023 Moxis
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+
 class provider implements
         \core_privacy\local\metadata\provider,
         \mod_assign\privacy\assignsubmission_provider,
@@ -47,7 +45,6 @@ class provider implements
             'step' => 'privacy:metadata:pxaiwriter_history:step',
             'status' => 'privacy:metadata:pxaiwriter_history:status',
             'type' => 'privacy:metadata:pxaiwriter_history:type',
-            'input_text' => 'privacy:metadata:pxaiwriter_history:input_text',
             'data' => 'privacy:metadata:pxaiwriter_history:data',
         ]);
 
@@ -58,47 +55,100 @@ class provider implements
 
     public static function get_context_for_userid_within_submission(int $userid, contextlist $contextlist)
     {
-        $sql = "SELECT contextid
-                  FROM {pxaiwriter_history}
-                 WHERE userid = :userid";
+        $sql = "SELECT DISTINCT cx.id FROM {pxaiwriter_history} h
+                JOIN {course_modules} cm ON cm.instance = h.assignment
+                    AND cm.deletioninprogress = 0
+                JOIN {modules} m ON m.id = cm.module
+                JOIN {context} cx ON cx.instanceid = cm.id
+                JOIN {assign_submission} s ON s.id = h.submission
+                LEFT JOIN {groups_members} gm ON gm.groupid = s.groupid
+                WHERE m.name = ?
+                    AND cx.contextlevel = ?
+                    AND (h.userid = ? OR gm.userid = ?)";
+
+        $contextlist->add_from_sql($sql, [
+            'assign',
+            CONTEXT_MODULE,
+            $userid,
+            $userid
+        ]);
     }
 
     public static function get_student_user_ids(useridlist $useridlist)
     {
-        //$useridlist->add_from_sql();
     }
 
     public static function export_submission_user_data(assign_plugin_request_data $exportdata)
     {
-        // TODO: Implement export_submission_user_data() method.
+        if ($exportdata->get_user() !== null)
+        {
+            return null;
+        }
+
+        $writer = writer::with_context($exportdata->get_context());
+        $data_path = $exportdata->get_subcontext();
+        $data_path[] = self::get_privacy_string('path');
+
+        $data = self::get_history_data_by_submission($exportdata->get_pluginobject());
+
+        $history_list = factory::make()->ai()->history()->repository()->get_all_by_assign_submission(
+            $exportdata->get_assignid(),
+            $exportdata->get_submissionids()
+        );
+        $data = self::get_history_list($data, $history_list);
+
+        $writer->export_data($data_path, (object)$data);
     }
 
     public static function delete_submission_for_context(assign_plugin_request_data $requestdata)
     {
+        $repo = factory::make()->file()->repository();
+        $submission_ids = $requestdata->get_submissionids();
 
+
+        foreach ($submission_ids as $id)
+        {
+            $repo->delete_files_by_submission(
+                $requestdata->get_context(),
+                $id
+            );
+        }
+
+        $assign_id = $requestdata->get_assignid();
+        delete_user_history::schedule_by_assignment_id($assign_id);
     }
 
     public static function delete_submission_for_userid(assign_plugin_request_data $exportdata)
     {
-        $user_ids = $exportdata->get_userids();
-        $submission_ids = $exportdata->get_submissionids();
-        $ids = self::get_history_ids_by_submissions_and_users($submission_ids, $user_ids);
+        $assign_id = $exportdata->get_assignid();
+        $instance = $exportdata->get_pluginobject();
 
-        if (empty($ids))
+        if (!isset($instance->id))
         {
             return;
         }
 
-        factory::make()->moodle()->db()->delete_records_list('pxaiwriter_history', 'id', $ids);
+        factory::make()->file()->repository()->delete_files_by_submission(
+            $exportdata->get_context(),
+            $instance->id
+        );
+
+        factory::make()->submission()->repository()->delete_by_assign_submission(
+            $assign_id,
+            $instance->id
+        );
     }
 
     public static function get_userids_from_context(userlist $userlist)
     {
         $context = $userlist->get_context();
-        if ($context->contextlevel === CONTEXT_MODULE)
+        if ($context->contextlevel !== CONTEXT_MODULE)
         {
-            
+            return;
         }
+
+        $sql = "SELECT userid FROM {pxaiwriter_history} WHERE assignment = :assignment";
+        $userlist->add_from_sql('userid', $sql, ['assignment' => $context->instanceid]);
     }
 
     public static function delete_submissions(assign_plugin_request_data $deletedata)
@@ -111,188 +161,77 @@ class provider implements
         );
     }
 
-    /**
-     * @param int[] $submission_ids
-     * @param int[] $user_ids
-     * @return int[]
-     * @throws \coding_exception
-     * @throws \dml_exception
-     */
-    private static function get_history_ids_by_submissions_and_users(array $submission_ids, array $user_ids): array
+    private static function get_history_data(entity $history): object
     {
-        $db = factory::make()->moodle()->db();
-
-        [$in_submission_sql, $submission_params] = $db->get_in_or_equal($submission_ids);
-        [$in_user_sql, $user_params] = $db->get_in_or_equal($user_ids);
-
-        $params = array_merge($submission_params, $user_params);
-
-        $items = $db->get_fieldset_select(
-            'pxaiwriter_history',
-            'id',
-            "submission {$in_submission_sql} AND userid {$in_user_sql}",
-            $params
-        );
-
-        $ids = [];
-        foreach ($items as $id)
-        {
-            $ids[$id] = $id;
-        }
-        return $ids;
+        return (object)[
+            'step' => $history->get_step(),
+            'status' => self::get_status_string($history->get_status()),
+            'type' => self::get_type_string($history->get_type()),
+            'data' => $history->get_data()
+        ];
     }
 
-//    /**
-//     * Return meta data about this plugin.
-//     *
-//     * @param  collection $collection A list of information to add to.
-//     * @return collection Return the collection after adding to it.
-//     */
-//    public static function get_metadata(collection $collection) : collection {
-//        $detail = [
-//                    'assignment' => 'privacy:metadata:assignmentid',
-//                    'submission' => 'privacy:metadata:submissionpurpose',
-//                    'steps_data' => 'privacy:metadata:textpurpose'
-//                  ];
-//        $collection->add_database_table('assignsubmission_pxaiwriter', $detail, 'privacy:metadata:tablepurpose');
-//        $collection->link_subsystem('core_files', 'privacy:metadata:filepurpose');
-//        return $collection;
-//    }
-//
-//    /**
-//     * This is covered by mod_assign provider and the query on assign_submissions.
-//     *
-//     * @param  int $userid The user ID that we are finding contexts for.
-//     * @param  contextlist $contextlist A context list to add sql and params to for contexts.
-//     */
-//    public static function get_context_for_userid_within_submission(int $userid, contextlist $contextlist) {
-//        // This is already fetched from mod_assign.
-//    }
-//
-//    /**
-//     * This is also covered by the mod_assign provider and it's queries.
-//     *
-//     * @param  \mod_assign\privacy\useridlist $useridlist An object for obtaining user IDs of students.
-//     */
-//    public static function get_student_user_ids(\mod_assign\privacy\useridlist $useridlist) {
-//        // No need.
-//    }
-//
-//    /**
-//     * If you have tables that contain userids and you can generate entries in your tables without creating an
-//     * entry in the assign_submission table then please fill in this method.
-//     *
-//     * @param  \core_privacy\local\request\userlist $userlist The userlist object
-//     */
-//    public static function get_userids_from_context(\core_privacy\local\request\userlist $userlist) {
-//        // Not required.
-//    }
-//
-//    /**
-//     * Export all user data for this plugin.
-//     *
-//     * @param  assign_plugin_request_data $exportdata Data used to determine which context and user to export and other useful
-//     * information to help with exporting.
-//     */
-//    public static function export_submission_user_data(assign_plugin_request_data $exportdata) {
-//        // We currently don't show submissions to teachers when exporting their data.
-//        if ($exportdata->get_user() != null) {
-//            return null;
-//        }
-//        // Retrieve text for this submission.
-//        $assign = $exportdata->get_assign();
-//        $plugin = $assign->get_plugin_by_type('assignsubmission', 'pxaiwriter');
-//        $submission = $exportdata->get_pluginobject();
-//        $stepsdata = $plugin->get_editor_text('pxaiwriter', $submission->id);
-//        $context = $exportdata->get_context();
-//        if (!empty($stepsdata)) {
-//            $submissiontext = new \stdClass();
-//            $currentpath = $exportdata->get_subcontext();
-//            $currentpath[] = get_string('privacy:path', 'assignsubmission_pxaiwriter');
-//            $submissiontext->text = writer::with_context($context)->rewrite_pluginfile_urls($currentpath,
-//                    'assignsubmission_pxaiwriter', 'submissions_pxaiwriter', $submission->id, $stepsdata);
-//            writer::with_context($context)
-//                    ->export_area_files($currentpath, 'assignsubmission_pxaiwriter', 'submissions_pxaiwriter', $submission->id)
-//                    // Add the text to the exporter.
-//                    ->export_data($currentpath, $submissiontext);
-//
-//            // Handle plagiarism data.
-//            $coursecontext = $context->get_course_context();
-//            $userid = $submission->userid;
-//            \core_plagiarism\privacy\provider::export_plagiarism_user_data($userid, $context, $currentpath, [
-//                'cmid' => $context->instanceid,
-//                'course' => $coursecontext->instanceid,
-//                'userid' => $userid,
-//                'content' => $stepsdata,
-//                'assignment' => $submission->assignment
-//            ]);
-//        }
-//    }
-//
-//    /**
-//     * Any call to this method should delete all user data for the context defined in the deletion_criteria.
-//     *
-//     * @param  assign_plugin_request_data $requestdata Data useful for deleting user data from this sub-plugin.
-//     */
-//    public static function delete_submission_for_context(assign_plugin_request_data $requestdata) {
-//        global $DB;
-//
-//        \core_plagiarism\privacy\provider::delete_plagiarism_for_context($requestdata->get_context());
-//
-//        // Delete related files.
-//        $fs = get_file_storage();
-//        $fs->delete_area_files($requestdata->get_context()->id, 'assignsubmission_pxaiwriter',
-//        ASSIGNSUBMISSION_PXAIWRITER_FILEAREA);
-//
-//        // Delete the records in the table.
-//        $DB->delete_records('assignsubmission_pxaiwriter', ['assignment' => $requestdata->get_assignid()]);
-//    }
-//
-//    /**
-//     * A call to this method should delete user data (where practicle) from the userid and context.
-//     *
-//     * @param  assign_plugin_request_data $deletedata Details about the user and context to focus the deletion.
-//     */
-//    public static function delete_submission_for_userid(assign_plugin_request_data $deletedata) {
-//        global $DB;
-//
-//        \core_plagiarism\privacy\provider::delete_plagiarism_for_user($deletedata->get_user()->id, $deletedata->get_context());
-//
-//        $submissionid = $deletedata->get_pluginobject()->id;
-//
-//        // Delete related files.
-//        $fs = get_file_storage();
-//        $fs->delete_area_files($deletedata->get_context()->id, 'assignsubmission_pxaiwriter', ASSIGNSUBMISSION_PXAIWRITER_FILEAREA,
-//                $submissionid);
-//
-//        // Delete the records in the table.
-//        $DB->delete_records('assignsubmission_pxaiwriter', ['assignment' => $deletedata->get_assignid(),
-//                'submission' => $submissionid]);
-//    }
-//
-//    /**
-//     * Deletes all submissions for the submission ids / userids provided in a context.
-//     * assign_plugin_request_data contains:
-//     * - context
-//     * - assign object
-//     * - submission ids (pluginids)
-//     * - user ids
-//     * @param  assign_plugin_request_data $deletedata A class that contains the relevant information required for deletion.
-//     */
-//    public static function delete_submissions(assign_plugin_request_data $deletedata) {
-//        global $DB;
-//
-//        \core_plagiarism\privacy\provider::delete_plagiarism_for_users($deletedata->get_userids(), $deletedata->get_context());
-//        if (empty($deletedata->get_submissionids())) {
-//            return;
-//        }
-//
-//        $fs = get_file_storage();
-//        list($sql, $params) = $DB->get_in_or_equal($deletedata->get_submissionids(), SQL_PARAMS_NAMED);
-//        $fs->delete_area_files_select($deletedata->get_context()->id,
-//                'assignsubmission_pxaiwriter', ASSIGNSUBMISSION_PXAIWRITER_FILEAREA, $sql, $params);
-//
-//        $params['assignid'] = $deletedata->get_assignid();
-//        $DB->delete_records_select('assignsubmission_pxaiwriter', "assignment = :assignid AND submission $sql", $params);
-//    }
+    private static function get_status_string(string $status): string
+    {
+        switch ($status)
+        {
+            case entity::STATUS_DELETED:
+            case entity::STATUS_DRAFTED:
+            case entity::STATUS_FAILED:
+            case entity::STATUS_SUBMITTED:
+                return self::get_privacy_meta_string("pxaiwriter_history:status:{$status}");
+        }
+        return self::get_privacy_meta_string('pxaiwriter_history:status:unknown');
+    }
+
+    private static function get_history_data_by_submission(
+        ?object $submission
+    ): array
+    {
+        if (!$submission)
+        {
+            return [];
+        }
+        $history_list = factory::make()->ai()->history()->repository()->get_all_by_submission($submission->id);
+        return self::get_history_list([], $history_list);
+    }
+
+    /**
+     * @param array $data
+     * @param iterable|entity[] $history_list
+     * @return array
+     */
+    private static function get_history_list(array $data, iterable $history_list): array
+    {
+        foreach ($history_list as $history)
+        {
+            $data[$history->get_status()][] = self::get_history_data($history);
+        }
+        return $data;
+    }
+
+    private static function get_type_string(string $type): string
+    {
+        switch ($type)
+        {
+            case entity::TYPE_AI_EXPAND:
+            case entity::TYPE_AI_GENERATE:
+            case entity::TYPE_USER_EDIT:
+                return self::get_privacy_meta_string("pxaiwriter_history:type:{$type}");
+        }
+        return self::get_privacy_meta_string('pxaiwriter_history:type:unknown');
+    }
+
+    private static function get_privacy_meta_string(string $identifier, $arguments = null): string
+    {
+        return self::get_privacy_string("metadata:$identifier", $arguments);
+    }
+
+    private static function get_privacy_string(string $identifier, $arguments = null): string
+    {
+        return factory::make()->moodle()->get_string(
+            "privacy:{$identifier}",
+            $arguments
+        );
+    }
 }

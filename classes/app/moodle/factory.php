@@ -28,12 +28,6 @@ class factory implements interfaces\factory
 {
     private array $factories = [];
 
-    public function cfg(): object
-    {
-        global $CFG;
-        return $CFG;
-    }
-
     public function context(): context_factory
     {
         return $this->factories[__FUNCTION__] ??= new context\factory();

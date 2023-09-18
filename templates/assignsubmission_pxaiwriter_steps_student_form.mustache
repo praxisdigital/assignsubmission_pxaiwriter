@@ -9,11 +9,11 @@
                 </div>
             </div>
             <div class="steps row">
-                <div class="step-list col-md-12 mb-2">
+                <div class="step-list col-md-12 d-flex">
                     {{#steps_data}}
-                        <button class="step-page-button btn-no-interaction btn btn-lg btn-outline-secondary rounded-circle"
-                                type="button" data-step-number="{{step}}">{{step}}</button>
-                        <span class="step-separator"></span>
+                        <button class="step-page-button {{#is_current_step}}highlight{{/is_current_step}}"
+                                type="button"
+                                data-step-number="{{step}}">{{step}}</button>
                     {{/steps_data}}
                 </div>
                 {{#steps_data}}

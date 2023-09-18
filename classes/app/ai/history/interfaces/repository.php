@@ -50,7 +50,6 @@ interface repository
     public function get_all_by_submission(
         int $submission_id,
         int $user_id = 0,
-        int $assignment_id = 0,
         int $offset = 0,
         int $limit = 0
     ): collection;
@@ -81,6 +80,16 @@ interface repository
         int $user_id = 0
     ): collection;
 
+    /**
+     * @param int $assignment_id
+     * @param int[] $submission_ids
+     * @return collection<entity>|entity[]
+     */
+    public function get_all_by_assign_submission(
+        int $assignment_id,
+        array $submission_ids
+    ): collection;
+
     public function get_cm_info_by_history(entity $history): cm_info;
 
     public function insert(entity $entity): void;
@@ -90,4 +99,6 @@ interface repository
     public function delete_by_id(int $id): void;
     public function delete_by_user_id(int $user_id): void;
     public function delete_by_user_assignment(int $user_id, int $assignment_id): void;
+    public function delete_by_assignment_id(int $assignment_id): void;
+    public function delete_by_assign_submission(int $assignment_id, int $submission_id): void;
 }

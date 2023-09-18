@@ -40,6 +40,12 @@ You can access these set of settings here : https://<site>/admin/settings.php?se
 - Either click on 'Save and return to course' or 'Save and display' button to save the submission configuration.
 
 ## Release notes
+- **1.3.1** (2023091500)
+  - Changes:
+    - Add privacy provider for the history records.
+    - Add step guide information for the AI step.
+    - Change the design of step number in submission edit view.
+      - Add highlight around the step number and the summary text.
 - **1.3.0** (2023090800)
   - Changes:
     - Switched text diff library from d4h/finediff to caxy/php-htmldiff
