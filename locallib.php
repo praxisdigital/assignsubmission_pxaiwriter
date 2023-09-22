@@ -305,14 +305,14 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         $instance ??= new stdClass();
         $instance->step ??= 1;
         $instance->description ??= $description;
-        $instance->mandatory = true;
-        $instance->type = 'text';
-        $instance->removable = false;
-        $instance->isreadonly = false;
-        $instance->readonly = '';
-        $instance->ai_element = false;
-        $instance->ai_expand_element = false;
-        $instance->value = '';
+        $instance->mandatory ??= true;
+        $instance->type ??= 'text';
+        $instance->removable ??= false;
+        $instance->isreadonly ??= false;
+        $instance->readonly ??= '';
+        $instance->ai_element ??= false;
+        $instance->ai_expand_element ??= false;
+        $instance->value ??= '';
 
         return $instance;
     }

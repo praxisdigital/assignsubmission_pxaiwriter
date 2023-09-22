@@ -15,6 +15,7 @@ class step_config implements interfaces\step_config, \JsonSerializable
 
     public function __construct(object $config)
     {
+        $this->set_default_config($config);
         $this->config = $config;
     }
 
@@ -56,5 +57,14 @@ class step_config implements interfaces\step_config, \JsonSerializable
     public function to_object(): object
     {
         return $this->config;
+    }
+
+    private function set_default_config(object $config): void
+    {
+        if (((int)$config->step) === 1)
+        {
+            $config->ai_element = true;
+            $config->ai_expand_element = true;
+        }
     }
 }
