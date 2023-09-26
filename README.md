@@ -9,7 +9,7 @@ Submission
 See [version.php](version.php)
 
 ## 3rd-party library dependencies
-* [d4h/finediff](https://github.com/D4H/php-finediff)
+* [php-htmldiff](https://github.com/caxy/php-htmldiff)
 
 ## Description
 
@@ -17,7 +17,7 @@ AI text submission plugin that allows admins to define submission scope of steps
 
 ## Global settings
 
-PXAIWriter requires some setup to be completed before used, forgetting this step will cause the plugin not to work as supposed to be. Here, its mandatory that you complete all the sections Open API request settings, Open API text comparer settings and Assignment Settings.
+Praxis AI writer requires some setup to be completed before used, forgetting this step will cause the plugin not to work as supposed to be. Here, its mandatory that you complete all the sections Open API request settings, Open API text comparer settings and Assignment Settings.
 You can access these set of settings here : https://<site>/admin/settings.php?section=assignsubmission_pxaiwriter.
 
 - OpenAI API token **(openai_token)**
@@ -28,7 +28,6 @@ You can access these set of settings here : https://<site>/admin/settings.php?se
 - Frequency Penalty **(frequency_penalty)**
 - Presence penalty **(presence_penalty)**
 - Last modified by **(last_modified_by)**
-- Granularity **(granularity)**
 - Attempt count **(attempt_count)**
 
 ## Setup
@@ -41,6 +40,15 @@ You can access these set of settings here : https://<site>/admin/settings.php?se
 - Either click on 'Save and return to course' or 'Save and display' button to save the submission configuration.
 
 ## Release notes
+- **1.3.0** (2023090800)
+  - Changes:
+    - Switched text diff library from d4h/finediff to caxy/php-htmldiff
+  - Fixes:
+    - Fixed issue with text diff not working properly.
+    - Fixed Moodle 4.1 assignfeedback_editpdf cause an error
+      when submission_created & submission_updated event doesn't set the assignment instance to the event.
+      After the event got triggered.
+    
 - **1.2.1** (2023071800)
   - Changes:
     - Removed assignment due date validation.

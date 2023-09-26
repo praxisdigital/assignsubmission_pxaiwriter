@@ -7,6 +7,7 @@ use assignsubmission_pxaiwriter\app\ai\history\interfaces\collection;
 use assignsubmission_pxaiwriter\app\ai\history\interfaces\entity;
 use assignsubmission_pxaiwriter\app\exceptions\database_error_exception;
 use assignsubmission_pxaiwriter\app\interfaces\factory as base_factory;
+use cm_info;
 use dml_exception;
 use moodle_database;
 
@@ -325,6 +326,16 @@ class repository implements interfaces\repository
             $assignment_id,
             $user_id
         );
+    }
+
+    public function get_cm_info_by_history(entity $history): cm_info
+    {
+        $sql = "SELECT cm.id, cm.course FROM {pxaiwriter_history} h
+                JOIN {course_modules} cm ON cm.instance = h.assignment AND cm.deletioninprogress = 0
+                JOIN {modules} m ON m.id = cm.module AND m.name = 'assign'
+                WHERE h.id = :id";
+        $record = $this->db()->get_record_sql($sql, ['id' => $history->get_id()]);
+        return cm_info::create($record);
     }
 
     public function insert(entity $entity): void

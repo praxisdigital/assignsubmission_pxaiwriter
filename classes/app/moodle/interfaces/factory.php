@@ -18,6 +18,8 @@ defined('MOODLE_INTERNAL') || die();
 
 interface factory
 {
+    public function cfg(): object;
+
     public function context(): context_factory;
 
     public function course(): object;

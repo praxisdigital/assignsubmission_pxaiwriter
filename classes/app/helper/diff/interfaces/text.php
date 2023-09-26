@@ -9,10 +9,9 @@ defined('MOODLE_INTERNAL') || die();
 
 interface text
 {
-    public const GRANULARITY_CHARACTER = 'character';
-    public const GRANULARITY_WORD = 'word';
-    public const GRANULARITY_SENTENCE = 'sentence';
-    public const GRANULARITY_PARAGRAPH = 'paragraph';
-
     public function diff(string $old_data, string $new_data): string;
+
+    public function set_deletion_tag(html $tag): text;
+
+    public function set_insertion_tag(html $tag): text;
 }

@@ -32,7 +32,7 @@ class factory implements interfaces\factory
             $assignment_id,
             $type,
             $submission,
-            $userid,
+            $this->get_user_id($userid),
             $step,
         );
     }
@@ -113,5 +113,14 @@ class factory implements interfaces\factory
             'timecreated' => $now,
             'timemodified' => $now
         ]);
+    }
+
+    private function get_user_id(?int $id): int
+    {
+        if (empty($id))
+        {
+            return $this->factory->moodle()->user()->id;
+        }
+        return $id;
     }
 }

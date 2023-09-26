@@ -39,6 +39,7 @@ class event implements interfaces\event
             $submission_entity
         );
         $event = submission_created::create($params);
+        $this->factory->assign()->mapper()->add_assign_to_event($event, $assign);
         $event->trigger();
     }
 
@@ -54,6 +55,7 @@ class event implements interfaces\event
             $submission_entity
         );
         $event = submission_updated::create($params);
+        $this->factory->assign()->mapper()->add_assign_to_event($event, $assign);
         $event->trigger();
     }
 

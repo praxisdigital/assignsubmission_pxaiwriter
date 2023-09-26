@@ -112,9 +112,9 @@ class delete_users_history_test extends integration_testcase
         self::assertCount(0, $records);
     }
 
-    private function get_history_records(array $params = []): array
+    private function get_history_records(): array
     {
-        return $this->factory()->moodle()->db()->get_records('pxaiwriter_history', $params);
+        return $this->factory()->moodle()->db()->get_records('pxaiwriter_history');
     }
 
     private function create_fake_history(array $record = []): object

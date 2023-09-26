@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <libraries>
     <library>
-        <location>vendor/d4h/finediff/</location>
-        <name>finediff</name>
-        <version>1.0.1</version>
-        <license>MIT</license>
+        <location>vendor/caxy/php-htmldiff/</location>
+        <name>caxy/php-htmldiff</name>
+        <version>0.1.14</version>
+        <license>GPL 2.0</license>
     </library>
 </libraries>

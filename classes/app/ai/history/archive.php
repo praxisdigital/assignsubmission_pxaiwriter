@@ -5,6 +5,7 @@ namespace assignsubmission_pxaiwriter\app\ai\history;
 
 use assignsubmission_pxaiwriter\app\ai\history\interfaces\entity;
 use assignsubmission_pxaiwriter\app\interfaces\factory as base_factory;
+use assignsubmission_pxaiwriter\event\history_record_updated;
 
 /* @codeCoverageIgnoreStart */
 defined('MOODLE_INTERNAL') || die();
@@ -47,6 +48,7 @@ class archive implements interfaces\archive
         $entity->set_input_text($input_text);
         $entity->set_data($data);
         $this->get_repository()->insert($entity);
+        $this->push_updated_event($entity);
         return $entity;
     }
 
@@ -92,6 +94,7 @@ class archive implements interfaces\archive
         );
         $entity->set_type_ai_generate();
         $this->get_repository()->insert($entity);
+        $this->push_updated_event($entity);
         return $entity;
     }
 
@@ -112,6 +115,7 @@ class archive implements interfaces\archive
         );
         $entity->set_type_ai_expand();
         $this->get_repository()->insert($entity);
+        $this->push_updated_event($entity);
         return $entity;
     }
 
@@ -142,6 +146,7 @@ class archive implements interfaces\archive
         $entity->set_status_failed();
         $entity->set_input_text($input_text);
         $this->get_repository()->insert($entity);
+        $this->push_updated_event($entity);
         return $entity;
     }
 
@@ -219,5 +224,10 @@ class archive implements interfaces\archive
             $hash,
             $step ?? $this->default_step
         );
+    }
+
+    private function push_updated_event(interfaces\entity $entity): void
+    {
+        history_record_updated::trigger_by_history($entity);
     }
 }
