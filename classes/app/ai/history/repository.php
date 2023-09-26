@@ -241,7 +241,6 @@ class repository implements interfaces\repository
     public function get_all_by_submission(
         int $submission_id,
         int $user_id = 0,
-        int $assignment_id = 0,
         int $offset = 0,
         int $limit = 0
     ): collection
@@ -251,12 +250,8 @@ class repository implements interfaces\repository
             return $this->mapper->map_collection([]);
         }
 
-        return $this->get_all_by_status_submission(
-            [entity::STATUS_DRAFTED, entity::STATUS_SUBMITTED],
-            $submission_id,
-            $assignment_id,
-            $user_id
-        );
+        return $user_id < 1 ? $this->get_history_list_by_submission_id($submission_id)
+            : $this->get_history_list_by_user_submission($user_id, $submission_id);
     }
 
     public function get_all_submitted_by_submission(
@@ -326,6 +321,40 @@ class repository implements interfaces\repository
             $assignment_id,
             $user_id
         );
+    }
+
+    public function get_all_by_assign_submission(int $assignment_id, array $submission_ids): collection
+    {
+        if (empty($submission_ids))
+        {
+            return $this->mapper->map_collection([]);
+        }
+
+        try
+        {
+            [$in_sql, $submissions] = $this->db()->get_in_or_equal($submission_ids);
+
+            $records = $this->db()->get_recordset_select(
+                $this->get_table(),
+                "assignment = ? AND status <> ? AND submission $in_sql",
+                [
+                    $assignment_id,
+                    entity::STATUS_FAILED,
+                    ...$submissions
+                ],
+                'step, id'
+            );
+            $collection = $this->mapper->map_collection($records);
+            $records->close();
+            return $collection;
+        }
+        catch (dml_exception $exception)
+        {
+            throw database_error_exception::by_get_recordset(
+                $exception->getMessage(),
+                $exception
+            );
+        }
     }
 
     public function get_cm_info_by_history(entity $history): cm_info
@@ -439,6 +468,45 @@ class repository implements interfaces\repository
         }
     }
 
+    public function delete_by_assignment_id(int $assignment_id): void
+    {
+        try
+        {
+            $this->db()->delete_records(
+                $this->get_table(),
+                ['assignment' => $assignment_id]
+            );
+        }
+        catch (dml_exception $exception)
+        {
+            throw database_error_exception::by_delete_records(
+                $exception->getMessage(),
+                $exception
+            );
+        }
+    }
+
+    public function delete_by_assign_submission(int $assignment_id, int $submission_id): void
+    {
+        try
+        {
+            $this->db()->delete_records(
+                $this->get_table(),
+                [
+                    'assignment' => $assignment_id,
+                    'submission' => $submission_id
+                ]
+            );
+        }
+        catch (dml_exception $exception)
+        {
+            throw database_error_exception::by_delete_records(
+                $exception->getMessage(),
+                $exception
+            );
+        }
+    }
+
     private function get_all_by_status_submission(
         array $statuses,
         int $submission_id,
@@ -480,6 +548,53 @@ class repository implements interfaces\repository
                 $exception
             );
         }
+    }
+
+    private function get_history_list_by_user_submission(int $user_id, int $submission_id): collection
+    {
+        [$in_status_sql, $params] = $this->factory->moodle()->db()->get_in_or_equal([
+            entity::STATUS_DRAFTED,
+            entity::STATUS_SUBMITTED
+        ]);
+
+        $params[] = $submission_id;
+        $params[] = $user_id;
+        $params[] = $user_id;
+
+        $sql = "SELECT DISTINCT h.* FROM {pxaiwriter_history} h
+                LEFT JOIN {assign_submission} s ON s.id = h.submission
+                LEFT JOIN {groups_members} gm ON gm.groupid = s.groupid
+                WHERE h.status $in_status_sql 
+                    AND h.submission = ?
+                    AND (h.userid = ? OR gm.userid = ?)
+                ORDER BY h.status, h.step, h.id";
+
+        $records = $this->db()->get_recordset_sql($sql, $params);
+        $collection = $this->mapper->map_collection($records);
+        $records->close();
+        return $collection;
+    }
+
+    private function get_history_list_by_submission_id(int $submission_id): collection
+    {
+        [$in_status_sql, $params] = $this->factory->moodle()->db()->get_in_or_equal([
+            entity::STATUS_DRAFTED,
+            entity::STATUS_SUBMITTED
+        ]);
+
+        $params[] = $submission_id;
+
+        $sql = "SELECT DISTINCT h.* FROM {pxaiwriter_history} h
+                LEFT JOIN {assign_submission} s ON s.id = h.submission
+                LEFT JOIN {groups_members} gm ON gm.groupid = s.groupid
+                WHERE h.status $in_status_sql 
+                    AND h.submission = ?
+                ORDER BY h.status, h.step, h.id";
+
+        $records = $this->db()->get_recordset_sql($sql, $params);
+        $collection = $this->mapper->map_collection($records);
+        $records->close();
+        return $collection;
     }
 
     private function get_first_item(array $items): ?entity

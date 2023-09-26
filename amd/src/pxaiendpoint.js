@@ -1,6 +1,14 @@
+/* eslint-disable camelcase */
 import $ from "jquery";
 import Ajax from "core/ajax";
 import Notification from "core/notification";
+
+/**
+ * @typedef {Object} HistoryRecordResponse
+ * @property {string} checksum
+ * @property {string} timecreated
+ * @property {string} timemodified
+ */
 
 /**
  * @typedef TextAreaData
@@ -14,6 +22,7 @@ import Notification from "core/notification";
  * @param {number} assignmentId
  * @param {number} submissionId
  * @param {number} stepNumber
+ * @return {EventCreator}
  */
 export const init = (
     assignmentId,
@@ -23,13 +32,42 @@ export const init = (
 
     const defaultStep = 1;
 
+    let properties = {
+        checksumList: {},
+    };
+
+    /**
+     * @param {number} step
+     * @return {string}
+     */
+    const getChecksumByStep = (step) => {
+        return properties.checksumList[step] ?? '';
+    };
+
+    /**
+     * @param {number} step
+     * @param {string} checksum
+     */
+    const setChecksumByStep = (step, checksum) => {
+        properties.checksumList[step] = checksum;
+    };
+
+    const getNumberFromAttribute = (element, attribute) => {
+        const value = element?.getAttribute(attribute);
+        if (!value) {
+            return undefined;
+        }
+        const number = Number.parseInt(value);
+        return Number.isNaN(number) ? undefined : number;
+    };
+
     /**
      * @param {number} assignmentId
      * @param {number} submissionId
      * @param {number} stepNumber
      * @constructor
      */
-    let EventCreator = function (assignmentId, submissionId, stepNumber) {
+    let EventCreator = function(assignmentId, submissionId, stepNumber) {
         this.currentStep = stepNumber;
         this.selectedStart = 0;
         this.selectedEnd = 0;
@@ -127,6 +165,7 @@ export const init = (
                     event.stopPropagation();
                     return false;
                 }
+                return true;
             });
             element.addEventListener('paste', (event) => {
                 event.preventDefault();
@@ -239,9 +278,9 @@ export const init = (
 
     /**
      * @param {string} text
-     * @return {Promise<string|null>}
+     * @return {Promise<string>}
      */
-    const getHashCode = async (text) => {
+    const getHashCode = async(text) => {
         if (!text) {
             return null;
         }
@@ -250,9 +289,9 @@ export const init = (
             const buffer = encoder.encode(text);
             const raw = await crypto.subtle.digest("SHA-256", buffer);
             return Array.from(new Uint8Array(raw)).map(b => b.toString(16).padStart(2, "0")).join("");
+        } catch (e) {
+            return '';
         }
-        catch (e) {}
-        return null;
     };
 
     /**
@@ -309,12 +348,11 @@ export const init = (
             });
         },
         /**
-         * @template T
          * @param {number} assignmentId
          * @param {number} submissionId
          * @param {string} text
          * @param {number} step
-         * @return {Promise<T>}
+         * @return {Promise<HistoryRecordResponse>}
          */
         recordHistory: (assignmentId, submissionId, text, step = 1) => {
             return requestAIApi('assignsubmission_pxaiwriter_record_history', {
@@ -326,7 +364,7 @@ export const init = (
         }
     };
 
-    EventCreator.prototype.init = function () {
+    EventCreator.prototype.init = function() {
 
         preventPasting(selectors.input);
 
@@ -334,26 +372,20 @@ export const init = (
          * @param {HTMLElement} button
          */
         const highlightStepButton = (button) => {
-
             if (!(button instanceof HTMLElement)) {
                 return;
             }
-
-            button.classList.add('btn-outline-primary');
-            button.classList.remove('btn-outline-secondary');
+            button.classList.add('current');
         };
 
         /**
          * @param {HTMLElement} button
          */
         const blurStepButton = (button) => {
-
             if (!(button instanceof HTMLElement)) {
                 return;
             }
-
-            button.classList.remove('btn-outline-primary');
-            button.classList.add('btn-outline-secondary');
+            button.classList.remove('current');
         };
 
         const wrapper = document.querySelector(selectors.wrapper);
@@ -380,7 +412,7 @@ export const init = (
             copyTextFromPreviousStep(step);
         });
 
-        wrapper?.addEventListener(eventList.pageChange, async (e) => {
+        wrapper?.addEventListener(eventList.pageChange, async(e) => {
             if (isDebugMode()) {
                 window.console.log(`${component}: Page changed`);
             }
@@ -389,7 +421,7 @@ export const init = (
             await recordHistory(step);
         });
 
-        document.querySelector(selectors.expandSelection)?.addEventListener("click", async (e) => {
+        document.querySelector(selectors.expandSelection)?.addEventListener("click", async(e) => {
 
             if (isDebugMode()) {
                 window.console.log(`${component}: Expand selected text...`);
@@ -419,13 +451,12 @@ export const init = (
                 );
                 setApiResponseToInput(this.currentStep, response);
                 await dispatchHistoryFromInput();
-            }
-            catch (exception) {
+            } catch (exception) {
                 await Notification.exception(exception);
             }
         });
 
-        document.querySelector(selectors.doAIMagic)?.addEventListener("click", async (e) => {
+        document.querySelector(selectors.doAIMagic)?.addEventListener("click", async(e) => {
 
             if (isDebugMode()) {
                 window.console.log(`${component}: Do AI magic...`);
@@ -451,10 +482,18 @@ export const init = (
                 );
                 setApiResponseToInput(this.currentStep, response);
                 await dispatchHistoryFromInput();
-            }
-            catch (exception) {
+            } catch (exception) {
                 await Notification.exception(exception);
             }
+        });
+
+        document.querySelectorAll('textarea.pxaiwriter-student-data').forEach(async(element) => {
+            const step = getNumberFromAttribute(element, 'data-input-step');
+            if (step < 1) {
+                return;
+            }
+            const checksum = await getHashCode(element.value);
+            setChecksumByStep(step, checksum);
         });
     };
 
@@ -481,7 +520,7 @@ export const init = (
      * @param {number} step
      * @return {Promise<void>}
      */
-    const recordHistory = async (step) => {
+    const recordHistory = async(step) => {
         if (isDebugMode()) {
             window.console.log(`${component}: Saving history...`);
         }
@@ -493,26 +532,24 @@ export const init = (
             return;
         }
         const text = getStepInputText(step);
-        const response = await api.recordHistory(assignmentId, submissionId, text, step);
+        const checksum = await getHashCode(text);
 
-        if (isDebugMode() && response.hasOwnProperty("checksum")) {
-            if (!response.checksum) {
-                window.console.log(`${component}: Cannot determine the changes in the data`);
-                return;
-            }
-
-            let textChecksum = await getHashCode(text);
-            textChecksum = textChecksum.toLocaleLowerCase();
-            if (response.checksum === textChecksum) {
-                window.console.log(`${component}: Input text got recorded`);
-            }
-            else {
+        if (checksum === getChecksumByStep(step)) {
+            if (isDebugMode()) {
                 window.console.log(`${component}: Nothing has been changed`);
             }
+            return;
+        }
+
+        const response = await api.recordHistory(assignmentId, submissionId, text, step);
+        setChecksumByStep(step, response.checksum);
+
+        if (isDebugMode()) {
+            window.console.log(`${component}: Input text got recorded`);
         }
     };
 
-    const dispatchHistoryFromInput = async () => {
+    const dispatchHistoryFromInput = async() => {
         const elements = document.querySelectorAll(selectors.input);
         for (const element of elements) {
             if (element instanceof HTMLTextAreaElement) {
@@ -521,5 +558,5 @@ export const init = (
         }
     };
 
-    return new EventCreator(assignmentId,  submissionId, stepNumber);
+    return new EventCreator(assignmentId, submissionId, stepNumber);
 };

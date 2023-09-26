@@ -33,6 +33,8 @@ interface repository
 
     public function get_by_assign_submission(object $submission): ?entity;
 
+    public function has_id(int $submission_id): bool;
+
     public function create_by_submission_history(submission_history $submission_history): entity;
 
     public function update_by_submission_history(entity $entity, submission_history $submission_history): void;
@@ -40,6 +42,12 @@ interface repository
     public function save_data(object $submission, object $submission_data): void;
 
     public function delete_by_submission(object $submission): void;
+
+    public function delete_by_assignment_id(int $assignment_id): void;
+
+    public function delete_by_assign_submission(int $assignment_id, int $submission_id): void;
+
+    public function copy_to(entity $source, int $destination_submission_id): void;
 
     public function insert(entity $entity): void;
     public function update(entity $entity): void;

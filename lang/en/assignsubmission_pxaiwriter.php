@@ -42,6 +42,9 @@ $string["attempt_count_description"] = "";
 
 // General
 $string['guide_to_step_label'] = "Guide to step";
+$string['guide_to_step_with_helper'] = '{$a->step}: {$a->help}';
+$string['guide_to_step_no_helper'] = '{$a->step}';
+$string['ai_step_helper'] = "Interaction with AI";
 $string['add_step_label'] = "Add another step";
 $string['remove_step_label'] = "Delete step";
 $string['submission_step_label'] = "AI writer submission steps";
@@ -89,6 +92,7 @@ $string['system_role_message'] = 'You are a helpful assistant.';
 $string['eventassessableuploaded'] = 'Uploaded assessable';
 $string['event_ai_text_generated'] = 'AI writer text generated';
 $string['event_history_record_updated'] = 'AI writer history record updated';
+$string['event_history_record_updated_error'] = 'AI writer history record updated error';
 
 // Errors
 $string['error_course_module_not_found_by_assign_id'] = 'Could not find course module by assignment id {$a}';
@@ -100,6 +104,8 @@ $string['error_expand_ai_text_api'] = 'Could not expand AI text this time';
 $string['error_record_history_api'] = 'Could not record history this time';
 
 // Privacy
+$string['privacy:path'] = 'AI writer history';
+
 $string['privacy:metadata:file'] = 'AI writer stored files for the PDF annotation';
 
 $string['privacy:metadata:assignsubmission_pxaiwriter'] = 'Stores the AI writer submission steps of the submission';
@@ -113,5 +119,15 @@ $string['privacy:metadata:pxaiwriter_history:submission'] = 'The ID of the submi
 $string['privacy:metadata:pxaiwriter_history:step'] = 'The step number';
 $string['privacy:metadata:pxaiwriter_history:status'] = 'The status of the history';
 $string['privacy:metadata:pxaiwriter_history:type'] = 'The type of the history';
-$string['privacy:metadata:pxaiwriter_history:input_text'] = 'User input text';
 $string['privacy:metadata:pxaiwriter_history:data'] = 'The result of the AI writer';
+
+$string['privacy:metadata:pxaiwriter_history:status:deleted'] = 'Deleted';
+$string['privacy:metadata:pxaiwriter_history:status:drafted'] = 'Drafted';
+$string['privacy:metadata:pxaiwriter_history:status:failed'] = 'Failed';
+$string['privacy:metadata:pxaiwriter_history:status:submitted'] = 'Submitted';
+$string['privacy:metadata:pxaiwriter_history:status:unknown'] = 'Unknown';
+
+$string['privacy:metadata:pxaiwriter_history:type:ai-expand'] = 'AI Expanded text';
+$string['privacy:metadata:pxaiwriter_history:type:ai-generate'] = 'AI Generated text';
+$string['privacy:metadata:pxaiwriter_history:type:user-edit'] = 'Edited by user';
+$string['privacy:metadata:pxaiwriter_history:type:unknown'] = 'Unknown';

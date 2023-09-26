@@ -1,13 +1,19 @@
 <?php
 
+namespace assignsubmission_pxaiwriter;
 
+use assignsubmission_pxaiwriter\app\factory;
+use HTML_QuickForm_element;
+use stdClass;
+
+/* @codeCoverageIgnoreStart */
 defined('MOODLE_INTERNAL') || die();
+/* @codeCoverageIgnoreEnd */
 
 global $CFG;
-
-require_once($CFG->libdir . '/form/datetimeselector.php');
-require_once('HTML/QuickForm/element.php');
-require_once($CFG->dirroot . '/lib/filelib.php');
+require_once $CFG->libdir . '/form/datetimeselector.php';
+require_once $CFG->libdir . '/formslib.php';
+require_once $CFG->dirroot . '/lib/filelib.php';
 
 /**
  * Datetime rule element.
@@ -26,17 +32,6 @@ class pxaiwriter_steps_form_element extends HTML_QuickForm_element
         $this->_init_val = $initvalue;
         $this->_has_used = $hasUsed;
         parent::__construct($elementName, $elementLabel, $attributes);
-    }
-
-    /**
-     * Old syntax of class constructor. Deprecated in PHP7.
-     *
-     * @deprecated since Moodle 3.1
-     */
-    public function pxaiwriter_steps_form_element($elementName = null, $elementLabel = null, $attributes = null, $initvalue = null)
-    {
-        debugging('Use of class name as constructor is deprecated', DEBUG_DEVELOPER);
-        self::__construct($elementName, $elementLabel, $attributes, $initvalue);
     }
 
     function setName($name) {
@@ -65,12 +60,12 @@ class pxaiwriter_steps_form_element extends HTML_QuickForm_element
         global $OUTPUT, $PAGE;
 
         $stepConfig = new stdClass();
-        $stepConfig->steps = $this->_init_val;
+        $stepConfig->steps = $this->get_steps_with_guide_info($this->_init_val);
         $stepLabel = get_string('guide_to_step_label', 'assignsubmission_pxaiwriter');
         $stepConfig->template = '<div class="row mb-2" id="step_{{step}}">
                                     <div class="col-md-11">
                                         <div class=" form-group row">
-                                            <label for="staticEmail" class="col-md-3 col-form-label">'.$stepLabel.'&nbsp;{{step}}</label>
+                                            <label for="staticEmail" class="col-md-3 col-form-label">'.$stepLabel.' {{{guide}}}</label>
                                             <div class="col-md-9">
                                                 <textarea class="form-control step-des" name="step_{{step}}_value" id="step_{{step}}_value" data-id="{{step}}">{{ description }}</textarea>
                                             </div>
@@ -88,6 +83,43 @@ class pxaiwriter_steps_form_element extends HTML_QuickForm_element
         // Includes the config javascript for tempalte actions
         $module = array('name' => 'assignsubmission_pxaiwriter_stepConfig', 'fullpath' => '/mod/assign/submission/pxaiwriter/classes/pxaiwriter-step-config.js');
         $PAGE->requires->js_init_call('stepConfig.init', array($stepConfig), true, $module);
+
         return $html;
+    }
+
+    private function get_steps_with_guide_info(array $steps): array
+    {
+        $items = [];
+        foreach ($steps as $step)
+        {
+            if ($this->is_ai_step($step))
+            {
+                $step->help = $this->get_plugin_string('ai_step_helper');
+                $step->guide = $this->get_plugin_string(
+                    'guide_to_step_with_helper',
+                    $step
+                );
+                $items[] = $step;
+                continue;
+            }
+            $step->help = '';
+            $step->guide = $this->get_plugin_string('guide_to_step_no_helper', $step);
+            $items[] = $step;
+        }
+
+        return $items;
+    }
+
+    private function get_plugin_string(string $identifier, $arguments = null): string
+    {
+        return factory::make()->moodle()->get_string(
+            $identifier,
+            $arguments
+        );
+    }
+
+    private function is_ai_step($step): bool
+    {
+        return isset($step->step) && $step->step === 1;
     }
 }

@@ -110,6 +110,16 @@ class repository implements interfaces\repository
         );
     }
 
+    public function has_id(int $submission_id): bool
+    {
+        return $this->db()->record_exists(
+            $this->get_table(),
+            [
+                'submission' => $submission_id
+            ]
+        );
+    }
+
     public function add_ai_writer_submission_data(
         object $submission,
         object $submission_data,
@@ -223,6 +233,14 @@ class repository implements interfaces\repository
         $archive->save_draft();
     }
 
+    public function copy_to(entity $source, int $destination_submission_id): void
+    {
+        $instance = $source->to_object();
+        unset($instance->id);
+        $instance->submission = $destination_submission_id;
+        $this->db()->insert_record($this->get_table(), $instance);
+    }
+
     public function insert(interfaces\entity $entity): void
     {
         $id = $this->db()->insert_record($this->get_table(), $entity->to_object());
@@ -236,6 +254,58 @@ class repository implements interfaces\repository
 
     public function delete_by_submission(object $submission): void
     {
+        if (!isset($submission->id))
+        {
+            return;
+        }
+
+        $this->delete_history_by_submission($submission);
+
+        $this->db()->delete_records(
+            $this->get_table(),
+            [
+                'id' => $submission->id
+            ]
+        );
+    }
+
+    public function delete_by_assignment_id(int $assignment_id): void
+    {
+        $this->db()->delete_records_select(
+            $this->get_table(),
+            'assignment = :assignment_id',
+            ['assignment' => $assignment_id]
+        );
+
+        $this->factory->ai()->history()->repository()->delete_by_assignment_id(
+            $assignment_id
+        );
+    }
+
+    public function delete_by_assign_submission(int $assignment_id, int $submission_id): void
+    {
+        $this->db()->delete_records_select(
+            $this->get_table(),
+            'assignment = :assignment AND submission = :submission',
+            [
+                'assignment' => $assignment_id,
+                'submission' => $submission_id
+            ]
+        );
+
+        $this->factory->ai()->history()->repository()->delete_by_assign_submission(
+            $assignment_id,
+            $submission_id
+        );
+    }
+
+
+    private function delete_history_by_submission(object $submission): void
+    {
+        if (!isset($submission->userid, $submission->assignment))
+        {
+            return;
+        }
         $this->factory->ai()->history()->repository()->delete_by_user_assignment(
             $submission->userid,
             $submission->assignment
