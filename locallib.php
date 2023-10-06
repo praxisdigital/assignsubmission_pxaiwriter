@@ -253,6 +253,10 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
     {
         $assign_id = $this->assignment->get_instance()->id;
 
+        if ($assign_id < 1) {
+            return true;
+        }
+
         $this->factory()->submission()->repository()->delete_by_assignment_id($assign_id);
 
         $this->factory()->file()->repository()->delete_files_by_context(
