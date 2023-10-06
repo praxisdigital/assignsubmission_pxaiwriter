@@ -273,12 +273,8 @@ class repository implements interfaces\repository
     {
         $this->db()->delete_records_select(
             $this->get_table(),
-            'assignment = :assignment_id',
+            'assignment = :assignment',
             ['assignment' => $assignment_id]
-        );
-
-        $this->factory->ai()->history()->repository()->delete_by_assignment_id(
-            $assignment_id
         );
     }
 

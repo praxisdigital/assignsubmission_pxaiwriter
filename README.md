@@ -40,6 +40,9 @@ You can access these set of settings here : https://<site>/admin/settings.php?se
 - Either click on 'Save and return to course' or 'Save and display' button to save the submission configuration.
 
 ## Release notes
+- **1.3.2** (2023100600)
+  - Fixes:
+    - Fix user unable to delete the assignment when AI writer submission is enabled.
 - **1.3.1** (2023091501)
   - Changes:
     - Add privacy provider for the history records.
