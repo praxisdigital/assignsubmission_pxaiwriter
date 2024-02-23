@@ -97,7 +97,7 @@ class collection implements interfaces\collection, JsonSerializable
         return $this->items[$offset];
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
         return $this->to_array();
     }

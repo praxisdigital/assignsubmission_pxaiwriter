@@ -44,7 +44,7 @@ class step_config implements interfaces\step_config, \JsonSerializable
         $this->config->value = $entity->get_data();
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): object
     {
         return $this->to_object();
     }

@@ -14,10 +14,18 @@ use assignsubmission_pxaiwriter\external\ai\generate_ai_text;
 defined('MOODLE_INTERNAL') || die();
 /* @codeCoverageIgnoreEnd */
 
-define('PHPUNIT_ISOLATED_TEST', true);
+if (!defined('PHPUNIT_ISOLATED_TEST')) {
+    define('PHPUNIT_ISOLATED_TEST', true);
+}
 
+/**
+ * @runTestsInSeparateProcesses
+ */
 class generate_ai_text_test extends integration_testcase
 {
+    /**
+     * @runInSeparateProcess
+     */
     public function test_execute(): void
     {
         $max_attempts = 2;
