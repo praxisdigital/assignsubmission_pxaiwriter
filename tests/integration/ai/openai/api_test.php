@@ -37,9 +37,6 @@ class api_test extends integration_testcase
         $chat_completion_data = $this->get_fake_chat_completion_api_data();
         $expected_chat_text = $chat_completion_data['choices'][0]['message']['content'];
 
-        $text_completion_data = $this->get_fake_text_completion_api_data();
-        $expected_text = $text_completion_data['choices'][0]['text'];
-
         return [
             $this->get_provider_data(
                 models::GPT_3_5_TURBO,
@@ -48,16 +45,16 @@ class api_test extends integration_testcase
                 $chat_completion_data
             ),
             $this->get_provider_data(
-                models::TEXT_DAVINCI_2,
+                models::GPT_4,
                 $user_text,
-                $expected_text,
-                $text_completion_data
+                $expected_chat_text,
+                $chat_completion_data
             ),
             $this->get_provider_data(
-                models::TEXT_DAVINCI_3,
+                models::GPT_4_TURBO,
                 $user_text,
-                $expected_text,
-                $text_completion_data
+                $expected_chat_text,
+                $chat_completion_data
             ),
         ];
     }
@@ -149,29 +146,6 @@ class api_test extends integration_testcase
         $factory->set_mock_method('http', $http_factory);
 
         return $factory;
-    }
-
-    private function get_fake_text_completion_api_data(): array
-    {
-        return [
-            'id' => "cmpl-divIuq2NRTHNUFcAwMZK3FbHaTQdS",
-            'object' => "text_completion",
-            'created' => 1681885800,
-            'model' => "text-davinci-003",
-            'choices' => [
-                [
-                    "text" => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-                    "index" => 0,
-                    "logprobs" => null,
-                    "finish_reason" => "stop"
-                ]
-            ],
-            'usage' => [
-                'prompt_tokens' => 11,
-                'completion_tokens' => 222,
-                'total_tokens' => 233
-            ]
-        ];
     }
 
     private function get_fake_chat_completion_api_data(): array

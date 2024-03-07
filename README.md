@@ -40,6 +40,14 @@ You can access these set of settings here : https://<site>/admin/settings.php?se
 - Either click on 'Save and return to course' or 'Save and display' button to save the submission configuration.
 
 ## Release notes
+- **1.4.0** (2024022300)
+  - New feature:
+    - Add new models
+      - "gpt-4"
+      - "gpt-4-turbo-preview"
+    - Remove deprecated models
+      - "text-davinci-003"
+      - "text-davinci-002"
 - **1.3.2** (2023100600)
   - Fixes:
     - Fix user unable to delete the assignment when AI writer submission is enabled.

@@ -23,9 +23,9 @@ class models implements interfaces\models
     public function get_model_urls(): array
     {
         return [
-            self::GPT_3_5_TURBO => 'https://api.openai.com/v1/chat/completions',
-            self::TEXT_DAVINCI_3 => 'https://api.openai.com/v1/completions',
-            self::TEXT_DAVINCI_2 => 'https://api.openai.com/v1/completions',
+            self::GPT_4 => self::API_URL_CHAT_COMPLETIONS,
+            self::GPT_4_TURBO => self::API_URL_CHAT_COMPLETIONS,
+            self::GPT_3_5_TURBO => self::API_URL_CHAT_COMPLETIONS,
         ];
     }
 
@@ -46,11 +46,16 @@ class models implements interfaces\models
             null,
             'moodle'
         );
+        $preview = factory::make()->moodle()->get_string(
+            'preview',
+            null,
+            'moodle'
+        );
 
         return [
+            self::GPT_4_TURBO => self::GPT_4_TURBO . " (GPT-4) ($preview)",
+            self::GPT_4 => self::GPT_4 . " (GPT-4)",
             self::GPT_3_5_TURBO => self::GPT_3_5_TURBO . " (GPT-3.5) ($recommended)",
-            self::TEXT_DAVINCI_3 => self::TEXT_DAVINCI_3 . ' (GPT-3.5)',
-            self::TEXT_DAVINCI_2 => self::TEXT_DAVINCI_2 . ' (GPT-3.5)',
         ];
     }
 

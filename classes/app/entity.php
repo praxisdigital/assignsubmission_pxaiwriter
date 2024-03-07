@@ -28,7 +28,7 @@ abstract class entity implements interfaces\entity, JsonSerializable
         $this->record['id'] = $id;
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
         return $this->to_array();
     }

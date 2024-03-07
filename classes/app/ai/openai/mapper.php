@@ -23,33 +23,47 @@ class mapper implements interfaces\mapper
 
     public function map_response(string $json, string $model): string
     {
+        return $this->get_mapped_response($json, $model);
+    }
+
+    public function map_request(string $text, settings $settings): array
+    {
+        return $this->get_mapped_request($text, $settings);
+    }
+
+    private function get_api_by_model(string $model): string
+    {
+        return models::instance()->get_model_url($model);
+    }
+
+    private function get_mapped_response(string $json, string $model): string
+    {
+        $api_url = $this->get_api_by_model($model);
+
         $response = $this->factory->helper()->encoding()->json()->decode_as_array($json);
         $this->throw_on_error_response($response);
 
-        switch ($model) {
-            case interfaces\models::GPT_3_5_TURBO:
+        switch ($api_url) {
+            case models::API_URL_CHAT_COMPLETIONS:
                 return $this->get_chat_message($response);
-            case interfaces\models::TEXT_DAVINCI_2:
-            case interfaces\models::TEXT_DAVINCI_3:
+            case models::API_URL_TEXT_COMPLETIONS:
                 return $this->get_text_completion($response);
             default:
                 throw unsupported_openai_model_exception::by_model_type($model);
         }
     }
 
-    public function map_request(string $text, settings $settings): array
+    private function get_mapped_request(string $text, settings $settings): array
     {
-        $model = $settings->get_model();
+        $api_url = $this->get_api_by_model($settings->get_model());
 
-        switch ($model)
-        {
-            case interfaces\models::GPT_3_5_TURBO:
+        switch ($api_url) {
+            case models::API_URL_CHAT_COMPLETIONS:
                 return $this->get_chat_completion_request($text, $settings);
-            case interfaces\models::TEXT_DAVINCI_2:
-            case interfaces\models::TEXT_DAVINCI_3:
+            case models::API_URL_TEXT_COMPLETIONS:
                 return $this->get_text_completion_request($text, $settings);
             default:
-                throw unsupported_openai_model_exception::by_model_type($model);
+                throw unsupported_openai_model_exception::by_model_type($settings->get_model());
         }
     }
 

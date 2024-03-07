@@ -55,7 +55,7 @@ class steps_data implements \JsonSerializable
         return $this->data['old_steps_data'] ?? [];
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
         return $this->data;
     }
