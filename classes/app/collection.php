@@ -29,7 +29,7 @@ class collection implements interfaces\collection, JsonSerializable
         next($this->items);
     }
 
-    public function key()
+    public function key(): mixed
     {
         return key($this->items);
     }
@@ -44,17 +44,17 @@ class collection implements interfaces\collection, JsonSerializable
         reset($this->items);
     }
 
-    public function offsetExists($offset): bool
+    public function offsetExists(mixed $offset): bool
     {
         return isset($this->items[$offset]);
     }
 
-    public function offsetSet($offset, $value): void
+    public function offsetSet(mixed $offset, mixed $value): void
     {
         $this->items[$offset] = $value;
     }
 
-    public function offsetUnset($offset): void
+    public function offsetUnset(mixed $offset): void
     {
         unset($this->items[$offset]);
     }
@@ -67,12 +67,12 @@ class collection implements interfaces\collection, JsonSerializable
     /**
      * @return T
      */
-    public function current()
+    public function current(): mixed
     {
         return current($this->items);
     }
 
-    public function last()
+    public function last(): mixed
     {
         if (empty($this->items))
         {
@@ -92,7 +92,7 @@ class collection implements interfaces\collection, JsonSerializable
      * @param $offset
      * @return T
      */
-    public function offsetGet($offset)
+    public function offsetGet(mixed $offset): mixed
     {
         return $this->items[$offset];
     }
