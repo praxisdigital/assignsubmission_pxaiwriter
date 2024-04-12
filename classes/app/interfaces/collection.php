@@ -20,12 +20,12 @@ interface collection extends ArrayAccess, Iterator, Countable
     /**
      * @return T
      */
-    public function current();
+    public function current(): mixed;
 
     /**
      * @return T|null
      */
-    public function last();
+    public function last(): mixed;
 
     /**
      * @param int $count
@@ -37,7 +37,7 @@ interface collection extends ArrayAccess, Iterator, Countable
      * @param mixed $offset
      * @return T
      */
-    public function offsetGet($offset);
+    public function offsetGet(mixed $offset): mixed;
 
     public function to_array(): array;
 }

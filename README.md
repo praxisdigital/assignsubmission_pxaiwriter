@@ -40,6 +40,8 @@ You can access these set of settings here : https://<site>/admin/settings.php?se
 - Either click on 'Save and return to course' or 'Save and display' button to save the submission configuration.
 
 ## Release notes
+- **1.5.0** (2024041000)
+  - Added support for PHP 8.0 - 8.2
 - **1.4.0** (2024022300)
   - New feature:
     - Add new models

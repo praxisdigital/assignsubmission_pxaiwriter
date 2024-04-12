@@ -15,6 +15,7 @@ defined('MOODLE_INTERNAL') || die();
 class repository_test extends integration_testcase
 {
     private object $user1;
+    private object $user2;
     private object $course;
     private mod_assign_testable_assign $assignment;
     private history_repository $repo;
