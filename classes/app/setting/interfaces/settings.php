@@ -22,4 +22,5 @@ interface settings
     public function get_url(): string;
 
     public function get_attempt_count(): int;
+    public function get_system_message(): string;
 }

@@ -46,14 +46,8 @@ class models implements interfaces\models
             null,
             'moodle'
         );
-        $preview = factory::make()->moodle()->get_string(
-            'preview',
-            null,
-            'moodle'
-        );
-
         return [
-            self::GPT_4_TURBO => self::GPT_4_TURBO . " (GPT-4) ($preview)",
+            self::GPT_4_TURBO => self::GPT_4_TURBO . " (GPT-4)",
             self::GPT_4 => self::GPT_4 . " (GPT-4)",
             self::GPT_3_5_TURBO => self::GPT_3_5_TURBO . " (GPT-3.5) ($recommended)",
         ];

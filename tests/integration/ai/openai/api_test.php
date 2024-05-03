@@ -21,21 +21,27 @@ class api_test extends integration_testcase
         string $model,
         string $user_text,
         string $expected_ai_text,
-        array $response_data
+        array $responses
     ): array
     {
         return [
             $model,
             $user_text,
             $expected_ai_text,
-            $response_data
+            $responses
         ];
     }
 
     private function get_data_provider_list(string $user_text): array
     {
-        $chat_completion_data = $this->get_fake_chat_completion_api_data();
-        $expected_chat_text = $chat_completion_data['choices'][0]['message']['content'];
+        $chat_completion_data = $this->get_fake_chat_completion_api_data_default();
+        $expected_chat_text = $this->get_expected_text_from_responses($chat_completion_data);
+
+        $messages = [
+            'A mighty orc that loose in the end.',
+            ' The cat is victorious in the end.',
+            ' But the orc is not defeated yet.',
+        ];
 
         return [
             $this->get_provider_data(
@@ -56,7 +62,22 @@ class api_test extends integration_testcase
                 $expected_chat_text,
                 $chat_completion_data
             ),
+            $this->get_provider_data(
+                models::GPT_3_5_TURBO,
+                $user_text,
+                implode('', $messages),
+                $this->get_fake_chat_completion_api_data_chain($messages)
+            ),
         ];
+    }
+
+    private function get_expected_text_from_responses(array $responses): string
+    {
+        $expected_text = '';
+        foreach ($responses as $response) {
+            $expected_text .= $response->choices[0]->message->content ?? '';
+        }
+        return $expected_text;
     }
 
     public function generate_ai_text_provider(): array
@@ -71,19 +92,19 @@ class api_test extends integration_testcase
      * @param string $model
      * @param string $user_text
      * @param string $expected_text
-     * @param array $response_data
+     * @param object[] $responses
      * @return void
      */
     public function test_generate_ai_text(
         string $model,
         string $user_text,
         string $expected_text,
-        array $response_data
+        array $responses
     ): void
     {
         $api = new api($this->get_fake_factory(
             $model,
-            $response_data
+            $responses
         ));
         $ai_text = $api->generate_ai_text($user_text);
         self::assertSame(
@@ -102,19 +123,19 @@ class api_test extends integration_testcase
      * @param string $model
      * @param string $user_text
      * @param string $expected_text
-     * @param array $response_data
+     * @param object[] $responses
      * @return void
      */
     public function test_expand_ai_text(
         string $model,
         string $user_text,
         string $expected_text,
-        array $response_data
+        array $responses
     ): void
     {
         $api = new api($this->get_fake_factory(
             $model,
-            $response_data
+            $responses
         ));
         $ai_text = $api->expand_ai_text($user_text);
         self::assertSame(
@@ -125,15 +146,25 @@ class api_test extends integration_testcase
 
     private function get_fake_factory(
         string $model,
-        array $response_data
+        array $responses
     ): \assignsubmission_pxaiwriter\app\interfaces\factory
     {
         $settings = new admin_settings();
         $settings->set_mock_method('get_model', $model);
 
         $rest = $this->createMock(rest::class);
+        $rest->responses = $responses;
         $rest->method('post')
-            ->willReturn(new response(json_encode($response_data)));
+            ->willReturnCallback(static function () use ($rest) {
+                $response = current($rest->responses);
+                if ($response === false) {
+                    return new response(json_encode([]));
+                }
+
+                next($rest->responses);
+
+                return new response(json_encode($response));
+            });
 
         $http_factory = new \assignsubmission_pxaiwriter\app\test\mock\http\factory();
         $http_factory->set_mock_method('json', $rest);
@@ -148,17 +179,19 @@ class api_test extends integration_testcase
         return $factory;
     }
 
-    private function get_fake_chat_completion_api_data(): array
+    private function get_fake_chat_completion_api_data(array $response = []): object
     {
-        return [
+        $prompt_tokens = 54;
+        $completion_tokens = 22;
+        $openai_response = [
             'id' => 'chatcmpl-dvwVzFSAh4DsvWjvqJlx9lgJK3Was',
             'object' => 'chat.completion',
             'created' => 1681885800,
             'model' => 'gpt-3.5-turbo-0301',
             'usage' => [
-                'prompt_tokens' => 54,
-                'completion_tokens' => 256,
-                'total_tokens' => 310
+                'prompt_tokens' => $prompt_tokens,
+                'completion_tokens' => $completion_tokens,
+                'total_tokens' => $prompt_tokens + $completion_tokens
             ],
             'choices' => [
                 [
@@ -166,10 +199,48 @@ class api_test extends integration_testcase
                         'role' => 'assistant',
                         'content' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
                     ],
-                    'finish_reason' => 'length',
+                    'finish_reason' => 'stop',
                     'index' => 0
                 ]
             ]
         ];
+        $data = array_merge($openai_response, $response);
+        $json = json_encode($data);
+        return json_decode($json, false);
+    }
+
+    private function get_fake_chat_completion_api_data_default(array $response = []): array
+    {
+        return [
+            $this->get_fake_chat_completion_api_data($response)
+        ];
+    }
+
+    private function get_fake_chat_completion_api_data_chain(array $messages = []): array
+    {
+        if (empty($messages)) {
+            return [];
+        }
+
+        $responses = [];
+        foreach ($messages as $message) {
+            $responses[] = $this->get_fake_chat_completion_api_data([
+                'choices' => [
+                    [
+                        'message' => [
+                            'role' => 'assistant',
+                            'content' => $message
+                        ],
+                        'finish_reason' => 'length',
+                        'index' => 0
+                    ]
+                ]
+            ]);
+        }
+
+        $last_key = array_key_last($responses);
+        $responses[$last_key]->choices[0]->finish_reason = 'stop';
+
+        return $responses;
     }
 }

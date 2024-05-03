@@ -40,8 +40,16 @@ You can access these set of settings here : https://<site>/admin/settings.php?se
 - Either click on 'Save and return to course' or 'Save and display' button to save the submission configuration.
 
 ## Release notes
+- **1.6.0** (2024050100)
+  - New feature:
+    - Add new models
+      - "gpt-4-turbo"
+  - Fixes:
+    - Fixed plugin stop to retrieve more messages if the completion tokens in the response hit the limit.
+    - Removed OpenAI model "gpt-4-turbo-preview" and replace it with "gpt-4-turbo".
 - **1.5.0** (2024041000)
-  - Added support for PHP 8.0 - 8.2
+  - Changes:
+    - Added support for PHP 8.0 - 8.2
 - **1.4.0** (2024022300)
   - New feature:
     - Add new models
