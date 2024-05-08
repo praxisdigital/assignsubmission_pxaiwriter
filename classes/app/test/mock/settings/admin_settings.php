@@ -109,4 +109,13 @@ class admin_settings extends mocker implements settings
         }
         return $this->settings->get_attempt_count();
     }
+
+    public function get_system_message(): string
+    {
+        if ($this->has_mock(__FUNCTION__))
+        {
+            return $this->call_mock_method(__FUNCTION__);
+        }
+        return $this->settings->get_system_message();
+    }
 }

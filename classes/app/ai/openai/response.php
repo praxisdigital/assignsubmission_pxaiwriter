@@ -21,10 +21,21 @@ class response implements interfaces\response
     {
         return $this->text;
     }
+
     public function get_response_json(): string
     {
         return $this->json;
     }
+
+    public function is_finished(int $message_index = 0): bool
+    {
+        $response = json_decode($this->get_response_json(), true);
+        if (isset($response['choices'][$message_index]['finish_reason'])) {
+            return $response['choices'][$message_index]['finish_reason'] === 'stop';
+        }
+        return false;
+    }
+
     public function __toString()
     {
         return $this->get_text();

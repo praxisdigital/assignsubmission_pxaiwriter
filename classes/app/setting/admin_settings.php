@@ -75,4 +75,9 @@ class admin_settings implements interfaces\settings
     {
         return $this->config->attempt_count ?? 0;
     }
+
+    public function get_system_message(): string
+    {
+        return $this->config->system_message ?? "I am a helpful assistant";
+    }
 }

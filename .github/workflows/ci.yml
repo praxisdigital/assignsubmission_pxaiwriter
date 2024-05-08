@@ -15,30 +15,36 @@ jobs:
     strategy:
       matrix:
         include:
-          ## Moodle 4.0+ with PHP 8.0
-          - os: ubuntu-22.04
-            php: 8.0
-            db: mysqli
-            moodle: MOODLE_402_STABLE
-            experimental: false
           ## Moodle 4.1+ with PHP 8.1
           - os: ubuntu-22.04
             php: 8.1
             db: mysqli
-            moodle: MOODLE_402_STABLE
+            moodle: MOODLE_401_STABLE
             experimental: false
-          ## Moodle dev with PHP 8.2
+          ## Moodle 4.2+ with PHP 8.2
           - os: ubuntu-22.04
             php: 8.2
             db: mysqli
-            moodle: master
+            moodle: MOODLE_402_STABLE
+            experimental: false
+          ## Moodle 4.3+ with PHP 8.2
+          - os: ubuntu-22.04
+            php: 8.2
+            db: mysqli
+            moodle: MOODLE_403_STABLE
+            experimental: false
+          ## Moodle 4.4+ with PHP 8.3
+          - os: ubuntu-22.04
+            php: 8.3
+            db: mysqli
+            moodle: MOODLE_404_STABLE
             experimental: true
     steps:
       - name: Setting up DB mysql
         if: ${{ matrix.db == 'mysqli' }}
         uses: johanmeiring/mysql-action@tmpfs-patch
         with:
-          collation server: utf8mb4_danish_ci
+          collation server: utf8mb4_unicode_ci
           mysql version: 8
           mysql database: test
           mysql user: test
@@ -53,13 +59,13 @@ jobs:
           ini-values: 'max_input_vars=5000'
 
       - name: Checking out code from moodle/moodle
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: moodle/moodle
           ref: ${{ matrix.moodle }}
 
       - name: Check out code from ${{ github.repository }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: ${{ github.workspace }}/mod/assign/submission/pxaiwriter
           ref: ${{ github.ref }}

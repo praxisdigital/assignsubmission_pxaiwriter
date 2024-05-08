@@ -18,7 +18,7 @@ interface models
     public const API_URL_TEXT_COMPLETIONS = 'https://api.openai.com/v1/completions';
 
     public const GPT_4 = 'gpt-4';
-    public const GPT_4_TURBO = 'gpt-4-turbo-preview';
+    public const GPT_4_TURBO = 'gpt-4-turbo';
     public const GPT_3_5_TURBO = 'gpt-3.5-turbo';
 
     /**
