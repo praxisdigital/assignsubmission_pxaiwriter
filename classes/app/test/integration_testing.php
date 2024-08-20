@@ -89,6 +89,7 @@ trait integration_testing
     {
         $record['assignsubmission_pxaiwriter_enabled'] = true;
         $record['assignsubmission_pxaiwriter_steps'] = json_encode($steps_data);
+        $record['assignsubmission_pxaiwriter_step_1_additional_prompt'] = '';
         return $this->create_instance($course, $record);
     }
 
