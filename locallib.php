@@ -11,21 +11,30 @@ define('ASSIGNSUBMISSION_PXAIWRITER_FILEAREA', 'submissions_pxaiwriter');
 
 class assign_submission_pxaiwriter extends assign_submission_plugin
 {
-    public function get_name()
+    public function get_name(): string
     {
         return $this->moodle()->get_string('pluginname');
     }
 
-    public function get_settings(MoodleQuickForm $mform)
+    public function get_settings(MoodleQuickForm $mform): void
     {
         global $CFG;
 
         $steps_info = $this->get_config('pxaiwritersteps');
         $is_in_used = empty($steps_info);
-        $steps = $is_in_used ? $this->get_default_steps_info() : json_decode($steps_info);
+        $steps = $is_in_used ? $this->get_default_steps_info() : json_decode(
+            $steps_info,
+            false,
+            512,
+            JSON_THROW_ON_ERROR
+        );
 
         $mform->addElement('hidden', 'assignsubmission_pxaiwriter_steps', null);
         $mform->setType('assignsubmission_pxaiwriter_steps', PARAM_RAW);
+
+        $mform->addElement('textarea', 'assignsubmission_pxaiwriter_step_1_additional_prompt', get_string('assignsubmission_pxaiwriter_step_1_additional_prompt', 'assignsubmission_pxaiwriter'));
+        $mform->setType('assignsubmission_pxaiwriter_step_1_additional_prompt', PARAM_TEXT);
+        $mform->setDefault('assignsubmission_pxaiwriter_step_1_additional_prompt', $this->get_config('step_1_additional_prompt') ?? '');
 
         MoodleQuickForm::registerElementType(
             'pxaiwriter_steps_section',
@@ -42,22 +51,25 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         );
     }
 
-
     /**
      * Helper for saving the settings
      *
      * @param stdClass $data
      * @return bool
      */
-    public function save_settings(stdClass $data)
+    public function save_settings(object $data): bool
     {
         $this->set_config('pxaiwritersteps', $data->assignsubmission_pxaiwriter_steps);
+        $this->set_config('step_1_additional_prompt', $data->assignsubmission_pxaiwriter_step_1_additional_prompt);
         return true;
     }
 
-    public function get_form_elements($submission, MoodleQuickForm $mform, stdClass $data)
+    public function get_form_elements($submissionorgrade, MoodleQuickForm $mform, object $data): bool
     {
         global $CFG;
+
+        /** @var object $submission */
+        $submission = $submissionorgrade;
 
         $repo = $this->factory()->submission()->repository();
 
@@ -89,7 +101,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         return true;
     }
 
-    public function save(stdClass $submissionorgrade, stdClass $data)
+    public function save(object $submissionorgrade, object $data): bool
     {
         $factory = $this->factory();
         $submission_factory = $factory->submission();
@@ -106,7 +118,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
 
         $factory->file()->pdf()->repository()->save_submission_as_pdf($submission_history);
 
-        if (empty($entity))
+        if (!$entity)
         {
             $entity = $repo->create_by_submission_history($submission_history);
 
@@ -130,12 +142,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         return true;
     }
 
-    public function submission_is_empty(stdClass $data)
-    {
-        return false;
-    }
-
-    public function remove(stdClass $submission)
+    public function remove(object $submission): bool
     {
         if (!isset($submission->id)) {
             return false;
@@ -159,7 +166,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         return true;
     }
 
-    public function get_files(stdClass $submission, stdClass $user)
+    public function get_files(object $submission, object $user): array
     {
         return $this->factory()->file()->repository()->get_submission_files_with_path(
             $this->assignment->get_context(),
@@ -167,19 +174,20 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         );
     }
 
-    public function view_summary(stdClass $submission, &$showviewlink)
+    public function view_summary(object $submission, &$showviewlink): string
     {
         if (!$this->factory()->submission()->repository()->has_id($submission->id))
         {
             return $this->moodle()->get_string('not_available');
         }
 
+        // ewwww
         $showviewlink = true;
+
         return $this->moodle()->get_string('view_submission');
     }
 
-
-    public function view(stdClass $submission)
+    public function view(object $submission): string
     {
         $entity = $this->factory()->submission()->repository()->get_by_assign_submission($submission);
         if ($entity === null)
@@ -208,7 +216,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         return "<br>" . nl2br($data, false);
     }
 
-    public function get_editor_text($name, $submissionid)
+    public function get_editor_text($name, $submissionid): string
     {
         if ($name !== 'pxaiwriter') {
             return '';
@@ -222,34 +230,32 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         return $instance->steps_data;
     }
 
-
-    public function is_empty(stdClass $submission)
+    public function is_empty(object $submissionorgrade): bool
     {
         return false;
     }
 
-    public function get_file_areas()
+    public function get_file_areas(): array
     {
         return [ASSIGNSUBMISSION_PXAIWRITER_FILEAREA => $this->get_name()];
     }
 
-
-    public function copy_submission(stdClass $sourcesubmission, stdClass $destsubmission)
+    public function copy_submission(object $oldsubmission, object $submission): bool
     {
-        $entity = $this->factory()->submission()->repository()->get_by_assign_submission($sourcesubmission);
-        if ($entity === null)
+        $entity = $this->factory()->submission()->repository()->get_by_assign_submission($oldsubmission);
+        if (!$entity)
         {
             return true;
         }
 
         $this->factory()->submission()->repository()->copy_to(
             $entity,
-            $destsubmission->id
+            $submission->id
         );
         return true;
     }
 
-    public function delete_instance()
+    public function delete_instance(): bool
     {
         $assign_id = $this->assignment->get_instance()->id;
 
@@ -283,20 +289,21 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         return $this->factory()->moodle();
     }
 
-    public function get_config_for_external()
+    public function get_config_for_external(): array
     {
         return (array) $this->get_config();
     }
 
-    private function get_assignment_duedate()
+    private function get_assignment_duedate(): ?int
     {
         try {
             return $this->assignment->get_instance()->duedate ?? null;
-        } catch (Exception $e) {}
-        return null;
+        } catch (Exception) {
+            return null;
+        }
     }
 
-    private function get_pxaiwriter_submission($submissionid)
+    private function get_pxaiwriter_submission(int $submissionid)
     {
         return $this->db()->get_record('assignsubmission_pxaiwriter', ['submission' => $submissionid]);
     }

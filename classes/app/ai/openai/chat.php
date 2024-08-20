@@ -14,7 +14,7 @@ class chat implements JsonSerializable
     private settings $settings;
     private array $messages = [];
 
-    function __construct(settings $settings)
+    public function __construct(settings $settings)
     {
         $this->settings = $settings;
     }

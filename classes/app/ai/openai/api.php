@@ -23,9 +23,14 @@ class api implements interfaces\api
         $this->setup_api();
     }
 
-    public function generate_ai_text(string $user_text): interfaces\response
+    public function generate_ai_text(string $assistant_text, string $user_text): interfaces\response
     {
         $chat = new chat($this->get_settings());
+
+        if (!empty($assistant_text)) {
+            $chat->assistant_prompt($assistant_text);
+        }
+
         $chat->user_prompt($user_text);
         return $this->get_response_from_chat_response(
             $this->get_chat_completion($chat)
