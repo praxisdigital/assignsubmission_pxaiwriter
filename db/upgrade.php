@@ -44,7 +44,7 @@ function xmldb_assignsubmission_pxaiwriter_upgrade($oldversion)
             switch ($value) {
                 case 'gpt-4-turbo':
                 case 'gpt-4-turbo-preview':
-                    $value = models::GPT_4_TURBO;
+                    $value = 'gpt-4-turbo';
                     break;
                 case 'gpt-4':
                 case 'gpt-4-preview':
@@ -76,6 +76,36 @@ function xmldb_assignsubmission_pxaiwriter_upgrade($oldversion)
             );
         }
         catch (Exception) {
+            // Do nothing
+        }
+    }
+
+    if ($oldversion < 2024082700) {
+        $setting_name = 'model';
+        try {
+            $value = get_config($component, $setting_name);
+
+            switch ($value) {
+                case 'gpt-4-turbo':
+                case 'gpt-4-turbo-preview':
+                    $value = models::GPT_4_O_MINI;
+                    break;
+            }
+
+            // Force the model to be gpt-4o-mini, if the current model is deprecated
+            set_config(
+                $setting_name,
+                $value,
+                $component
+            );
+
+            upgrade_plugin_savepoint(
+                true,
+                2024082700,
+                'assignsubmission',
+                'pxaiwriter'
+            );
+        } catch (Exception) {
             // Do nothing
         }
     }

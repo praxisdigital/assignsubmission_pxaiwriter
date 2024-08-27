@@ -18,7 +18,8 @@ class models_test extends unit_testcase
     {
         return [
             [models_interface::GPT_3_5_TURBO, 'https://api.openai.com/v1/chat/completions'],
-            [models_interface::GPT_4_TURBO, 'https://api.openai.com/v1/chat/completions'],
+            [models_interface::GPT_4_O, 'https://api.openai.com/v1/chat/completions'],
+            [models_interface::GPT_4_O_MINI, 'https://api.openai.com/v1/chat/completions'],
             [models_interface::GPT_4, 'https://api.openai.com/v1/chat/completions'],
         ];
     }

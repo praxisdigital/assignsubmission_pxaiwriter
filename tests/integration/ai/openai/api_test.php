@@ -61,7 +61,14 @@ class api_test extends integration_testcase
                 $chat_completion_data
             ),
             $this->get_provider_data(
-                models::GPT_4_TURBO,
+                models::GPT_4_O,
+                $assistant_text,
+                $user_text,
+                $expected_chat_text,
+                $chat_completion_data
+            ),
+            $this->get_provider_data(
+                models::GPT_4_O_MINI,
                 $assistant_text,
                 $user_text,
                 $expected_chat_text,
