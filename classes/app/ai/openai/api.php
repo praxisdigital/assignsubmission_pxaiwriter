@@ -26,9 +26,10 @@ class api implements interfaces\api
     public function generate_ai_text(string $assistant_text, string $user_text): interfaces\response
     {
         $chat = new chat($this->get_settings());
+        $chat->system_prompt('You\'re a text completion AI used to help students complete their texts.');
 
         if (!empty($assistant_text)) {
-            $chat->assistant_prompt($assistant_text);
+            $chat->system_prompt($assistant_text);
         }
 
         $chat->user_prompt($user_text);
@@ -37,9 +38,15 @@ class api implements interfaces\api
         );
     }
 
-    public function expand_ai_text(string $user_text): interfaces\response
+    public function expand_ai_text(string $assistant_text, string $user_text): interfaces\response
     {
         $chat = new chat($this->get_settings());
+        $chat->system_prompt('You\'re a text completion AI used to help students complete their texts.');
+
+        if (!empty($assistant_text)) {
+            $chat->system_prompt($assistant_text);
+        }
+
         $chat->user_prompt(
             $this->get_expand_text_sentence($user_text)
         );

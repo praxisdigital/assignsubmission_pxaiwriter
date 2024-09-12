@@ -99,7 +99,10 @@ class generate_ai_text extends base
                 'assignment' => $assignment_id
             ]);
 
-            $response_data = $ai_factory->openai()->api()->generate_ai_text($step_1_additional_prompt, $text);
+            $response_data = $ai_factory->openai()->api()->generate_ai_text(
+                $step_1_additional_prompt === false ? '' : $step_1_additional_prompt,
+                $text
+            );
             $combined_text = $ai_factory->formatter()->text($text, $response_data->get_text());
 
             $archive->commit_by_generate_ai_text(

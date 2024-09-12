@@ -157,7 +157,7 @@ class api_test extends integration_testcase
             $model,
             $responses
         ));
-        $ai_text = $api->expand_ai_text($user_text);
+        $ai_text = $api->expand_ai_text($assistant_text, $user_text);
         self::assertSame(
             $expected_text,
             $ai_text->get_text()

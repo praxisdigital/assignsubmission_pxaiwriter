@@ -11,5 +11,5 @@ interface api
 {
     public function generate_ai_text(string $assistant_text, string $user_text): response;
 
-    public function expand_ai_text(string $user_text): response;
+    public function expand_ai_text(string $assistant_text, string $user_text): response;
 }

@@ -14,7 +14,6 @@ class chat_response implements interfaces\chat_response, JsonSerializable
     private string $response;
     private ?array $data = null;
     private ?array $messages = null;
-    private ?bool $finished = null;
     protected ?interfaces\chat_response $previous;
 
     public function __construct(string $response, ?interfaces\chat_response $previous = null)
@@ -50,11 +49,14 @@ class chat_response implements interfaces\chat_response, JsonSerializable
 
     public function is_finished(): bool
     {
-        if ($this->finished === null) {
-            $choices = $this->get_choices();
-            $this->finished = isset($choices[0]['finish_reason']) && $choices[0]['finish_reason'] !== 'length';
+        $finished = true;
+
+        $choice = $this->get_choices()[0] ?? [];
+        if (isset($choice['finish_reason']) && $choice['finish_reason'] === 'length') {
+            $finished = false;
         }
-        return $this->finished;
+
+        return $finished;
     }
 
     public function set_previous_response(interfaces\chat_response $response): void
