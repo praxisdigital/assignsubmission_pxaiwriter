@@ -40,7 +40,7 @@ You can access these set of settings here : https://<site>/admin/settings.php?se
 - Either click on 'Save and return to course' or 'Save and display' button to save the submission configuration.
 
 ## Release notes
-- **1.7.0** (2024082700)
+- **1.7.0** (2024082702)
   - New feature:
     - Added new instance setting to allow the teacher to add something to the prompt
   - New models:
