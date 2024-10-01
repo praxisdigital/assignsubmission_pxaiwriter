@@ -20,13 +20,12 @@
                     {{>assignsubmission_pxaiwriter/submission/step_editor}}
                 {{/steps_data}}
             </div>
-            {{#exceeds_max_attempts}}
-                <div class="row mb-1">
+            <div class="row mb-1 {{^exceeds_max_attempts}}d-none{{/exceeds_max_attempts}}"
+                 id="assignsubmission_pxaiwriter_max_attempts_message">
                     <div class="col-auto" style="color: red;">
                         <i>{{#str}} ai_attempt_exceed_msg, assignsubmission_pxaiwriter{{/str}}</i>
                     </div>
                 </div>
-            {{/exceeds_max_attempts}}
 
             <div class="actions-container mb-3 row d-flex justify-content-end">
 

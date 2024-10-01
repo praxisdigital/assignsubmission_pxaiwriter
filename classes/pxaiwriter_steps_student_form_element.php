@@ -9,11 +9,6 @@ require_once($CFG->libdir . '/form/datetimeselector.php');
 require_once('HTML/QuickForm/element.php');
 require_once($CFG->dirroot . '/lib/filelib.php');
 
-/**
- * Datetime rule element.
- *
- * @package   mod_courseevents
- */
 class pxaiwriter_steps_student_form_element extends HTML_QuickForm_element
 {
 
@@ -68,6 +63,8 @@ class pxaiwriter_steps_student_form_element extends HTML_QuickForm_element
             'assignmentId' => $this->data->assignmentid,
             'submissionId' => $this->data->submissionid,
             'stepNumber' => 1,
+            'maxAttempts' => $this->data->max_attempts,
+            'attemptsCount' => $this->data->attempts_count,
         ]);
 
         return $html;
