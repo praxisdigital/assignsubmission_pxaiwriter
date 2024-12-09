@@ -33,6 +33,7 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         $mform->setType('assignsubmission_pxaiwriter_steps', PARAM_RAW);
 
         $mform->addElement('textarea', 'assignsubmission_pxaiwriter_step_1_additional_prompt', get_string('assignsubmission_pxaiwriter_step_1_additional_prompt', 'assignsubmission_pxaiwriter'));
+        $mform->addHelpButton('assignsubmission_pxaiwriter_step_1_additional_prompt', 'assignsubmission_pxaiwriter_step_1_additional_prompt', 'assignsubmission_pxaiwriter');
         $mform->setType('assignsubmission_pxaiwriter_step_1_additional_prompt', PARAM_TEXT);
         $mform->setDefault(
             'assignsubmission_pxaiwriter_step_1_additional_prompt',

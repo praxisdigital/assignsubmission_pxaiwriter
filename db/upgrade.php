@@ -110,5 +110,28 @@ function xmldb_assignsubmission_pxaiwriter_upgrade($oldversion)
         }
     }
 
+    if ($oldversion < 2024120900) {
+        // Force the model to be gpt-4o
+        set_config(
+            'model',
+            'gpt-4o',
+            $component
+        );
+
+        // Force the max tokens to be 5000
+        set_config(
+            'max_tokens',
+            5000,
+            $component
+        );
+
+        upgrade_plugin_savepoint(
+            true,
+            2024120900,
+            'assignsubmission',
+            'pxaiwriter'
+        );
+    }
+
     return true;
 }

@@ -5,7 +5,8 @@ $string['pluginname'] = 'AI writer submissions';
 // Submission options
 $string['enabled'] = "Enabled";
 $string['enabled_help'] = "If enabled, students are able to use AI writer to generate text for their submission.";
-$string['assignsubmission_pxaiwriter_step_1_additional_prompt'] = "This text will be added to the step 1 prompt.";
+$string['assignsubmission_pxaiwriter_step_1_additional_prompt'] = "This text will be added to the step 1 system prompt.";
+$string['assignsubmission_pxaiwriter_step_1_additional_prompt_help'] = "This text will be added to the step 1 system prompt. Making the teacher able to guide the LLM model to generate a text based on the teacher's instructions.";
 
 // Admin settings
 $string['default'] = "Default";

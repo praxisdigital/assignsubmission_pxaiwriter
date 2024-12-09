@@ -41,7 +41,7 @@ You can access these set of settings here : https://<site>/admin/settings.php?se
 
 ## Release notes
 
-- **1.7.0** (2024082703)
+- **1.7.0** (2024120900)
   - New feature:
     - Added new instance setting to allow the teacher to add something to the prompt
   - New models:

@@ -48,7 +48,6 @@ class models implements interfaces\models
             'moodle'
         );
         return [
-            self::GPT_4 => self::GPT_4 . " (GPT-4)",
             self::GPT_4_O => self::GPT_4_O . " (GPT-4o)",
             self::GPT_4_O_MINI => self::GPT_4_O_MINI . " (GPT-4o Mini)",
             self::GPT_3_5_TURBO => self::GPT_3_5_TURBO . " (GPT-3.5) ($recommended)",
