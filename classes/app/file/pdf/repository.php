@@ -7,6 +7,7 @@ use assignsubmission_pxaiwriter\app\ai\history\interfaces\collection;
 use assignsubmission_pxaiwriter\app\helper\diff\interfaces\text;
 use assignsubmission_pxaiwriter\app\interfaces\factory as base_factory;
 use assignsubmission_pxaiwriter\app\submission\interfaces\submission_history;
+use assignsubmission_pxaiwriter\app\submission\step_config;
 use stored_file;
 
 /* @codeCoverageIgnoreStart */
@@ -161,62 +162,35 @@ class repository implements interfaces\repository
 
         $first_step_number = $step_numbers;
         $first_steps = $history_list->get_step_entities($first_step_number);
+
+        /** @var step_config $first_step_config */
         $first_step_config = $submission_history->get_step_config($first_step_number);
-        $first_history = $first_steps->get_first_entity_by_step($first_step_number);
-        $step_count = 1;
+        $step_count = 0;
 
-        $sub_steps = $first_steps->skip(1);
+        $sub_steps = $first_steps;
         $sub_steps_count = $sub_steps->count();
-
-        if ($first_history !== null)
-        {
-            $first_user_text = $first_history->get_input_text();
-            $diff_text = $first_user_text;
-
-            $pdf_data[] = $this->get_pdf_html(
-                $first_history->get_step(),
-                $first_step_config->get_description(),
-                nl2br(trim($first_user_text))
-            );
-
-            $first_data_text = $first_history->get_data();
-
-            if (!empty($first_data_text) && $first_user_text !== $first_data_text)
-            {
-                $pdf_data[] = $this->get_pdf_html(
-                    $this->get_step_number_name($first_history, $step_count),
-                    $first_step_config->get_description(),
-                    $text_diff->diff($diff_text, $first_data_text)
-                );
-                $diff_text = $first_data_text;
-                ++$step_count;
-            }
-        }
 
         if ($sub_steps_count > 1)
         {
             foreach ($sub_steps as $step)
             {
-                if ($step->is_ai_generate())
-                {
-                    $data = $step->get_data();
-                    $pdf_data[] = $this->get_pdf_html(
-                        $this->get_step_number_name($step, $step_count),
-                        $first_step_config->get_description(),
-                        $text_diff->diff($step->get_input_text(), $data)
-                    );
-                    $diff_text = $data;
-                    ++$step_count;
-                    continue;
-                }
-
-                $data = $step->get_data();
-                $pdf_data[] = $this->get_pdf_html(
+                $pdf_data []= $this->get_pdf_html(
                     $this->get_step_number_name($step, $step_count),
                     $first_step_config->get_description(),
-                    $text_diff->diff($diff_text, $data)
+                    $text_diff->diff($diff_text, $step->get_input_text())
                 );
+                ++$step_count;
+
+                $data = $step->get_data();
+
                 $diff_text = $data;
+                $text = $step->is_ai_generate() ? $step->get_input_text() : $diff_text;
+
+                $pdf_data []= $this->get_pdf_html(
+                    $this->get_step_number_name($step, $step_count),
+                    $first_step_config->get_description(),
+                    $text_diff->diff($text, $data)
+                );
                 ++$step_count;
             }
         }

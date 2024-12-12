@@ -142,6 +142,8 @@ class repository implements interfaces\repository
             $day->get_end_of_day()->getTimestamp()
         );
         $submission_data->exceeds_max_attempts = $attempt->is_exceeded();
+        $submission_data->attempts_count = $attempt->get_attempted_count();
+        $submission_data->max_attempts = $attempt->get_max_attempts();
         $submission_data->enabled_ai_actions = !$submission_data->exceeds_max_attempts;
 
         $submission_data->steps_data = $steps_data;

@@ -14,7 +14,7 @@ class chat implements JsonSerializable
     private settings $settings;
     private array $messages = [];
 
-    function __construct(settings $settings)
+    public function __construct(settings $settings)
     {
         $this->settings = $settings;
     }
@@ -38,6 +38,11 @@ class chat implements JsonSerializable
         return $this->prompt($message, 'assistant');
     }
 
+    public function system_prompt(string $message): self
+    {
+        return $this->prompt($message, 'system');
+    }
+
     public function get_request_data(): array
     {
         return array_merge([], $this->get_request_body(), [
@@ -51,6 +56,7 @@ class chat implements JsonSerializable
             'model' => $this->settings->get_model(),
             'temperature' => $this->settings->get_temperature(),
             'max_tokens' => $this->settings->get_max_tokens(),
+            'n' => 1, // Makes sure we only get one choice in the response
             'top_p' => $this->settings->get_top_p(),
             'frequency_penalty' => $this->settings->get_frequency_penalty(),
             'presence_penalty' => $this->settings->get_presence_penalty(),

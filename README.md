@@ -40,6 +40,15 @@ You can access these set of settings here : https://<site>/admin/settings.php?se
 - Either click on 'Save and return to course' or 'Save and display' button to save the submission configuration.
 
 ## Release notes
+
+- **1.7.0** (2024120900)
+  - New feature:
+    - Added new instance setting to allow the teacher to add something to the prompt
+  - New models:
+    - "gpt-4o"
+    - "gpt-4o-mini"
+  - Fixes:
+    - Disabled the GPT-4 Turbo model due to it working badly with the plugin. Sites that have this model enabled will be switched to GPT-4o mini.
 - **1.6.0** (2024050100)
   - New feature:
     - Add new models

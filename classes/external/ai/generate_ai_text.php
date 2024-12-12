@@ -92,8 +92,17 @@ class generate_ai_text extends base
             {
                 throw user_exceed_attempts_exception::by_external_api();
             }
+            $step_1_additional_prompt = $factory->moodle()->db()->get_field('assign_plugin_config', 'value', [
+                'plugin' => 'pxaiwriter',
+                'subtype' => 'assignsubmission',
+                'name' => 'step_1_additional_prompt',
+                'assignment' => $assignment_id
+            ]);
 
-            $response_data = $ai_factory->openai()->api()->generate_ai_text($text);
+            $response_data = $ai_factory->openai()->api()->generate_ai_text(
+                $step_1_additional_prompt === false ? '' : $step_1_additional_prompt,
+                $text
+            );
             $combined_text = $ai_factory->formatter()->text($text, $response_data->get_text());
 
             $archive->commit_by_generate_ai_text(

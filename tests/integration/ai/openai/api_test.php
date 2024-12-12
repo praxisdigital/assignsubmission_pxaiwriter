@@ -19,6 +19,7 @@ class api_test extends integration_testcase
 {
     private function get_provider_data(
         string $model,
+        string $assistant_text,
         string $user_text,
         string $expected_ai_text,
         array $responses
@@ -26,13 +27,14 @@ class api_test extends integration_testcase
     {
         return [
             $model,
+            $assistant_text,
             $user_text,
             $expected_ai_text,
             $responses
         ];
     }
 
-    private function get_data_provider_list(string $user_text): array
+    private function get_data_provider_list(string $assistant_text, string $user_text): array
     {
         $chat_completion_data = $this->get_fake_chat_completion_api_data_default();
         $expected_chat_text = $this->get_expected_text_from_responses($chat_completion_data);
@@ -46,24 +48,35 @@ class api_test extends integration_testcase
         return [
             $this->get_provider_data(
                 models::GPT_3_5_TURBO,
+                $assistant_text,
                 $user_text,
                 $expected_chat_text,
                 $chat_completion_data
             ),
             $this->get_provider_data(
                 models::GPT_4,
+                $assistant_text,
                 $user_text,
                 $expected_chat_text,
                 $chat_completion_data
             ),
             $this->get_provider_data(
-                models::GPT_4_TURBO,
+                models::GPT_4_O,
+                $assistant_text,
+                $user_text,
+                $expected_chat_text,
+                $chat_completion_data
+            ),
+            $this->get_provider_data(
+                models::GPT_4_O_MINI,
+                $assistant_text,
                 $user_text,
                 $expected_chat_text,
                 $chat_completion_data
             ),
             $this->get_provider_data(
                 models::GPT_3_5_TURBO,
+                $assistant_text,
                 $user_text,
                 implode('', $messages),
                 $this->get_fake_chat_completion_api_data_chain($messages)
@@ -83,6 +96,7 @@ class api_test extends integration_testcase
     public function generate_ai_text_provider(): array
     {
         return $this->get_data_provider_list(
+            'Respond as if you were the king of bad grammar',
             'Makeup a story about a cat that is facing a mighty orc in the final battle'
         );
     }
@@ -90,6 +104,7 @@ class api_test extends integration_testcase
     /**
      * @dataProvider generate_ai_text_provider
      * @param string $model
+     * @param string $assistant_text
      * @param string $user_text
      * @param string $expected_text
      * @param object[] $responses
@@ -97,6 +112,7 @@ class api_test extends integration_testcase
      */
     public function test_generate_ai_text(
         string $model,
+        string $assistant_text,
         string $user_text,
         string $expected_text,
         array $responses
@@ -106,7 +122,7 @@ class api_test extends integration_testcase
             $model,
             $responses
         ));
-        $ai_text = $api->generate_ai_text($user_text);
+        $ai_text = $api->generate_ai_text($assistant_text, $user_text);
         self::assertSame(
             $expected_text,
             $ai_text->get_text()
@@ -115,12 +131,15 @@ class api_test extends integration_testcase
 
     public function expand_ai_text_provider(): array
     {
-        return $this->get_data_provider_list('A mighty orc that loose in the end');
+        return $this->get_data_provider_list(
+            'Respond as if you were the queen of orcs',
+            'A mighty orc that loose in the end');
     }
 
     /**
      * @dataProvider expand_ai_text_provider
      * @param string $model
+     * @param string $assistant_text
      * @param string $user_text
      * @param string $expected_text
      * @param object[] $responses
@@ -128,6 +147,7 @@ class api_test extends integration_testcase
      */
     public function test_expand_ai_text(
         string $model,
+        string $assistant_text,
         string $user_text,
         string $expected_text,
         array $responses
@@ -137,7 +157,7 @@ class api_test extends integration_testcase
             $model,
             $responses
         ));
-        $ai_text = $api->expand_ai_text($user_text);
+        $ai_text = $api->expand_ai_text($assistant_text, $user_text);
         self::assertSame(
             $expected_text,
             $ai_text->get_text()
@@ -153,15 +173,14 @@ class api_test extends integration_testcase
         $settings->set_mock_method('get_model', $model);
 
         $rest = $this->createMock(rest::class);
-        $rest->responses = $responses;
         $rest->method('post')
-            ->willReturnCallback(static function () use ($rest) {
-                $response = current($rest->responses);
+            ->willReturnCallback(static function () use (&$responses) {
+                $response = current($responses);
                 if ($response === false) {
                     return new response(json_encode([]));
                 }
 
-                next($rest->responses);
+                next($responses);
 
                 return new response(json_encode($response));
             });

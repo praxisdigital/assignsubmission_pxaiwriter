@@ -112,7 +112,17 @@ class expand_ai_text extends base
                 throw user_exceed_attempts_exception::by_external_api();
             }
 
-            $generated_text = $ai_factory->openai()->api()->expand_ai_text($selected_text);
+            $step_1_additional_prompt = $factory->moodle()->db()->get_field('assign_plugin_config', 'value', [
+                'plugin' => 'pxaiwriter',
+                'subtype' => 'assignsubmission',
+                'name' => 'step_1_additional_prompt',
+                'assignment' => $assignment_id
+            ]);
+
+            $generated_text = $ai_factory->openai()->api()->expand_ai_text(
+                $step_1_additional_prompt === false ? '' : $step_1_additional_prompt,
+                $selected_text
+            );
 
             $new_text = $ai_factory->formatter()->replace(
                 $text,

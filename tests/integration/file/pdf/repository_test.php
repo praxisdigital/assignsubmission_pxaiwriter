@@ -16,7 +16,7 @@ require_once $CFG->libdir . '/pdflib.php';
 
 class repository_test extends integration_testcase
 {
-    public function test_save_submission_as_pdf()
+    public function test_save_submission_as_pdf(): void
     {
         $user = $this->create_user();
         $course = $this->create_course();
@@ -116,10 +116,12 @@ class repository_test extends integration_testcase
         preg_match_all('#<b>Step (?<steps>1.[0-9]+|[0-9]+)</b>#', $data, $matches);
 
         $expected_steps = [
-            '1',
+            '1.0',
             '1.1',
             '1.2',
             '1.3',
+            '1.4',
+            '1.5',
             '2',
             '3',
         ];

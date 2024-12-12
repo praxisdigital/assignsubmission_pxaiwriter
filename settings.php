@@ -61,7 +61,7 @@ $settings->add(new admin_setting_configtext(
     'assignsubmission_pxaiwriter/max_tokens',
     new lang_string('max_tokens', 'assignsubmission_pxaiwriter'),
     new lang_string('max_tokens_description', 'assignsubmission_pxaiwriter'),
-    256
+    5000
 ));
 
 $settings->add(new admin_setting_configtext(
