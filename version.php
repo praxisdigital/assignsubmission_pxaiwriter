@@ -5,7 +5,7 @@ defined('MOODLE_INTERNAL') || die();
 /** @var object $plugin */
 $plugin->component = 'assignsubmission_pxaiwriter';
 $plugin->version = 2025121000;
-$plugin->requires = 2021051700; // Moodle 3.11
+$plugin->requires = 2025041400; // Moodle 5.0
 $plugin->release = '1.7.1 (Build: 2025-12-10)';
 $plugin->maturity = MATURITY_STABLE;
 $plugin->dependencies = [
