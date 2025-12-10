@@ -119,7 +119,7 @@ class expand_ai_text extends base
                 'assignment' => $assignment_id
             ]);
 
-            $generated_text = $ai_factory->openai()->api()->expand_ai_text(
+            $generated_text = $ai_factory->api()->expand_ai_text(
                 $step_1_additional_prompt === false ? '' : $step_1_additional_prompt,
                 $selected_text
             );
@@ -127,15 +127,15 @@ class expand_ai_text extends base
             $new_text = $ai_factory->formatter()->replace(
                 $text,
                 $selected_text,
-                $generated_text->get_text(),
+                $generated_text,
                 $select_start
             );
 
             $archive->commit_by_expand_ai_text(
                 $selected_text,
-                $generated_text->get_text(),
+                $generated_text,
                 $new_text,
-                $generated_text->get_response_json()
+                $generated_text
             );
 
             $transaction->allow_commit();
@@ -144,7 +144,7 @@ class expand_ai_text extends base
 
             return [
                 'data' => $new_text,
-                'ai_text' => $generated_text->get_text(),
+                'ai_text' => $generated_text,
                 'attempt_text' => $attempt_data->get_attempt_text(),
                 'attempted_count' => $attempt_data->get_attempted_count(),
                 'max_attempts' => $attempt_data->get_max_attempts()

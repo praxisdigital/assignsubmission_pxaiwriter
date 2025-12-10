@@ -11,8 +11,4 @@ defined('MOODLE_INTERNAL') || die();
 
 class http_request_exception extends plugin_exception
 {
-    public static function by_openai_api(string $message, ?Exception $exception = null): self
-    {
-        return new static($message, 0, $exception);
-    }
 }

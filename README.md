@@ -20,13 +20,6 @@ AI text submission plugin that allows admins to define submission scope of steps
 Praxis AI writer requires some setup to be completed before used, forgetting this step will cause the plugin not to work as supposed to be. Here, its mandatory that you complete all the sections Open API request settings, Open API text comparer settings and Assignment Settings.
 You can access these set of settings here : https://<site>/admin/settings.php?section=assignsubmission_pxaiwriter.
 
-- OpenAI API token **(openai_token)**
-- Model **(model)**
-- Temperature **(temperature)**
-- Max tokens **(max_tokens)**
-- Top p **(top_p)**
-- Frequency Penalty **(frequency_penalty)**
-- Presence penalty **(presence_penalty)**
 - Last modified by **(last_modified_by)**
 - Attempt count **(attempt_count)**
 
@@ -41,6 +34,8 @@ You can access these set of settings here : https://<site>/admin/settings.php?se
 
 ## Release notes
 
+- **1.7.1** (2025121000)
+  - Transitioned to use local_mxaimanager for API requests.
 - **1.7.0** (2024120900)
   - New feature:
     - Added new instance setting to allow the teacher to add something to the prompt

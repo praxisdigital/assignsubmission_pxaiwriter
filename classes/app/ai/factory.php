@@ -5,7 +5,6 @@ namespace assignsubmission_pxaiwriter\app\ai;
 
 use assignsubmission_pxaiwriter\app\ai\attempt\interfaces\factory as attempt_factory;
 use assignsubmission_pxaiwriter\app\ai\history\interfaces\factory as history_factory;
-use assignsubmission_pxaiwriter\app\ai\openai\interfaces\factory as openai_factory;
 use assignsubmission_pxaiwriter\app\interfaces\factory as base_factory;
 
 /* @codeCoverageIgnoreStart */
@@ -38,8 +37,8 @@ class factory implements interfaces\factory
         return $this->factories[__FUNCTION__] ??= new history\factory($this->factory);
     }
 
-    public function openai(): openai_factory
+    public function api(): api
     {
-        return $this->factories[__FUNCTION__] ??= new openai\factory($this->factory);
+        return $this->factories[__FUNCTION__] ??= new api($this->factory);
     }
 }
