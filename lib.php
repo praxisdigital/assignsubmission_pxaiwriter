@@ -7,6 +7,11 @@ ensure_assignsubmission_pxaiwriter_features_are_setup();
 function ensure_assignsubmission_pxaiwriter_features_are_setup(): void {
     $component = 'assignsubmission_pxaiwriter';
 
+    if (!\core\plugin_manager::instance()->get_plugin_info('local_mxaimanager')) {
+        // AI Manager is not installed, nothing to do.
+        return;
+    }
+
     // Obtain the factory instance.
     $factory = \local_mxaimanager\app\factory::make();
 
