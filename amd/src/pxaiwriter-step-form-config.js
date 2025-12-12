@@ -1,16 +1,17 @@
-stepConfigForm = {};
+import $ from 'jquery';
+
+
+let stepConfigForm = {};
 stepConfigForm.steps = [];
 stepConfigForm.currentStep = 1;
 stepConfigForm.prevStep = 0;
 
-stepConfigForm.init = function (config, stepConfig) {
-
+stepConfigForm.init = function (stepConfig) {
     // this.template = stepConfig.template;
     this.steps = stepConfig.steps;
     this.backStepContent = "";
 
-
-    $(".actions-container").on("click", '#pxaiwriter-expand-selection', function (e) {
+    $(".actions-container").on("click", '#pxaiwriter-expand-selection', function() {
         this.steps.forEach((element, index) => {
             if (this.steps[index]['step'] != this.currentStep) {
                 this.steps[index]['value'] = "";
@@ -18,7 +19,7 @@ stepConfigForm.init = function (config, stepConfig) {
         });
     }.bind(this));
 
-    $(".actions-container").on("click", '#pxaiwriter-do-ai-magic', function (e) {
+    $(".actions-container").on("click", '#pxaiwriter-do-ai-magic', function() {
         this.steps.forEach((element, index) => {
             if (this.steps[index]['step'] != this.currentStep) {
                 this.steps[index]['value'] = "";
@@ -26,13 +27,12 @@ stepConfigForm.init = function (config, stepConfig) {
         });
     }.bind(this));
 
-    $("#pxaiwriter-input-steps-component").on("click", '#go-back', function () {
-        let currentVal = $('[name="pxaiwriter-data-step-' + (this.currentStep - 1) + '"]').val();
+    $("#pxaiwriter-input-steps-component").on("click", '#go-back', function() {
         changeCurrentStep(-1);
         setElementsVisibility();
     }.bind(this));
 
-    $("#pxaiwriter-input-steps-component").on("click", '#advance', function () {
+    $("#pxaiwriter-input-steps-component").on("click", '#advance', function() {
         let currentVal = $('[name="pxaiwriter-data-step-' + this.currentStep + '"]').val();
 
         if (this.currentStep == 1) {
@@ -46,23 +46,17 @@ stepConfigForm.init = function (config, stepConfig) {
 
     $('.steps textarea').bind('mouseup mousemove', function (e) {
         var innerHeight = $(e.target).height();
-        const elements = $("textarea").each(function (index, item) {
+        $("textarea").each(function (index, item) {
             $(item).height(innerHeight);
         });
     }.bind(this));
 
     $('.pxaiwriter-student-data').bind('paste keyup keypress blur change', function (e) {
-
         const currentStep = $(e.target).data("input-step");
         const value = $(e.target).val();
         this.steps[currentStep - 1]['value'] = value;
         $('[name="assignsubmission_pxaiwriter_student_data"]').val(JSON.stringify(this.steps));
-
     }.bind(this));
-
-    var setSaveContent = function () {
-
-    }.bind(this);
 
     const triggerPageChangeEvent = (newStep, oldStep = 0) => {
         var wrapper = document.querySelector('.assignsubmission_pxaiwriter');
@@ -156,4 +150,6 @@ stepConfigForm.init = function (config, stepConfig) {
     }.bind(this);
 
     setElementsVisibility();
-}
+};
+
+export default stepConfigForm;

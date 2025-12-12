@@ -46,4 +46,6 @@ interface factory
     public function setting(): setting_factory;
 
     public function submission(): submission_factory;
+
+    public function local_mxaimanager(): \local_mxaimanager\app\factory;
 }

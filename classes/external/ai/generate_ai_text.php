@@ -99,19 +99,19 @@ class generate_ai_text extends base
                 'assignment' => $assignment_id
             ]);
 
-            $response_data = $ai_factory->openai()->api()->generate_ai_text(
+            $response = $ai_factory->api()->generate_ai_text(
                 $step_1_additional_prompt === false ? '' : $step_1_additional_prompt,
                 $text
             );
-            $combined_text = $ai_factory->formatter()->text($text, $response_data->get_text());
+            $combined_text = $ai_factory->formatter()->text($text, $response);
 
             $archive->commit_by_generate_ai_text(
                 $text,
-                $response_data->get_text(),
+                $response,
                 $combined_text,
-                $response_data->get_response_json()
+                $response
             );
-            
+
             $attempt_data->make_attempt();
 
             $transaction->allow_commit();

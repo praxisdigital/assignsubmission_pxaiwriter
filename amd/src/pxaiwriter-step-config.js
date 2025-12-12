@@ -1,11 +1,13 @@
-stepConfig = {};
+import $ from 'jquery';
+import Mustache from 'core/mustache';
+
+let stepConfig = {};
 stepConfig.template = null;
 stepConfig.hasUsed = false;
 stepConfig.hasRaised = false;
 stepConfig.steps = [];
 
-stepConfig.init = function (config, stepConfig) {
-
+stepConfig.init = function (stepConfig) {
     this.template = stepConfig.template;
     this.steps = stepConfig.steps;
     this.hasUsed = stepConfig.hasUsed;
@@ -16,19 +18,20 @@ stepConfig.init = function (config, stepConfig) {
     });
 
     $('#id_assignsubmission_pxaiwriter_enabled').click(function () {
-        $("#ai_writer_submisson_steps_section").toggle(this.checked); // -> display/hide aiwriter section upon selecting the ai writer submission checkbox
+        // -> display/hide aiwriter section upon selecting the ai writer submission checkbox
+        $("#ai_writer_submisson_steps_section").toggle(this.checked);
     });
 
     $("#add_step_btn").toggle(true); // enable add button after rendering the template
 
     $("#ai_writer_submisson_steps_loader").toggle(false); // hide loader after rendering template
 
-    $('input[name="assignsubmission_pxaiwriter_steps"]').val(JSON.stringify(this.steps)); // set defualt value to the ai writer steps. this is the value stored in the db
+    // set defualt value to the ai writer steps. this is the value stored in the db
+    $('input[name="assignsubmission_pxaiwriter_steps"]').val(JSON.stringify(this.steps));
 
-    $('#add_step_btn').click(function (e) {
-
+    $('#add_step_btn').click(function(e) {
         e.preventDefault();
-        const modal = new Promise((resolve, reject) => {
+        new Promise((resolve, reject) => {
             if (this.hasRaised == false && this.hasUsed == true) {
                 $('#steps-change-warning-modal').modal('show');
                 $('#confirm-ai-writer-change-action').click(function () {
@@ -40,8 +43,7 @@ stepConfig.init = function (config, stepConfig) {
             } else {
                 resolve("user clicked");
             }
-        }).then((val) => {
-            const newStepId = this.steps.length + 1;
+        }).then(() => {
             let newStep = {
                 step: this.steps.length + 1,
                 description: null,
@@ -58,41 +60,17 @@ stepConfig.init = function (config, stepConfig) {
             let rendered = Mustache.render(this.template, newStep);
             $("#ai_writer_submisson_steps").append(rendered);
             this.hasRaised = true;
-        }).catch((err) => {
+        }).catch(() => {
             // Ignore !
         });
-
-        // raiseValidator();
-        // const newStepId = this.steps.length + 1;
-
-        // let newStep = {
-        //     step: this.steps.length + 1,
-        //     description: null,
-        //     mandatory: true,
-        //     type: 'text',
-        //     removable: true,
-        //     value: ""
-        // };
-        // this.steps.push(newStep);
-        // let rendered = Mustache.render(this.template, newStep);
-        // $("#ai_writer_submisson_steps").append(rendered);
-
-
     }.bind(this));
 
-    var raiseValidator = function () {
-        if (this.hasRaised == false && this.hasUsed == true) {
-            $('#steps-change-warning-modal').modal('show');
-            this.hasRaised = true;
-        }
-    }.bind(this);
-
-    $('#steps-change-warning-modal').click(function (e) {
+    $('#steps-change-warning-modal').click(function() {
         $('#steps-change-warning-modal').modal('hide');
     });
 
     $('#ai_writer_submisson_steps').on('focus change keyup paste', '.step-des', function (e) {
-        const modal = new Promise((resolve, reject) => {
+        new Promise((resolve, reject) => {
             if (this.hasRaised == false && this.hasUsed == true) {
                 e.preventDefault();
                 $('#steps-change-warning-modal').modal('show');
@@ -105,13 +83,13 @@ stepConfig.init = function (config, stepConfig) {
             } else {
                 resolve("user clicked");
             }
-        }).then((val) => {
+        }).then(() => {
             const stepId = $(e.currentTarget).attr('data-id');
             let step = this.steps.find(e => e.step == stepId);
             step.description = $(e.currentTarget).val();
             $('input[name="assignsubmission_pxaiwriter_steps"]').val(JSON.stringify(this.steps));
             this.hasRaised = true;
-        }).catch((err) => {
+        }).catch(() => {
             // Ignore !
             console.log("error");
         });
@@ -119,7 +97,7 @@ stepConfig.init = function (config, stepConfig) {
 
     $('#ai_writer_submisson_steps').on('click', '.remove-btn', function (e) {
         e.preventDefault();
-        const modal = new Promise((resolve, reject) => {
+        new Promise((resolve, reject) => {
             if (this.hasRaised == false && this.hasUsed == true) {
                 $('#steps-change-warning-modal').modal('show');
                 $('#confirm-ai-writer-change-action').click(function () {
@@ -131,7 +109,7 @@ stepConfig.init = function (config, stepConfig) {
             } else {
                 resolve("user clicked");
             }
-        }).then((val) => {
+        }).then(() => {
             const stepId = $(e.currentTarget).attr("data-id");
             this.steps = this.steps.filter((st) => {
                 if (st.step != stepId) {
@@ -148,9 +126,11 @@ stepConfig.init = function (config, stepConfig) {
             });
             $('input[name="assignsubmission_pxaiwriter_steps"]').val(JSON.stringify(this.steps));
             this.hasRaised = true;
-        }).catch((err) => {
+        }).catch(() => {
             // Ignore !
         });
 
     }.bind(this));
-}
+};
+
+export default stepConfig;

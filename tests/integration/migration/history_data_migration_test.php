@@ -58,9 +58,9 @@ class history_data_migration_test extends integration_testcase
 
         $actual_steps_data = json_decode($submission_instance->steps_data);
 
-        self::assertObjectHasAttribute('old_steps_data', $actual_steps_data);
-        self::assertObjectHasAttribute('history_ids', $actual_steps_data);
-        self::assertObjectHasAttribute('latest_history_ids', $actual_steps_data);
+        self::assertObjectHasProperty('old_steps_data', $actual_steps_data);
+        self::assertObjectHasProperty('history_ids', $actual_steps_data);
+        self::assertObjectHasProperty('latest_history_ids', $actual_steps_data);
 
         $steps_data_count = count($steps_data);
         self::assertCount(

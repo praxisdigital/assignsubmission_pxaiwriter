@@ -80,9 +80,9 @@ class pxaiwriter_steps_form_element extends HTML_QuickForm_element
         $html = "";
         $html .= $OUTPUT->render_from_template('assignsubmission_pxaiwriter/assignsubmission_pxaiwriter_steps_form',null);
 
-        // Includes the config javascript for tempalte actions
-        $module = array('name' => 'assignsubmission_pxaiwriter_stepConfig', 'fullpath' => '/mod/assign/submission/pxaiwriter/classes/pxaiwriter-step-config.js');
-        $PAGE->requires->js_init_call('stepConfig.init', array($stepConfig), true, $module);
+        $PAGE->requires->js_call_amd('assignsubmission_pxaiwriter/pxaiwriter-step-config', 'init', [
+            $stepConfig
+        ]);
 
         return $html;
     }

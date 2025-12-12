@@ -12,33 +12,6 @@ $string['assignsubmission_pxaiwriter_step_1_additional_prompt_help'] = "This tex
 $string['default'] = "Default";
 $string['default_help'] = "If set, this submission method will be enabled by default for all new assignments.";
 
-$string['open_ai_request_settings'] = "OpenAI API request settings";
-$string['open_ai_request_settings_description'] = "";
-
-$string['openai_token'] = 'OpenAI API Token';
-$string['openai_token_description'] = 'Set your OpenAI API Token. Example: sk-{token}';
-
-$string['model'] = 'Model';
-$string['model_description'] = "";
-
-$string['temperature'] = "Temperature";
-$string['temperature_description'] = "";
-
-$string['max_tokens'] = "Max tokens";
-$string['max_tokens_description'] = "";
-
-$string['top_p'] = "Top p";
-$string['top_p_description'] = "";
-
-$string['frequency_penalty'] = "Frequency Penalty";
-$string['frequency_penalty_description'] = "";
-
-$string['presence_penalty'] = "Presence penalty";
-$string['presence_penalty_description'] = "";
-
-$string['open_ai_assignment_settings'] = "Assignment Settings";
-$string['open_ai_assignment_settings_description'] = "";
-
 $string["attempt_count"] = "Attempt count";
 $string["attempt_count_description"] = "";
 
@@ -86,9 +59,11 @@ $string['remaining_ai_attempt_count_text'] = '{$a->remaining} attempt(s) out of 
 $string['view_submission'] = 'View Submission';
 $string['not_available'] = 'N/A';
 
-// OpenAI API
 $string['expand_command'] = "Expand on the following";
 $string['system_role_message'] = 'You are a helpful assistant.';
+
+$string['ai:feature:assist_with_assignment_writing'] = 'Assist with assignment writing';
+$string['ai:feature:assist_with_assignment_writing_desc'] = 'Assist students with writing assignments using AI-generated text.';
 
 // Events
 $string['eventassessableuploaded'] = 'Uploaded assessable';

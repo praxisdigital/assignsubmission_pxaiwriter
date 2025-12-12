@@ -26,8 +26,6 @@ class factory implements interfaces\factory
                 return [
                     new history_table_migration($this->factory),
                     new history_data_migration($this->factory),
-                    new openai_token_migration($this->factory),
-                    new openai_model_migration($this->factory),
                 ];
             default:
                 return [];

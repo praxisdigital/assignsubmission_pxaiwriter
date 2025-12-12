@@ -1,6 +1,5 @@
 <?php
 
-use assignsubmission_pxaiwriter\app\ai\openai\interfaces\models;
 use assignsubmission_pxaiwriter\app\factory;
 
 function xmldb_assignsubmission_pxaiwriter_upgrade($oldversion)
@@ -19,49 +18,8 @@ function xmldb_assignsubmission_pxaiwriter_upgrade($oldversion)
         }
     }
 
-    if ($oldversion < 2024022300) {
-        $setting_name = 'model';
-        try {
-            $old_model = get_config($component, $setting_name);
-            if ($old_model !== models::GPT_3_5_TURBO) {
-                set_config(
-                    $setting_name,
-                    models::GPT_3_5_TURBO,
-                    $component
-                );
-            }
-        }
-        catch (Exception $e) {
-            // Do nothing
-        }
-    }
-
     if ($oldversion < 2024050100) {
-        $setting_name = 'model';
         try {
-            $value = get_config($component, $setting_name);
-
-            switch ($value) {
-                case 'gpt-4-turbo':
-                case 'gpt-4-turbo-preview':
-                    $value = 'gpt-4-turbo';
-                    break;
-                case 'gpt-4':
-                case 'gpt-4-preview':
-                    $value = models::GPT_4;
-                    break;
-                default:
-                    $value = models::GPT_3_5_TURBO;
-                    break;
-            }
-
-            // Force the model to be gpt-3.5-turbo, if the current model is deprecated
-            set_config(
-                $setting_name,
-                $value,
-                $component
-            );
-
             // Reformat the response JSON object into array in AI writer history
             $sql = "UPDATE {pxaiwriter_history} SET
                     response = CONCAT('[', response, ']')
@@ -78,59 +36,6 @@ function xmldb_assignsubmission_pxaiwriter_upgrade($oldversion)
         catch (Exception) {
             // Do nothing
         }
-    }
-
-    if ($oldversion < 2024082700) {
-        $setting_name = 'model';
-        try {
-            $value = get_config($component, $setting_name);
-
-            switch ($value) {
-                case 'gpt-4-turbo':
-                case 'gpt-4-turbo-preview':
-                    $value = models::GPT_4_O_MINI;
-                    break;
-            }
-
-            // Force the model to be gpt-4o-mini, if the current model is deprecated
-            set_config(
-                $setting_name,
-                $value,
-                $component
-            );
-
-            upgrade_plugin_savepoint(
-                true,
-                2024082700,
-                'assignsubmission',
-                'pxaiwriter'
-            );
-        } catch (Exception) {
-            // Do nothing
-        }
-    }
-
-    if ($oldversion < 2024120900) {
-        // Force the model to be gpt-4o
-        set_config(
-            'model',
-            'gpt-4o',
-            $component
-        );
-
-        // Force the max tokens to be 5000
-        set_config(
-            'max_tokens',
-            5000,
-            $component
-        );
-
-        upgrade_plugin_savepoint(
-            true,
-            2024120900,
-            'assignsubmission',
-            'pxaiwriter'
-        );
     }
 
     return true;
