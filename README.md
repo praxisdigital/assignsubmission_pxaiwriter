@@ -33,7 +33,8 @@ You can access these set of settings here : https://<site>/admin/settings.php?se
 - Either click on 'Save and return to course' or 'Save and display' button to save the submission configuration.
 
 ## Release notes
-
+- **1.7.2** (2026052100)
+  - Replaced imports of deprecated external_* namespaces with core_external/external_* namespaces.
 - **1.7.1** (2025121000)
   - Transitioned to use local_mxaimanager for API requests.
 - **1.7.0** (2024120900)
