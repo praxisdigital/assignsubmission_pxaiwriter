@@ -6,8 +6,9 @@ namespace assignsubmission_pxaiwriter\external;
 use assignsubmission_pxaiwriter\app\exceptions\invalid_step_number_exception;
 use assignsubmission_pxaiwriter\app\factory;
 use assignsubmission_pxaiwriter\app\interfaces\factory as base_factory;
-use external_api;
-use external_description;
+use core_external\external_api;
+use core_external\external_description;
+
 
 global $CFG;
 require_once "$CFG->libdir/externallib.php";

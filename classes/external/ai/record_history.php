@@ -6,10 +6,11 @@ namespace assignsubmission_pxaiwriter\external\ai;
 use assignsubmission_pxaiwriter\app\exceptions\moodle_traceable_exception;
 use assignsubmission_pxaiwriter\external\base;
 use Exception;
-use external_description;
-use external_function_parameters;
-use external_single_structure;
-use external_value;
+use core_external\external_description;
+use core_external\external_function_parameters;
+use core_external\external_value;
+use core_external\external_single_structure;
+
 
 /* @codeCoverageIgnoreStart */
 defined('MOODLE_INTERNAL') || die();
