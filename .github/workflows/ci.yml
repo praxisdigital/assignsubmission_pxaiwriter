@@ -7,31 +7,44 @@ on:
 
 jobs:
   PHPUnit:
-    runs-on: ${{ env.OS }}
-    continue-on-error: ${{ env.EXPERIMENTAL }}
-    env:
-      OS: ubuntu-latest
-      EXPERIMENTAL: false
-      DEPENDENCIES: |
-        praxisdigital/local_mxaimanager@MOODLE_50_STABLE
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:
-        php: ['8.3', '8.4']
-        moodle: [MOODLE_500_STABLE, MOODLE_501_STABLE, MOODLE_502_STABLE]
-        dbtype: [mysqli, sqlsrv]
+        os: [ ubuntu-latest ]
+        experimental: [ false ]
+        php: [ '8.3', '8.4' ]
+        moodle: [ MOODLE_500_STABLE, MOODLE_501_STABLE, MOODLE_502_STABLE ]
+        dbtype: [ mysqli, sqlsrv ]
         include:
-          - php: '8.2'
+          - os: ubuntu-latest
+            experimental: false
+            php: '8.2'
             moodle: MOODLE_500_STABLE
             dbtype: mysqli
-          - php: '8.2'
+            dependencies: |
+              praxisdigital/local_mxaimanager@MOODLE_50_STABLE
+          - os: ubuntu-latest
+            experimental: false
+            php: '8.2'
             moodle: MOODLE_500_STABLE
             dbtype: sqlsrv
-          - php: '8.2'
+            dependencies: |
+              praxisdigital/local_mxaimanager@MOODLE_50_STABLE
+          - os: ubuntu-latest
+            experimental: false
+            php: '8.2'
             moodle: MOODLE_501_STABLE
             dbtype: mysqli
-          - php: '8.2'
+            dependencies: |
+              praxisdigital/local_mxaimanager@MOODLE_50_STABLE
+          - os: ubuntu-latest
+            experimental: false
+            php: '8.2'
             moodle: MOODLE_501_STABLE
             dbtype: sqlsrv
+            dependencies: |
+              praxisdigital/local_mxaimanager@MOODLE_50_STABLE
 
     steps:
       - name: Unit testing & integration testing
@@ -39,10 +52,10 @@ jobs:
         with:
           plugin: assignsubmission_pxaiwriter
           plugin-path: mod/assign/submission/pxaiwriter
-          os: ${{ env.OS }}
+          os: ${{ matrix.os }}
           php: ${{ matrix.php }}
           dbtype: ${{ matrix.dbtype }}
           moodle: ${{ matrix.moodle }}
-          experimental: ${{ env.EXPERIMENTAL }}
-          dependencies: ${{ env.DEPENDENCIES }}
+          experimental: ${{ matrix.experimental }}
+          dependencies: ${{ matrix.dependencies }}
           PRIVATE_REPO_TOKEN: ${{ secrets.MOODLE_GH_KEY }}
