@@ -1,0 +1,14 @@
+<div class="row mb-2" id="step_{{step}}">
+    <div class="col-md-11">
+        <div class=" form-group row">
+            <label for="staticEmail" class="col-md-3 col-form-label">{{#str}} guide_to_step_label, assignsubmission_pxaiwriter {{/str}} {{{guide}}}</label>
+            <div class="col-md-9">
+                <textarea class="form-control step-des" name="step_{{step}}_value" id="step_{{step}}_value" data-id="{{step}}">{{ description }}</textarea>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-1 align-self-baseline">
+        {{#removable}} <button class="btn btn-remove remove-btn" id="remove_{{step}}" data-id="{{step}}"><i class="fa fa-trash" aria-hidden="true"></i></button> {{/removable}}
+        {{^removable}} <button class="btn btn-remove remove-btn d-none" id="remove_{{step}}" data-id="{{step}}"><i class="fa fa-trash" aria-hidden="true"></i></button> {{/removable}}
+    </div>
+</div>

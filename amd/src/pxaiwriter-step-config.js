@@ -1,5 +1,6 @@
 import $ from 'jquery';
 import Mustache from 'core/mustache';
+import Template from 'core/templates';
 
 let stepConfig = {};
 stepConfig.template = null;
@@ -7,15 +8,14 @@ stepConfig.hasUsed = false;
 stepConfig.hasRaised = false;
 stepConfig.steps = [];
 
-stepConfig.init = function (stepConfig) {
-    this.template = stepConfig.template;
+stepConfig.init = async function (stepConfig) {
     this.steps = stepConfig.steps;
     this.hasUsed = stepConfig.hasUsed;
 
-    this.steps.forEach(step => {
-        let rendered = Mustache.render(this.template, step);
+    for(let i = 0; i < this.steps.length;i++){
+        let rendered = await Template.render("assignsubmission_pxaiwriter/assignsubmission_pxaiwriter_step_config",this.steps[i]);
         $("#ai_writer_submisson_steps").append(rendered);
-    });
+    }
 
     $('#id_assignsubmission_pxaiwriter_enabled').click(function () {
         // -> display/hide aiwriter section upon selecting the ai writer submission checkbox
@@ -43,7 +43,7 @@ stepConfig.init = function (stepConfig) {
             } else {
                 resolve("user clicked");
             }
-        }).then(() => {
+        }).then(async () => {
             let newStep = {
                 step: this.steps.length + 1,
                 description: null,
@@ -57,7 +57,7 @@ stepConfig.init = function (stepConfig) {
                 value: ""
             };
             this.steps.push(newStep);
-            let rendered = Mustache.render(this.template, newStep);
+            let rendered = await Template.render("assignsubmission_pxaiwriter/assignsubmission_pxaiwriter_step_config",newStep);
             $("#ai_writer_submisson_steps").append(rendered);
             this.hasRaised = true;
         }).catch(() => {
@@ -109,23 +109,28 @@ stepConfig.init = function (stepConfig) {
             } else {
                 resolve("user clicked");
             }
-        }).then(() => {
+        }).then(async () => {
+
             const stepId = $(e.currentTarget).attr("data-id");
             this.steps = this.steps.filter((st) => {
                 if (st.step != stepId) {
                     return st;
                 }
             });
+
             $("#ai_writer_submisson_steps").empty();
-            this.steps.forEach((step) => {
-                if (stepId && step.step > stepId) {
-                    step.step = step.step - 1;
+
+            for (let i = 0; i < this.steps.length; i++) {
+                if (stepId && this.steps[i].step > stepId) {
+                    this.steps[i].step = this.steps[i].step - 1;
                 }
-                let rendered = Mustache.render(this.template, step);
+                let rendered = await Template.render("assignsubmission_pxaiwriter/assignsubmission_pxaiwriter_step_config", this.steps[i]);
                 $("#ai_writer_submisson_steps").append(rendered);
-            });
+            }
+
             $('input[name="assignsubmission_pxaiwriter_steps"]').val(JSON.stringify(this.steps));
             this.hasRaised = true;
+
         }).catch(() => {
             // Ignore !
         });
