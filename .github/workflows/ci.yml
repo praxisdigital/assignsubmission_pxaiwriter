@@ -11,59 +11,26 @@ jobs:
     continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:
-        include:
-          - php: 8.3
-            os: ubuntu-latest
-            moodle: MOODLE_500_STABLE
-            dbtype: mysqli
-            experimental: false
-            dependencies: |
-              praxisdigital/local_mxaimanager@MOODLE_50_STABLE
-          - php: 8.4
-            os: ubuntu-latest
-            moodle: MOODLE_500_STABLE
-            dbtype: mysqli
-            experimental: false
-            dependencies: |
-              praxisdigital/local_mxaimanager@MOODLE_50_STABLE
-          - php: 8.3
-            os: ubuntu-latest
-            moodle: MOODLE_500_STABLE
-            dbtype: sqlsrv
-            experimental: false
-            dependencies: |
-              praxisdigital/local_mxaimanager@MOODLE_50_STABLE
-          - php: 8.4
-            os: ubuntu-latest
-            moodle: MOODLE_500_STABLE
-            dbtype: sqlsrv
-            experimental: false
-            dependencies: |
-              praxisdigital/local_mxaimanager@MOODLE_50_STABLE
-          - php: 8.4
-            os: ubuntu-latest
-            moodle: MOODLE_501_STABLE
-            dbtype: sqlsrv
-            experimental: false
-            dependencies: |
-              praxisdigital/local_mxaimanager@MOODLE_50_STABLE
-          - php: 8.4
-            os: ubuntu-latest
-            moodle: MOODLE_502_STABLE
-            dbtype: sqlsrv
-            experimental: false
-            dependencies: |
-              praxisdigital/local_mxaimanager@MOODLE_50_STABLE
+        php: ${{ fromJSON(vars.MOODLE_SUPPORTED_PHP_VERSIONS) }}
+        os: ${{ fromJSON(vars.MOODLE_OS || '["ubuntu-latest"]') }}
+        moodle: ${{ fromJSON(vars.MOODLE_SUPPORTED_VERSIONS) }}
+        moodle_repos: ${{ fromJSON(vars.MOODLE_REPOS || '["moodle/moodle"]') }}
+        dbtype: ${{ fromJSON(vars.MOODLE_DB_TYPES || '["mysqli", "sqlsrv"]') }}
+        experimental: ${{ fromJSON(vars.MOODLE_EXPERIMENTAL || '[false]') }}
+        dependencies: ["${{ join(fromJSON(vars.MOODLE_PLUGIN_DEPENDENCIES || '[]'), ' ') }}"]
+        exclude: ${{ fromJSON(vars.MOODLE_EXCLUDE_MATRIX || '[]') }}
+
     steps:
       - name: Unit testing & integration testing
         uses: praxisdigital/moodle-test-action@master
         with:
           plugin: assignsubmission_pxaiwriter
-          plugin-path: mod/assign/submission/pxaiwriter
+          plugin-path: assignsubmission/pxaiwriter
           os: ${{ matrix.os }}
           php: ${{ matrix.php }}
           dbtype: ${{ matrix.dbtype }}
           moodle: ${{ matrix.moodle }}
+          moodle_repository: ${{ matrix.moodle_repos || 'moodle/moodle' }}
           experimental: ${{ matrix.experimental }}
           dependencies: ${{ matrix.dependencies }}
-          PRIVATE_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PRIVATE_REPO_TOKEN: ${{ secrets.MOODLE_GH_KEY }}
