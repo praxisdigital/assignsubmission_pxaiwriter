@@ -236,7 +236,7 @@ class EventCreator {
                     temp
                 );
                 }).catch((err) => {
-                    console.error("Error " + err);
+                    window.console.error("Error " + err);
                 });
             }
         });
