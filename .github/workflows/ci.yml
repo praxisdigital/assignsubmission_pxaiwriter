@@ -25,7 +25,7 @@ jobs:
         uses: praxisdigital/moodle-test-action@master
         with:
           plugin: assignsubmission_pxaiwriter
-          plugin-path: assignsubmission/pxaiwriter
+          plugin-path: mod/assign/submission/pxaiwriter
           os: ${{ matrix.os }}
           php: ${{ matrix.php }}
           dbtype: ${{ matrix.dbtype }}
