@@ -224,7 +224,7 @@ class EventCreator {
             } catch (exception) {
                 let errMsg = "";
                 if(!exception.message){
-                    errMsg = get_string("unknown_error","assignsubmission_pxaiwriter");
+                    errMsg = await get_string("unknown_error","assignsubmission_pxaiwriter");
                 }else {
                     errMsg = exception.message;
                 }

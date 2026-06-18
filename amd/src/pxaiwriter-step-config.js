@@ -1,5 +1,4 @@
 import $ from 'jquery';
-import Mustache from 'core/mustache';
 import Template from 'core/templates';
 
 let stepConfig = {};
