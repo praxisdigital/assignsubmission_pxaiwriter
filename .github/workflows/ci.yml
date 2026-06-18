@@ -33,4 +33,4 @@ jobs:
           moodle_repository: ${{ matrix.moodle_repos || 'moodle/moodle' }}
           experimental: ${{ matrix.experimental }}
           dependencies: ${{ matrix.dependencies }}
-          PRIVATE_REPO_TOKEN: ${{ secrets.MOODLE_GH_KEY }}
+          PRIVATE_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
