@@ -2,6 +2,8 @@
 import $ from "jquery";
 import Ajax from "core/ajax";
 import Notification from "core/notification";
+import Template from "core/templates";
+import {get_string} from "core/str";
 
 /**
  * @typedef {Object} HistoryRecordResponse
@@ -75,6 +77,7 @@ class EventCreator {
 
     selectors = {
         wrapper: '.assignsubmission_pxaiwriter',
+        stepContainer: '.step-container',
         doAIMagic: '#pxaiwriter-do-ai-magic',
         expandSelection: '#pxaiwriter-expand-selection',
         input: '.pxaiwriter-student-data[data-input-step]',
@@ -99,7 +102,7 @@ class EventCreator {
         this.init();
     }
 
-    init() {
+    async init() {
         this.preventPasting(this.selectors.input);
 
         /**
@@ -219,7 +222,22 @@ class EventCreator {
                 this.updateAIButtonState();
                 await this.dispatchHistoryFromInput();
             } catch (exception) {
-                await Notification.exception(exception);
+                let errMsg = "";
+                if(!exception.message){
+                    errMsg = await get_string("unknown_error","assignsubmission_pxaiwriter");
+                }else {
+                    errMsg = exception.message;
+                }
+                $('#loader').addClass('d-none');
+                await Template.render("assignsubmission_pxaiwriter/assignsubmission_pxaiwriter_exception",{err_msg:errMsg}).then((temp) => {
+                const stepContainer = document.querySelector(this.selectors.stepContainer);
+                stepContainer.insertAdjacentHTML(
+                    'afterbegin',
+                    temp
+                );
+                }).catch((err) => {
+                    window.console.error("Error " + err);
+                });
             }
         });
 

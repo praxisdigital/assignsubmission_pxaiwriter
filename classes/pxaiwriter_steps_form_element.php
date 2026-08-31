@@ -61,21 +61,6 @@ class pxaiwriter_steps_form_element extends HTML_QuickForm_element
 
         $stepConfig = new stdClass();
         $stepConfig->steps = $this->get_steps_with_guide_info($this->_init_val);
-        $stepLabel = get_string('guide_to_step_label', 'assignsubmission_pxaiwriter');
-        $stepConfig->template = '<div class="row mb-2" id="step_{{step}}">
-                                    <div class="col-md-11">
-                                        <div class=" form-group row">
-                                            <label for="staticEmail" class="col-md-3 col-form-label">'.$stepLabel.' {{{guide}}}</label>
-                                            <div class="col-md-9">
-                                                <textarea class="form-control step-des" name="step_{{step}}_value" id="step_{{step}}_value" data-id="{{step}}">{{ description }}</textarea>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-1 align-self-baseline">
-                                        {{#removable}} <button class="btn btn-remove remove-btn" id="remove_{{step}}" data-id="{{step}}"><i class="fa fa-trash" aria-hidden="true"></i></button> {{/removable}}
-                                        {{^removable}} <button class="btn btn-remove remove-btn d-none" id="remove_{{step}}" data-id="{{step}}"><i class="fa fa-trash" aria-hidden="true"></i></button> {{/removable}}
-                                    </div>
-                                </div>';
         $stepConfig->hasUsed = $this->_has_used;
         $html = "";
         $html .= $OUTPUT->render_from_template('assignsubmission_pxaiwriter/assignsubmission_pxaiwriter_steps_form',null);

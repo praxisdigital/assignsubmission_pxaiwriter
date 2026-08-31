@@ -45,6 +45,10 @@ $string['previous'] = "Previous";
 $string['next'] = "Next";
 $string['expand_selection'] = "Expand selection";
 $string['do_ai_magic'] = "Do AI magic";
+$string['error_title'] = 'Error';
+$string['unknown_error'] = 'Unknown error';
+$string['error_contact_siteadmin'] = 'If the error persists please contact your site administrator';
+
 
 $string['title_place_holder'] = "Write an instruction to the AI: ex. 'Write an essay on computers'";
 $string['title_required_warning'] = "Title is a mandatory field for this action. Please insert an appropriate title to proceed.";
@@ -76,8 +80,7 @@ $string['error_course_module_not_found_by_assign_id'] = 'Could not find course m
 $string['error_user_exceed_attempts'] = 'You have already exceeded the attempt limit';
 $string['error_invalid_step_number'] = 'Invalid step number {$a}';
 $string['error_overdue_assignment'] = 'The assignment is overdue';
-$string['error_generate_ai_text_api'] = 'Could not generate AI text this time';
-$string['error_expand_ai_text_api'] = 'Could not expand AI text this time';
+$string['error_ai'] = '{$a}';
 $string['error_record_history_api'] = 'Could not record history this time';
 
 // Privacy
