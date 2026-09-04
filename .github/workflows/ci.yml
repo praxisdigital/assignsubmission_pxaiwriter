@@ -1,36 +1,28 @@
-name: Integration & Unit test
+name: Moodle CI
 
 on:
   pull_request:
     branches:
+      - main
+      - master
       - MOODLE_*_STABLE
+  push:
+    branches:
+      - main
+      - master
+      - MOODLE_*_STABLE
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: write
+  issues: write
+  statuses: write
 
 jobs:
-  PHPUnit:
-    runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.experimental }}
-    strategy:
-      matrix:
-        php: ${{ fromJSON(vars.MOODLE_SUPPORTED_PHP_VERSIONS) }}
-        os: ${{ fromJSON(vars.MOODLE_OS || '["ubuntu-latest"]') }}
-        moodle: ${{ fromJSON(vars.MOODLE_SUPPORTED_VERSIONS) }}
-        moodle_repos: ${{ fromJSON(vars.MOODLE_REPOS || '["moodle/moodle"]') }}
-        dbtype: ${{ fromJSON(vars.MOODLE_DB_TYPES || '["mysqli", "sqlsrv"]') }}
-        experimental: ${{ fromJSON(vars.MOODLE_EXPERIMENTAL || '[false]') }}
-        dependencies: ["${{ join(fromJSON(vars.MOODLE_PLUGIN_DEPENDENCIES || '[]'), ' ') }}"]
-        exclude: ${{ fromJSON(vars.MOODLE_EXCLUDE_MATRIX || '[]') }}
-
-    steps:
-      - name: Unit testing & integration testing
-        uses: praxisdigital/moodle-test-action@master
-        with:
-          plugin: assignsubmission_pxaiwriter
-          plugin-path: mod/assign/submission/pxaiwriter
-          os: ${{ matrix.os }}
-          php: ${{ matrix.php }}
-          dbtype: ${{ matrix.dbtype }}
-          moodle: ${{ matrix.moodle }}
-          moodle_repository: ${{ matrix.moodle_repos || 'moodle/moodle' }}
-          experimental: ${{ matrix.experimental }}
-          dependencies: ${{ matrix.dependencies }}
-          PRIVATE_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  ci:
+    uses: praxisdigital/moodle-test-action/.github/workflows/ci.yml@master
+    secrets: inherit
