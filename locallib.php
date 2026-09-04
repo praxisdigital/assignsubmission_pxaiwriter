@@ -32,13 +32,15 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
         $mform->addElement('hidden', 'assignsubmission_pxaiwriter_steps', null);
         $mform->setType('assignsubmission_pxaiwriter_steps', PARAM_RAW);
 
-        $mform->addElement('textarea', 'assignsubmission_pxaiwriter_step_1_additional_prompt', get_string('assignsubmission_pxaiwriter_step_1_additional_prompt', 'assignsubmission_pxaiwriter'));
-        $mform->addHelpButton('assignsubmission_pxaiwriter_step_1_additional_prompt', 'assignsubmission_pxaiwriter_step_1_additional_prompt', 'assignsubmission_pxaiwriter');
-        $mform->setType('assignsubmission_pxaiwriter_step_1_additional_prompt', PARAM_TEXT);
+        $step_1 = 'assignsubmission_pxaiwriter_step_1_additional_prompt';
+        $mform->addElement('textarea', $step_1, get_string($step_1, 'assignsubmission_pxaiwriter'));
+        $mform->addHelpButton($step_1, $step_1, 'assignsubmission_pxaiwriter');
+        $mform->setType($step_1, PARAM_TEXT);
         $mform->setDefault(
-            'assignsubmission_pxaiwriter_step_1_additional_prompt',
+            $step_1,
             $this->get_config('step_1_additional_prompt') === false ? '' : $this->get_config('step_1_additional_prompt')
         );
+        $mform->hideIf($step_1, 'assignsubmission_pxaiwriter_enabled', 'notchecked');
 
         MoodleQuickForm::registerElementType(
             'pxaiwriter_steps_section',
@@ -52,6 +54,11 @@ class assign_submission_pxaiwriter extends assign_submission_plugin
             null,
             $steps,
             $is_in_used
+        );
+        $mform->hideIf(
+            'assignsubmission_pxaiwriter_steps_config',
+            'assignsubmission_pxaiwriter_enabled',
+            'notchecked'
         );
     }
 
