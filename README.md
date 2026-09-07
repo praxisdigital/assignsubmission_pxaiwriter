@@ -33,6 +33,8 @@ You can access these set of settings here : https://<site>/admin/settings.php?se
 - Either click on 'Save and return to course' or 'Save and display' button to save the submission configuration.
 
 ## Release notes
+- **1.7.5** (2026090401)
+  - The submission type now defaults to off, so the AI writer is enabled per assignment until an administrator changes it
 - **1.7.4** (2026090400)
   - Fixed pxaiwriter form always being shown in assignment settings
 - **1.7.3** (2026061800)
