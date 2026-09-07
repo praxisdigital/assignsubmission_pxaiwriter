@@ -62,8 +62,23 @@ class pxaiwriter_steps_form_element extends HTML_QuickForm_element
         $stepConfig = new stdClass();
         $stepConfig->steps = $this->get_steps_with_guide_info($this->_init_val);
         $stepConfig->hasUsed = $this->_has_used;
-        $html = "";
-        $html .= $OUTPUT->render_from_template('assignsubmission_pxaiwriter/assignsubmission_pxaiwriter_steps_form',null);
+
+        $name = $this->getName();
+        $id = $this->getAttribute('id');
+        if (empty($id)) {
+            $id = 'id_' . $name;
+            $this->updateAttributes(['id' => $id]);
+        }
+        $html = \html_writer::empty_tag('input', [
+            'type' => 'hidden',
+            'name' => $name,
+            'id' => $id,
+            'value' => '1',
+        ]);
+        $html .= $OUTPUT->render_from_template(
+            'assignsubmission_pxaiwriter/assignsubmission_pxaiwriter_steps_form',
+            null
+        );
 
         $PAGE->requires->js_call_amd('assignsubmission_pxaiwriter/pxaiwriter-step-config', 'init', [
             $stepConfig
