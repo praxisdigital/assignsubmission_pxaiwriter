@@ -10,7 +10,7 @@ if ($ADMIN->fulltree) {
             'assignsubmission_pxaiwriter/default',
             new lang_string('default', 'assignsubmission_pxaiwriter'),
             new lang_string('default_help', 'assignsubmission_pxaiwriter'),
-            1
+            0
         )
     );
 
