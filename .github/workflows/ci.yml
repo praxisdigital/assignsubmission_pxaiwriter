@@ -24,7 +24,5 @@ permissions:
 
 jobs:
   ci:
-    uses: praxisdigital/moodle-test-action/.github/workflows/ci.yml@mma_GH-1178
+    uses: praxisdigital/moodle-test-action/.github/workflows/ci.yml@master
     secrets: inherit
-    with:
-      action_ref: 'mma_GH-1178'
